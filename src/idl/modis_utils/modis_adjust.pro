@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.34 2004/10/31 23:48:25 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.35 2004/11/06 00:25:27 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.34 2004/10/31 23:48:25 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.35 2004/11/06 00:25:27 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -796,7 +796,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               slope = 1.0
               intcp = 0.0
               readf, lun, ds_det_test, intcp, slope
-              if ds_det_test eq ds_det + vec_ctr then begin
+              if ds_det_test eq ds_det then begin
                   if abs(slope) ge epsilon then $
                     swath[*, ds_det, *] = (temporary(vector) - intcp) / slope
                   reg_slope[ds_det] = slope
