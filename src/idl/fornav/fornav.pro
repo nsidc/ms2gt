@@ -3,7 +3,7 @@
 ;*
 ;* 23-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/fornav.pro,v 1.2 2000/10/25 22:38:14 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/fornav.pro,v 1.3 2000/10/25 23:58:29 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -31,6 +31,7 @@
 ;               [, weight_min=weight_min]
 ;               [, weight_factor=weight_factor]
 ;               [, weight_sum_min=weight_sum_min]
+;               [, bytes_per_cell=bytes_per_cell]
 ;               [, fill=fill]
 ;
 ; ARGUMENTS:
@@ -46,7 +47,7 @@
 ;         floating-point numbers. 
 ;       swath_chan_files: string array of 1 or more swath channel filenames.
 ;         Each file consists of swath_cols x swath_rows of 2 byte signed
-;         integers.
+;         integers (unless bytes_per_cell is equal to 1).
 ;       grid_cols: number of columns in each grid file.
 ;       grid_rows: number of rows in each grid file.
 ;    Outputs:
@@ -71,11 +72,18 @@
 ;         minimum weight is reached. Default is 1.0.
 ;       weight_sum_min: minimum weight sum value. Pixels whose weight sums
 ;         are less than weight_sum_min are set to the fill value.
-;         Default is 0.9.
+;         Default is 0.001.
+;       bytes_per_cell: the number of bytes per input swath cell. The
+;         default is 2, indicating signed integers. The only other valid
+;         value is 1, indicating byte data. If bytes_per_cell is equal to 1,
+;         then weighting is used only for detecting missing data; final cell
+;         values are simply a reflection of the most recently assigned value
+;         given to each cell.
 ;       fill: fill value for missing channel data. If a scalar is provided,
 ;         the value is used for all channel files. If an array is provided,
 ;         it must have the same number of elements as swath_chan_files.
-;         Default value is -1.
+;         If bytes_per_cell equals 1, then default value of fill is -1;
+;         otherwise it is 0.
 ;
 ; EXAMPLE:
 ;         fornav, 1354, 203, 10, $
@@ -104,6 +112,7 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
             weight_min=weight_min, $
             weight_factor=weight_factor, $
             weight_sum_min=weight_sum_min, $
+            bytes_per_cell=bytes_per_cell, $
             fill=fill
 
   usage = 'usage: fornav, swath_cols, swath_scans, swath_rows_per_scan, ' + $
@@ -119,6 +128,7 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
           '[, weight_min=weight_min] ' + $
           '[, weight_factor=weight_factor] ' + $
           '[, weight_sum_min=weight_sum_min] ' + $
+          '[, bytes_per_cell=bytes_per_cell] ' + $
           '[, fill=fill]'
 
   if n_params() ne 9 then $
@@ -140,9 +150,15 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
   if n_elements(weight_factor) eq 0 then $
     weight_factor = 1.0
   if n_elements(weight_sum_min) eq 0 then $
-    weight_sum_min = 0.9
-  if n_elements(fill) eq 0 then $
-    fill = -1
+    weight_sum_min = 0.001
+  if n_elements(bytes_per_cell) eq 0 then $
+    bytes_per_cell = 2
+  if n_elements(fill) eq 0 then begin
+      if bytes_per_cell eq 2 then $
+        fill = -1 $
+      else $
+        fill = 0B
+  endif
 
   print, 'fornav:'
   print, '  swath_cols:          ', swath_cols
@@ -163,6 +179,7 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
   print, '  weight_min:          ', weight_min
   print, '  weight_factor:       ', weight_factor
   print, '  weight_sum_min:      ', weight_sum_min
+  print, '  bytes_per_cell:      ', bytes_per_cell
   print, '  fill:                ', fill
 
   chan_count = n_elements(swath_chan_files)
@@ -174,7 +191,10 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
 
   if n_elements(fill) eq 1 then begin
       fill_val = fill
-      fill = intarr(chan_count)
+      if bytes_per_cell eq 2 then $
+        fill = intarr(chan_count) $
+      else $
+        fill = bytarr(chan_count)
       fill[*] = fill_val
   endif
   if chan_count ne n_elements(fill) then begin
@@ -187,10 +207,16 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
 
   swath_col = fltarr(swath_cols, swath_rows_per_scan)
   swath_row = fltarr(swath_cols, swath_rows_per_scan)
-  swath_chan = intarr(swath_cols, swath_rows_per_scan, chan_count)
 
-  grid_chan = fltarr(grid_cols, grid_rows, chan_count)
-  grid_weight = fltarr(grid_cols, grid_rows)
+  if bytes_per_cell eq 2 then begin
+      swath_chan = intarr(swath_cols, swath_rows_per_scan, chan_count)
+      grid_chan = fltarr(grid_cols, grid_rows, chan_count)
+      grid_weight = fltarr(grid_cols, grid_rows)
+  endif else begin
+      swath_chan = bytarr(swath_cols, swath_rows_per_scan, chan_count)
+      grid_chan = bytarr(grid_cols, grid_rows, chan_count)
+      grid_weight = bytarr(grid_cols, grid_rows)
+  endelse
 
   grid_col = intarr(grid_cols, grid_rows)
   for i = 0, grid_rows - 1 do $
@@ -250,7 +276,10 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
         print, scan
       readu, swath_col_lun, swath_col
       readu, swath_row_lun, swath_row
-      swath_chan_1 = intarr(swath_cols, swath_rows_per_scan)
+      if bytes_per_cell eq 2 then $
+        swath_chan_1 = intarr(swath_cols, swath_rows_per_scan) $
+      else $
+        swath_chan_1 = bytarr(swath_cols, swath_rows_per_scan)
       for i = 0, chan_count - 1 do begin
           readu, swath_chan_lun[i], swath_chan_1
           swath_chan[*,*,i] = swath_chan_1
@@ -340,16 +369,26 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
                   endif
 
                   if count gt 0 then begin
-                      this_weight = weight[fix(dist_squared[i] / $
-                                               dist_squared_max * $
-                                               weight_element_max)]
-                      for j = 0, chan_count - 1 do begin
-                          chan = reform(this_grid_chan[*,*,j])
-                          chan[i] = chan[i] + $
-                                    this_swath_chan[j] * this_weight
-                          this_grid_chan[*,*,j] = chan
-                      endfor
-                      this_grid_weight[i] = this_grid_weight[i] + this_weight
+                      if (bytes_per_cell eq 2) then begin
+                          this_weight = weight[fix(dist_squared[i] / $
+                                                   dist_squared_max * $
+                                                   weight_element_max)]
+                          for j = 0, chan_count - 1 do begin
+                              chan = reform(this_grid_chan[*,*,j])
+                              chan[i] = chan[i] + $
+                                this_swath_chan[j] * this_weight
+                              this_grid_chan[*,*,j] = chan
+                          endfor
+                          this_grid_weight[i] = $
+                            this_grid_weight[i] + this_weight
+                      endif else begin
+                          for j = 0, chan_count - 1 do begin
+                              chan = reform(this_grid_chan[*,*,j])
+                              chan[i] = this_swath_chan[j]
+                              this_grid_chan[*,*,j] = chan
+                          endfor
+                          this_grid_weight[i] = 1B
+                      endelse
                   endif
 
                   ; put the cutouts back into the grids
@@ -377,9 +416,13 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
 
   ; set grid values to fill value wherever we didn't get any data
 
-  i = where(grid_weight lt weight_sum_min, count)
-  if count gt 0 then $
-    grid_weight[i] = 1.0
+  if bytes_per_cell eq 2 then begin
+      i = where(grid_weight lt weight_sum_min, count)
+      if count gt 0 then $
+        grid_weight[i] = 1
+  endif else begin
+      i = where(grid_weight eq 0B, count)
+  endelse
 
   ; open, write, and close output files
 
@@ -387,7 +430,8 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
       free_lun, swath_chan_lun[j]
       chan = reform(grid_chan[*,*,j])
       openw, lun, dirout + grid_chan_files[j], /get_lun
-      chan = fix(chan / grid_weight + 0.5)
+      if bytes_per_cell eq 2 then $
+        chan = fix(chan / grid_weight + 0.5)
       if count gt 0 then $
         chan[i] = fill[j]
       writeu, lun, chan
