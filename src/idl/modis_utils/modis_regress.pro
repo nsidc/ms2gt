@@ -3,7 +3,7 @@
 ;*
 ;* 20-Nov-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_regress.pro,v 1.5 2002/11/26 20:43:42 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_regress.pro,v 1.6 2002/11/27 18:02:34 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -139,7 +139,7 @@ Pro modis_regress, x, y, slope, intercept, $
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
-  print, 'modis_regress: $Header: /hosts/icemaker/temp/tharan/inst/modis_regress.pro,v 1.5 2002/11/26 20:43:42 haran Exp haran $'
+  print, 'modis_regress: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_regress.pro,v 1.6 2002/11/27 18:02:34 haran Exp haran $'
   help, x
   help, y
   if skip_first_regression then begin
@@ -250,7 +250,8 @@ Pro modis_regress, x, y, slope, intercept, $
           slope_old = slope[0]
           i = where(abs(y - (slope[0] * x + intercept)) lt $
                     y_tolerance, n2)
-          if n2 eq 0 then begin
+          help, n2
+          if n2 lt 2 then begin
               slope = 1.0
               intercept = 0.0
               regression_count = regression_max
