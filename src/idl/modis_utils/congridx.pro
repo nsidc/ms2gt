@@ -3,7 +3,7 @@
 ;*
 ;* 11-Jan-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/congridx.pro,v 1.1 2001/01/11 15:34:55 haran Exp $
+;$Header: /export/data/modis/src/idl/fornav/congridx.pro,v 1.1 2001/01/11 16:42:44 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -34,7 +34,8 @@
 ;    Outputs:
 ;       None.
 ;    Result:
-;       An array consisting of cols_out columns and rows_out rows is returned.
+;       A floating-point array consisting of cols_out columns and rows_out
+;       rows is returned.
 ;
 ; KEYWORDS:
 ;    col_offset: the column number in the final array which will contain
@@ -56,147 +57,97 @@
 ; REFERENCE:
 ;-
 
-Function congridx, array, cols_out, rows_out, $
+FUNCTION congridx, array, cols_out, rows_out, $
                    col_offset=col_offset, row_offset=row_offset, $
+                   cubic=cubic, interp=interp, minus_one=minus_one
                    
-usage = 'usage: congridx, ' + $
-                  'interp_factor, colsin, scansin, rowsperscanin, ' + $
-                  'colfilein, rowfilein, tag' + $
-                  '[, grid_check=[col_min, col_max, row_min, row_max]]' + $
-                  '[, col_offset=col_offset]' + $
-                  '[, row_offset=row_offset]'
+usage = 'usage: result = CONGRIDX(array, cols_out, rows_out, ' + $
+                                  '[, col_offset=col_offset] ' + $
+                                  '[, row_offset=row_offset] ' + $
+                                  '[, cubic=value{-1 to 0}] ' + $
+                                  '[, /interp] ' + $
+                                  '[, /minus_one])'
 
-  if n_params() ne 7 then $
+  if n_params() ne 3 then $
     message, usage
-  if n_elements(grid_check) ne 4 then $
-    check_grid = 0 $
-  else begin
-      check_grid = 1
-      col_min = grid_check[0]
-      col_max = grid_check[1]
-      row_min = grid_check[2]
-      row_max = grid_check[3]
-  endelse
-    
   if n_elements(col_offset) eq 0 then $
     col_offset = 0
   if n_elements(row_offset) eq 0 then $
     row_offset = 0
+  size_array = size(array)
+  if size_array[0] ne 2 then $
+    message, 'array must be 2-dimensional'
+  cols_in = size_array[1]
+  rows_in = size_array[2]
+  if cols_in lt 2 then $
+    message, 'array must have at least 2 columns'
+  if rows_in lt 2 then $
+    message, 'array must have at least 2 rows'
 
-  print, 'congridx:'
-  print, '  interp_factor: ', interp_factor
-  print, '  colsin:        ', colsin
-  print, '  scansin:       ', scansin
-  print, '  rowsperscanin: ', rowsperscanin
-  print, '  colfilein:     ', colfilein
-  print, '  rowfilein:     ', rowfilein
-  print, '  tag:           ', tag
-  print, '  grid_check:    ', grid_check
-  print, '  col_offset:    ', col_offset
-  print, '  row_offset:    ', row_offset
+  ; array_x will contain the extrapolated array
 
-  ; allocate arrays
+  cols_in_x = cols_in + 2
+  rows_in_x = rows_in + 2
+  array_x = fltarr(cols_in_x, rows_in_x)
+  array_x[1:cols_in_x-2, 1:rows_in_x-2] = array
 
-  scan_of_cols_in = fltarr(colsin, rowsperscanin)
-  scan_of_rows_in = fltarr(colsin, rowsperscanin)
+  ; compute the first row
+  array_x[1:cols_in_x-2, 0] = $
+    array_x[1:cols_in_x-2, 1] * 2 - $
+    array_x[1:cols_in_x-2, 2]
 
-  ; open input files
+  ; compute the last row
+  array_x[1:cols_in_x-2, rows_in_x-1] = $
+    array_x[1:cols_in_x-2, rows_in_x-2] * 2 - $
+    array_x[1:cols_in_x-2, rows_in_x-3]
 
-  openr, col_lun_in, colfilein, /get_lun
-  openr, row_lun_in, rowfilein, /get_lun
+  ; compute the first column
+  array_x[0, 1:rows_in_x-2] = $
+    array_x[1, 1:rows_in_x-2] * 2 - $
+    array_x[2, 1:rows_in_x-2]
 
-  ;  Create preliminary names of output files as if check_grid is FALSE.
-  ;  If check_grid is FALSE, then these will be the final names.
-  ;  If check_grid is TRUE, then we will rename the output files once
-  ;  we're done and we know the final values of scansout and scanfirst.
+  ; compute the last column
+  array_x[cols_in_x-1, 1:rows_in_x-2] = $
+    array_x[cols_in_x-2, 1:rows_in_x-2] * 2 - $
+    array_x[cols_in_x-3, 1:rows_in_x-2]
 
-  scansout = scansin
-  scanfirst = 0
-  rowsperscanout = rowsperscanin * interp_factor
-  colsout = colsin * interp_factor
-  rowsout = rowsin * interp_factor
+  ; compute the upper left cell
+  array_x[0, 0] = $
+    ((array_x[1, 0] * 2 - array_x[2, 0]) + $
+     (array_x[0, 1] * 2 - array_x[0, 2])) / 2
 
-  suffix = string(colsin, format='(I5.5)') + '_' + $
-           string(scansout, format='(I5.5)') + '_' + $
-           string(scanfirst, format='(I5.5)') + '_' + $
-           string(rowsperscanout, format='(I2.2)') + '.img'
-  colfileout = tag + '_cols_' + suffix
-  rowfileout = tag + '_rows_' + suffix
+  ; compute the upper right cell
+  array_x[cols_in_x-1, 0] = $
+    ((array_x[cols_in_x-2, 0] * 2 - $
+      array_x[cols_in_x-3, 0]) + $
+     (array_x[cols_in_x-1, 1] * 2 - $
+      array_x[cols_in_x-1, 2])) / 2
 
-  ;  Open output files
+  ; compute the lower left cell
+  array_x[0, rows_in_x-1] = $
+    ((array_x[1, rows_in_x-1] * 2 - $
+      array_x[2, rows_in_x-1]) + $
+     (array_x[0, rows_in_x-2] * 2 - $
+      array_x[0, rows_in_x-3])) / 2
 
-  openw, col_lun_out, colfileout, /get_lun
-  openw, row_lun_out, rowfileout, /get_lun
+  ; compute the lower right cell
+  array_x[cols_in_x-1, rows_in_x-1] = $
+    ((array_x[cols_in_x-2, rows_in_x-1] * 2 - $
+      array_x[cols_in_x-3, rows_in_x-1]) + $
+     (array_x[cols_in_x-1, rows_in_x-2] * 2 - $
+      array_x[cols_in_x-1, rows_in_x-3])) / 2
 
-  ;  set scanfirst to -1 to indicate we haven't found a point within
-  ;  the grid yet.
+  ; array_x will be replaced by the interpolated array
+  cols_out_x = fix(cols_out / cols_in * (cols_in_x))
+  rows_out_x = fix(rows_out / rows_in * (rows_in_x))
+  array_x = congrid(array_x, cols_out_x, rows_out_x, $
+                    cubic=cubic, interp=interp, minus_one=minus_one)
 
-  if check_grid eq 1 then begin
-      scanfirst = -1
-      scanlast  = -1
-  endif
-  for scan = 0, scansin - 1 do begin
-
-      ;  read in a scan's worth of data
-
-      readu, col_lun_in, scan_of_cols_in
-      readu, row_lun_in, scan_of_rows_in
-
-      scan_of_cols_out = $
-        congridx(scan_of_cols, cols_out, rows_out, $
-                 col_offset=col_offset, row_offset=row_offset, $
-                 cubic=0.5)
-      scan_of_rows_out = $
-        congridx(scan_of_rows, cols_out, rows_out, $
-                 col_offset=col_offset, row_offset=row_offset, $
-                 cubic=0.5)
-
-      if check_grid eq 1 then begin
-          this_col_min = min(scan_of_cols_out, max=this_col_max)
-          this_row_min = min(scan_of_rows_out, max=this_row_max)
-          if (this_col_min ge col_min) and (this_col_max le col_max) and $
-             (this_row_min ge row_min) and (this_row_max le row_max) then begin
-              scanlast = scan
-              if scanfirst lt 0 then $
-                scanfirst = scan
-          endif
-      endif else begin
-          scanlast = scan
-      endelse
-
-      if (check_grid eq 1) and (scanfirst ge 0) and (scanlast ne scan) then $
-        goto, DONE
-      if scanfirst ge 0 then begin
-
-          ;  write out a scan's worth of data
-
-          writeu, col_lun_out, scan_of_cols_out
-          writeu, row_lun_out, scan_of_rows_out
-      endif
-
-  endfor
-
-  DONE:
-
-  ; close files
-
-  free_lun, col_lun_in
-  free_lun, row_lun_in
-  free_lun, col_lun_out
-  free_lun, row_lun_out
-
-  ;  rename the output files if check grid is true
-
-  if check_grid eq 1 then begin
-      scansout = scanlast - scanfirst + 1
-      suffix = string(colsin, format='(I5.5)') + '_' + $
-               string(scansout, format='(I5.5)') + '_' + $
-               string(scanfirst, format='(I5.5)') + '_' + $
-               string(rowsperscanout, format='(I2.2)') + '.img'
-      colfileout_new = tag + '_cols_' + suffix
-      rowfileout_new = tag + '_rows_' + suffix
-      spawn, 'mv ' + colfileout + ' ' + colfileout_new, /sh
-      spawn, 'mv ' + rowfileout + ' ' + rowfileout_new, /sh
-  endif
-
+  ; return the portion of array_x specified by cols_out, rows_out,
+  ; col_offset, and row_offset
+  col_first_out = fix(cols_out / cols_in) - col_offset
+  row_first_out = fix(cols_out / cols_in) - row_offset
+  col_last_out = col_first_out + cols_out - 1
+  row_last_out = row_first_out + rows_out - 1
+  return, array_x[col_first_out:col_last_out, row_first_out:row_last_out]
 END ; congridx
