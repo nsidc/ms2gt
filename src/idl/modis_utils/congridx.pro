@@ -3,7 +3,7 @@
 ;*
 ;* 11-Jan-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/congridx.pro,v 1.1 2001/01/11 16:42:44 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/congridx.pro,v 1.2 2001/01/12 18:43:12 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -19,7 +19,7 @@
 ;	Modis.
 ;
 ; CALLING SEQUENCE:
-;       result = CONGRIDX(array, cols_out, rows_out,
+;       result = CONGRIDX(array, interp_factor, cols_out, rows_out,
 ;                         [, col_offset=col_offset]
 ;                         [, row_offset=row_offset]
 ;                         [, cubic=value{-1 to 0}]
@@ -29,8 +29,9 @@
 ; ARGUMENTS:
 ;    Inputs:
 ;       array: a 2-dimensional floating-point array to expand.
-;       cols_out: number of columns in the expanded array.
-;       rows_out: number of rows in the expanded array.
+;       interp_factor: interpolation factor by which array is to be expanded.
+;       cols_out: number of columns returned from the expanded array.
+;       rows_out: number of rows returned from the expanded array.
 ;    Outputs:
 ;       None.
 ;    Result:
@@ -47,7 +48,8 @@
 ;    cubic, /interp, and /minus_one if present are passed to congrid.
 ;
 ; EXAMPLE:
-;      scan_of_cols_out = congridx(scan_of_cols, cols_out, rows_out, $
+;      scan_of_cols_out = congridx(scan_of_cols, interp_factor, $
+;                                  cols_out, rows_out, $
 ;                                  col_offset=col_offset, $
 ;                                  row_offset=row_offset, $
 ;                                  cubic=0.5)
@@ -57,18 +59,19 @@
 ; REFERENCE:
 ;-
 
-FUNCTION congridx, array, cols_out, rows_out, $
+FUNCTION congridx, array, interp_factor, cols_out, rows_out, $
                    col_offset=col_offset, row_offset=row_offset, $
                    cubic=cubic, interp=interp, minus_one=minus_one
                    
-usage = 'usage: result = CONGRIDX(array, cols_out, rows_out, ' + $
+usage = 'usage: result = CONGRIDX(array, interp_factor, ' + $
+                                  'cols_out, rows_out, ' + $
                                   '[, col_offset=col_offset] ' + $
                                   '[, row_offset=row_offset] ' + $
                                   '[, cubic=value{-1 to 0}] ' + $
                                   '[, /interp] ' + $
                                   '[, /minus_one])'
 
-  if n_params() ne 3 then $
+  if n_params() ne 4 then $
     message, usage
   if n_elements(col_offset) eq 0 then $
     col_offset = 0
@@ -138,15 +141,15 @@ usage = 'usage: result = CONGRIDX(array, cols_out, rows_out, ' + $
       array_x[cols_in_x-1, rows_in_x-3])) / 2
 
   ; array_x will be replaced by the interpolated array
-  cols_out_x = fix(cols_out / cols_in * (cols_in_x))
-  rows_out_x = fix(rows_out / rows_in * (rows_in_x))
+  cols_out_x = fix(interp_factor * cols_in_x)
+  rows_out_x = fix(interp_factor * rows_in_x)
   array_x = congrid(array_x, cols_out_x, rows_out_x, $
                     cubic=cubic, interp=interp, minus_one=minus_one)
 
   ; return the portion of array_x specified by cols_out, rows_out,
   ; col_offset, and row_offset
-  col_first_out = fix(cols_out / cols_in) - col_offset
-  row_first_out = fix(cols_out / cols_in) - row_offset
+  col_first_out = fix(interp_factor) - col_offset
+  row_first_out = fix(interp_factor) - row_offset
   col_last_out = col_first_out + cols_out - 1
   row_last_out = row_first_out + rows_out - 1
   return, array_x[col_first_out:col_last_out, row_first_out:row_last_out]
