@@ -307,23 +307,23 @@ if ($swath_rows_per_scan != $cr_rows_per_scan) {
 
 my $swath_scans = $cr_scans;
 my $swath_scan_first = $cr_scan_first;
-my $chan_file_param = "[";
-my $grid_file_param = "[";
-for ($i = 0; $i < $chan_count; $i++) {
-    if ($i > 0) {
-	$chan_file_param .= ",";
-	$grid_file_param .= ",";
-    }
-    my $chan_file = $chan_files[$i];
-    my $chan = $chans[$i];
-    my $grid_file = "$tag\_ch$chan\_grid\_$grid_cols\_$grid_rows.img";
-    $chan_file_param .= "\"'$chan_file'\"";
-    $grid_file_param .= "\"'$grid_file'\"";
-}
-$chan_file_param .= "]";
-$grid_file_param .= "]";
 
 if ($old_fornav) {
+    my $chan_file_param = "[";
+    my $grid_file_param = "[";
+    for ($i = 0; $i < $chan_count; $i++) {
+	if ($i > 0) {
+	    $chan_file_param .= ",";
+	    $grid_file_param .= ",";
+	}
+	my $chan_file = $chan_files[$i];
+	my $chan = $chans[$i];
+	my $grid_file = "$tag\_ch$chan\_grid\_$grid_cols\_$grid_rows.img";
+	$chan_file_param .= "\"'$chan_file'\"";
+	$grid_file_param .= "\"'$grid_file'\"";
+    }
+    $chan_file_param .= "]";
+    $grid_file_param .= "]";
     do_or_die("idl_sh.pl fornav " .
 	      "$swath_cols $swath_scans $swath_rows_per_scan " .
 	      "\"'$cols_file'\" \"'$rows_file'\" $chan_file_param " .
@@ -331,9 +331,22 @@ if ($old_fornav) {
 	      "weight_sum_min=0.001 " .
 	      "swath_scan_first=$swath_scan_first /col_row_presubsetted");
 } else {
-    do_or_die("fornav -v -p -s $swath_scan_first " .
+    my $chan_file_param;
+    my $grid_file_param;
+    for ($i = 0; $i < $chan_count; $i++) {
+	if ($i > 0) {
+	    $chan_file_param .= " ";
+	    $grid_file_param .= " ";
+	}
+	my $chan_file = $chan_files[$i];
+	my $chan = $chans[$i];
+	my $grid_file = "$tag\_ch$chan\_grid\_$grid_cols\_$grid_rows.img";
+	$chan_file_param .= $chan_file;
+	$grid_file_param .= $grid_file;
+    }
+    do_or_die("fornav $chan_count -v -p -s $swath_scan_first " .
 	      "$swath_cols $swath_scans $swath_rows_per_scan " .
-	      "\"'$cols_file'\" \"'$rows_file'\" $chan_file_param " .
+	      "$cols_file $rows_file $chan_file_param " .
 	      "$grid_cols $grid_rows $grid_file_param");
 }
 if (!$keep) {
