@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
-# $Id: mod29.pl,v 1.12 2001/05/01 00:15:31 haran Exp haran $
+
+# $Id: mod29.pl,v 1.13 2001/05/01 19:12:43 haran Exp haran $
 
 #========================================================================
 # mod29.pl - grids MOD29 data
@@ -13,6 +14,7 @@ $|=1;
 $path_ms2gt_src = $ENV{PATH_MS2GT_SRC};
 $source_ms2gt = "$path_ms2gt_src/scripts";
 
+require("$source_ms2gt/mod29_usage.pl");
 require("$source_ms2gt/setup.pl");
 require("$source_ms2gt/error_mail.pl");
 
@@ -22,32 +24,6 @@ require("$source_ms2gt/error_mail.pl");
 $junk = $weight_distance_max;
 $junk = $junk;
 
-my $Usage = "\n
-USAGE: mod29.pl dirinout tag listfile gpdfile
-                [chanlist [latlonlistfile [keep [rind]]]]
-       defaults:    1          none         0     50
-
-  dirinout: directory containing the input and output files.
-  tag: string used as a prefix to output files.
-  listfile: text file containing a list of MOD29 files to be gridded.
-  gpdfile: .gpd file that defines desired output grid.
-  chanlist: string specifying channel numbers to be gridded. The default
-            is 1, i.e. grid channel 1 only. The channel numbers are:
-              1: icer Sea Ice by Reflectance - 8-bit unsigned
-              2: irqa Sea Ice by Reflectance PixelQA - 8-bit unsigned
-              3: temp Ice Surface Temperature - 16-bit unsigned (Kelvin * 100)
-              4: itqa Ice Surface Temperature PixelQA - 8-bit unsigned
-              5: icet Sea Ice by IST - 8-bit unsigned
-              6: icrt Combined Sea Ice - 8-bit unsigned
-  latlonlistfile: text file containing a list of MOD02 or MOD03 files whose
-            latitude and longitude data should be used in place of the latlon
-            data in the corresponding MOD29 files in listfile. The default is
-            \"none\" indicating that the latlon data in each MOD29 file
-            should be used without substitution.
-  keep: 0: delete intermediate chan, lat, lon, col, and row files (default).
-        1: do not delete intermediate chan, lat, lon, col, and row files.
-  rind: number of pixels to add around intermediate grid to eliminate
-        holes in final grid. Default is 50.\n\n";
 
 # define a global used by do_or_die and invoke_or_die
 
@@ -65,7 +41,7 @@ my $keep = 0;
 my $rind = 50;
 
 if (@ARGV < 4) {
-    print $Usage;
+    print $mod29_usage;
     exit 1;
 }
 if (@ARGV <= 8) {
@@ -80,7 +56,7 @@ if (@ARGV <= 8) {
 	    if (@ARGV >= 7) {
 		$keep = $ARGV[6];
 		if ($keep ne "0" && $keep ne "1") {
-		    print "invalid keep\n$Usage";
+		    print "invalid keep\n$mod29_usage";
 		    exit 1;
 		}
 		if (@ARGV >= 8) {
@@ -90,7 +66,7 @@ if (@ARGV <= 8) {
 	}
     }
 } else {
-    print $Usage;
+    print $mod29_usage;
     exit 1;
 }
 
@@ -122,7 +98,7 @@ for ($i = 0; $i < $chan_count; $i++) {
 	$channum ne "4" &&
 	$channum ne "5" &&
 	$channum ne "6") {
-	print "invalid chanlist\n$Usage";
+	print "invalid chanlist\n$mod29_usage";
 	exit 1;
     }
     $chans[$i] = sprintf("%02d", $channum);
