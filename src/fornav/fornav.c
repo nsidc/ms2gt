@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.20 2001/04/30 22:50:05 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.21 2001/05/03 15:37:03 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -1259,4 +1259,5 @@ main (int argc, char *argv[])
       fprintf(stderr, "  swath_scans:       %d\n", scans_with_data);
     }
   }
+  exit(EXIT_SUCCESS);
 }
