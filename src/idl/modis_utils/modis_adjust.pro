@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.26 2002/12/03 15:20:05 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.27 2002/12/05 18:35:26 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -171,51 +171,59 @@
 ;         plot_tag is a null string, then plot_max is ignored.
 ;
 ; EXAMPLE:
-;       modis_adjust, $
-;         5416, 51, $
-;         'modis_inst_2001341_ref_ch01_5416_02040.img', $
-;         'modis_inst_2001341_ref_ch01_5416_02040_nor.img', $
-;         file_soze='modis_inst_2001341_soze_scaa_05416_00051_00000_40.img'
-;
-;       modis_adjust, $
-;         5416, 51, $
-;         'modis_inst_2001341_ref_ch01_5416_02040_nor.img', $
-;         'modis_inst_2001341_ref_ch01_5416_02040_adj.img', $
-;         /reg_cols, $
-;         reg_col_offset=3, $
-;         col_y_tolerance=0.1, $
-;         col_density_bin_width=0.01, $
-;         col_plot_tag='modis_inst_2001341_ch01_col', $
-;         col_plot_max=1.5, $
-;         /reg_rows, $
-;         row_y_tolerance=0.1, $
-;         row_density_bin_width=0.01, $
-;         row_plot_tag='modis_inst_2001341_ch01_row', $
-;         row_plot_max=1.5
-;
-;       modis_adjust, $
-;         5416, 51, $
-;         'modis_inst_2001341_ref_ch02_5416_02040.img', $
-;         'modis_inst_2001341_ref_ch02_5416_02040_nor.img', $
-;         file_soze='modis_inst_2001341_soze_scaa_05416_00051_00000_40.img', $
-;         reg_col_detectors=0
-;
-;       modis_adjust, $
-;         5416, 51, $
-;         'modis_inst_2001341_ref_ch02_5416_02040_nor.img', $
-;         'modis_inst_2001341_ref_ch02_5416_02040_adj.img', $
-;         /reg_cols, $
-;         reg_col_offset=0, $
-;         col_y_tolerance=0.1, $
-;         col_density_bin_width=0.01, $
-;         col_plot_tag='modis_inst_2001341_ch02_col', $
-;         col_plot_max=1.5, $
-;         /reg_rows, $
-;         row_y_tolerance=0.1, $
-;         row_density_bin_width=0.01, $
-;         row_plot_tag='modis_inst_2001341_ch02_row', $
-;         row_plot_max=1.5
-;
+;       #!/sbin/csh
+;      
+;       mkdir plots
+;       
+;       mod02.pl . inst 2001341.txt institute250.gpd chan.txt \
+;                ancil.txt 3 3 1
+;       
+;       ############################### ch01
+;       
+;       idl_sh.pl modis_adjust 5416 53 \
+;         "'inst_ref_ch01_5416_02120.img'" \
+;         "'inst_ref_ch01_5416_02120_adj0.img'" \
+;         "file_soze='inst_soze_scaa_05416_00053_00000_40.img'" \
+;         "/reg_cols" \
+;         "reg_col_offset=3" \
+;         "file_reg_cols_out='inst_ch01_col_adj0.txt'" \
+;         "col_plot_tag='plots/inst_ch01_col_adj0'" \
+;         "reg_row_mirror_side=0" \
+;         "/nor_rows" \
+;         "/reg_rows" \
+;         "file_reg_rows_out='inst_ch01_row_adj0.txt'" \
+;         "row_plot_tag='plots/inst_ch01_row_adj0'"
+;       
+;       fornav 1 -v -t f4 -f 65535 -F 0 5416 53 40 \
+;         inst_cols_05416_00053_00065_40.img \
+;         inst_rows_05416_00053_00065_40.img \
+;         inst_ref_ch01_5416_02120_adj0.img \
+;         1820 1743 \
+;         inst_refa_ch01_03033_02905_adj0.img
+;       
+;       ############################### ch02
+;       
+;       idl_sh.pl modis_adjust 5416 53 \
+;         "'inst_ref_ch02_5416_02120.img'" \
+;         "'inst_ref_ch02_5416_02120_adj0.img'" \
+;         "file_soze='inst_soze_scaa_05416_00053_00000_40.img'" \
+;         "/reg_cols" \
+;         "reg_col_offset=0" \
+;         "file_reg_cols_out='inst_ch02_col_adj0.txt'" \
+;         "col_plot_tag='plots/inst_ch02_col_adj0'" \
+;         "reg_row_mirror_side=0" \
+;         "/nor_rows" \
+;         "/reg_rows" \
+;         "file_reg_rows_out='inst_ch02_row_adj0.txt'" \
+;         "row_plot_tag='plots/inst_ch02_row_adj0'"
+;       
+;       fornav 1 -v -t f4 -f 65535 -F 0 5416 53 40 \
+;         inst_cols_05416_00053_00065_40.img \
+;         inst_rows_05416_00053_00065_40.img \
+;         inst_ref_ch02_5416_02120_adj0.img \
+;         1820 1743 \
+;         inst_refa_ch02_03033_02905_adj0.img
+;       
 ; ALGORITHM:
 ;
 ; REFERENCE:
@@ -356,7 +364,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.26 2002/12/03 15:20:05 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.27 2002/12/05 18:35:26 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
