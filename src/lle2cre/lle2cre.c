@@ -4,7 +4,7 @@
  * 26-Nov-2001 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char lle2cre_c_rcsid[] = "$Header: /home/haran/photoclin/src/lle2cre/lle2cre.c,v 1.4 2003/06/24 16:53:34 haran Exp haran $";
+static const char lle2cre_c_rcsid[] = "$Header: /home/haran/photoclin/src/lle2cre/lle2cre.c,v 1.5 2003/08/22 20:21:44 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -104,6 +104,7 @@ main (int argc, char *argv[])
   verbose = FALSE;
   gpdfile = "Sa0.gpd";
   do_correction = FALSE;
+  temp_mode = 0;
 
 /* 
  *	get command line options
