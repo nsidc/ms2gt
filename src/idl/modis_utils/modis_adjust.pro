@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.48 2004/12/08 00:15:57 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.49 2004/12/08 16:06:15 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.48 2004/12/08 00:15:57 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.49 2004/12/08 16:06:15 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -500,27 +500,30 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       'u1': begin
           test_out = bytarr(cells_per_swath)
           min_out = 0.0
-          max_out = 255.0
+          max_out = 255B
       end
       'u2': begin
           test_out = uintarr(cells_per_swath)
-          min_out = 0.0
-          max_out = 65535.0
+          min_out = 0
+          ;
+          ; use 65534 here because 65535 is fill
+          ;
+          max_out = 65534
       end
       's2': begin
           test_out = intarr(cells_per_swath)
-          min_out = -32768.0
-          max_out = 32767.0
+          min_out = -32768
+          max_out = 32767
       end
       'u4': begin
           test_out = ulonarr(cells_per_swath)
-          min_out = 0.0
-          max_out = 4294967295.0
+          min_out = 0L
+          max_out = 4294967295L
       end
       's4': begin
           test_out = lonarr(cells_per_swath)
-          min_out = -2147483648.0
-          max_out = 2147483647.0
+          min_out = -2147483648L
+          max_out = 2147483647L
       end
       'f4': begin
           test_out = fltarr(cells_per_swath)
@@ -999,29 +1002,24 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       soze = 0
   endif
 
+  ;  put the swath back into output data type as needed
+
+  i = where(swath lt min_out, count)
+  if count gt 0 then $
+    swath[i] = min_out
+  i = where(swath gt max_out, count)
+  if count gt 0 then $
+    swath[i] = max_out
+  swath = fix(round(temporary(swath)), type=type_code)
+
+
   ;  make min and max values the same as on input
 
   if count_min_in gt 0 then $
-    swath[i_min_in] = min_in
+    swath[i_min_in] = min_out
   if count_max_in gt 0 then $
-    swath[i_max_in] = max_in
+    swath[i_max_in] = max_out
  
-  ;  put the swath back into output data type as needed
-
-  if data_type_out ne 'f4' then begin
-      i = where(swath lt min_out, count)
-      if count gt 0 then $
-        swath[i] = min_out
-
-      ; use max_out - 1  here because we don't want to set high values
-      ; to 65535, which is fill
-
-      i = where(swath ge max_out, count)
-      if count gt 0 then $
-        swath[i] = max_out - 1
-      swath = fix(round(temporary(swath)), type=type_code)
-  endif
-
   ;  open, write, and close output file
 
   openw, lun, file_out, /get_lun
