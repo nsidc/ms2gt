@@ -174,7 +174,7 @@ my $line = <GPDFILE>;
 $line = <GPDFILE>;
 close(GPDFILE);
 my ($grid_cols, $grid_rows) = ($line =~ /(\S+)\s+(\S+)/);
-my $grid_file = "$tag\_grid\_$grid_cols\_$grid_rows.img";
+my $grid_file = "$tag\_ch$chan\_grid\_$grid_cols\_$grid_rows.img";
 if ($swath_scans eq "0") {
     $swath_scans = $swath_rows / $swath_rows_per_scan;
 }
