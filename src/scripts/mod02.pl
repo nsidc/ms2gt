@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod02.pl,v 1.21 2001/02/20 00:08:15 haran Exp haran $
+# $Id: mod02.pl,v 1.22 2001/02/20 15:08:13 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -327,7 +327,7 @@ for ($line = 0; $line < @list; $line++) {
 	$ancil_offset = 4;
 	$ancil_col_extra = 1;
 	$ancil_rows_per_scan = 2;
-	$latlon_interp_factor = 1;
+	$latlon_interp_factor = 2;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 4) {
@@ -349,7 +349,7 @@ for ($line = 0; $line < @list; $line++) {
 	$ancil_col_extra = 1;
 	$ancil_filestem =~ s/MOD02QKM/MOD021KM/;
 	$ancil_rows_per_scan = 2;
-	$latlon_interp_factor = 1;
+	$latlon_interp_factor = 4;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 6) {
