@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.13 2005/03/13 01:59:59 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.14 2005/03/13 02:06:06 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -70,6 +70,12 @@ FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
               string(npixels_across_img) + $
               ' is not evenly divisible by ' + $
               string(lines_per_scan_img)
+
+;- Read valid range attribute for image
+    valid_name = 'valid_range'
+    att_info = hdf_sd_attinfo(sd_id, sds_name_img, valid_name)
+    if (att_info.name eq '') then message, 'Attribute not found: ' + valid_name
+    valid_range = att_info.data
 
 ;- Get fill value for image
     attname = '_FillValue'
@@ -163,13 +169,13 @@ FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
             first_lat = k * npixels_per_scan_lat
             last_lat  = first_lat + npixels_per_scan_lat - 1
 
-        ;- count gets number of fill in latitude scan
-
             img_scan = img[first_img:last_img]
             lat_scan = lat[first_lat:last_lat]
 
-            j = where(lat_scan eq fill_lat, count)
-            if count ge invalid_pixel_count_max then begin
+        ;- count_invalid_lat gets number of fill in lat scan
+        ;- j not used here
+            j = where(lat_scan eq fill_lat, count_invalid_lat)
+            if count_invalid_lat ge invalid_pixel_count_max then begin
 
             ;- scan had too many fills
                 if i lt nscans_img - 1 then begin
@@ -187,27 +193,40 @@ FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
                         mirror[k + 1:n - 1]
 
                     message, /informational, $
-                      'WARNING: Scan: ' + string(i, format='(i3)') + $
+                      'Scan: ' + string(i, format='(i3)') + $
                       ' removed from ' + sds_name_img
                 endif
                 invalid_count = invalid_count + 1
                 npixels_along_img = npixels_along_img - lines_per_scan_img
                 npixels_along_lat = npixels_along_lat - lines_per_scan_lat
 
-            endif else begin
-                if count gt 0 then begin
+            endif
 
-                ;- set invalids to fill
-                    img_scan[j] = fill_img
-                    img[first_img:last_img] = img_scan
-                endif
-            endelse
         endfor
     endif
 
     if invalid_count gt 0 then begin
         nscans_img = nscans_img - invalid_count
         img = img[*, 0:npixels_along_img - 1]
+    endif
+
+    if not got_mirror then begin
+
+    ;- count_img gets number of out of range in img scan
+    ;- j gets the elements to be filled
+        j = where((img lt valid_range[0]) or $
+                  (img gt valid_range[1]), count_invalid_img)
+        
+        if count_invalid_img gt 0 then begin
+
+        ;- set out of range to fill
+            img[j] = fill_img
+            message, /informational, $
+              string(count_invalid_img) + $
+              ' out of range values detected in ' + sds_name_img
+
+        endif
+
     endif
 
     if got_mirror then begin
