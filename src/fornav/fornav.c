@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.24 2001/10/24 15:21:40 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.25 2001/10/24 15:23:51 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -429,18 +429,16 @@ static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
      */
     f_scale = ux * vy - uy * vx;
     f_scale *= f_scale;
-    if (f_scale > EPSILON) {
-      f_scale = qmax / f_scale;
-      a = (vx * vx + vy * vy) * f_scale;
-      b = -2.0 * (ux * vx + uy * vy) * f_scale;
-      c = (ux * ux + uy * uy) * f_scale;
-    } else {
-      a = 1.0;
-      b = 0.0;
-      c = 1.0;
-    }
+    if (f_scale < EPSILON)
+      f_scale = EPSILON;
+    f_scale = qmax / f_scale;
+    a = (vx * vx + vy * vy) * f_scale;
+    b = -2.0 * (ux * vx + uy * vy) * f_scale;
+    c = (ux * ux + uy * uy) * f_scale;
     d = 4.0 * a * c - b * b;
-    d = (d > EPSILON) ? 4.0 * qmax / d : 1.0;
+    if (d < EPSILON)
+      d = EPSILON;
+    d = 4.0 * qmax / d;
     this_ewap->a = a;
     this_ewap->b = b;
     this_ewap->c = c;
@@ -1113,7 +1111,7 @@ main (int argc, char *argv[])
       fprintf(stderr, "  grid_fill[%d]        = %f\n", i,
 	      grid_chan_io_image[i].fill);
     fprintf(stderr, "\n");
-    fprintf(stderr, "  col_row_min        = %e\n", col_row_min);
+    fprintf(stderr, "  col_row_min         = %e\n", col_row_min);
     fprintf(stderr, "  weight_count        = %d\n", weight_count);
     fprintf(stderr, "  weight_min          = %f\n", weight_min);
     fprintf(stderr, "  weight_distance_max = %f\n", weight_distance_max);
