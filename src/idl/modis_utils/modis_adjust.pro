@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.21 2002/11/28 00:44:31 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.22 2002/12/01 18:31:27 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -330,7 +330,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds) 
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.21 2002/11/28 00:44:31 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.22 2002/12/01 18:31:27 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -628,7 +628,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
       swath = reform(swath, cols, rows_per_ds_scan, ds_scans, /overwrite)
 
-      if file_reg_cols_in ne '' then begin
+      if file_reg_rows_in ne '' then begin
           line = ''
           openr, lun, file_reg_rows_in, /get_lun
           readf, lun, line
@@ -727,7 +727,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   if file_reg_rows_out ne '' then begin
      openw, lun, file_reg_rows_out, /get_lun
-     printf, lun, 'DS_Detector  Row_Slope        Row_Intercept'
+     printf, lun, 'DS_Detector  Row_Intercept    Row_Slope'
      for ds_det = 0, rows_per_ds_scan - 1 do $
        printf, lun, ds_det, reg_intcp[ds_det], reg_slope[ds_det], $
                     format='(i2.2, 11X, e15.8, 2x, e15.8)'
@@ -736,7 +736,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   if (file_reg_rows_in ne '') or (file_reg_rows_out ne '') or $
      (reg_rows ne 0) then begin
-      print, 'DS_Detector  Row_Slope        Row_Intercept'
+      print, 'DS_Detector  Row_Intercept    Row_Slope'
       for ds_det = 0, rows_per_ds_scan - 1 do $
         print, ds_det, reg_intcp[ds_det], reg_slope[ds_det], $
                format='(i2.2, 11X, e15.8, 2x, e15.8)'
