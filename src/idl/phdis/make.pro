@@ -11,14 +11,14 @@
 ;
 
 .compile hdf_info
-.compile NSIDC_DIST_GET_LATLON
-.compile NSIDC_DIST_GET_COLOR
 
-.compile NSIDC_DIST_TABLE__DEFINE
-.compile NSIDC_DIST_PLOT__DEFINE
-.compile NSIDC_DIST_GRID__DEFINE
-.compile NSIDC_DIST_FILE__DEFINE
-.compile NSIDC_DIST_MAIN__DEFINE
+.compile nsidc_dist_get_latlon
+.compile nsidc_dist_get_color
+.compile nsidc_dist_table__define
+.compile nsidc_dist_plot__define
+.compile nsidc_dist_grid__define
+.compile nsidc_dist_file__define
+.compile nsidc_dist_main__define
 
 .compile eosimagetool
 .compile main
