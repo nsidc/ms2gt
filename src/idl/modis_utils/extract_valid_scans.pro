@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.5 2004/11/21 20:53:07 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.6 2004/11/23 02:53:51 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -85,6 +85,14 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
     if (att_info.name eq '') then message, 'Attribute not found: ' + valid_name
     valid_range = att_info.data
 
+;- Get fill value
+    attname = '_FillValue'
+    attinfo = hdf_sd_attinfo(sd_id, sds_name, attname)
+    if (attinfo.name eq attname) then $
+      fill = attinfo.data[0] $
+    else $
+      fill = 0
+
 ;- Set invalid_count_max
     npixels_per_scan = npixels_across * lines_per_scan
     nscans = npixels_along / lines_per_scan
@@ -106,9 +114,13 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
             last  = first + npixels_per_scan - 1
 
         ;- count gets number of invalid
+        ;  treat fill values for channel data (i.e. band_index ge 0)
+        ;  as valid
             image_scan = image[first:last]
-            j = where((image_scan lt valid_range[0]) or $
-                      (image_scan gt valid_range[1]), count)
+            j = where(((image_scan lt valid_range[0]) or $
+                       (image_scan gt valid_range[1])) and $
+                      ((band_index ge 0) or $
+                       (image_scan ne fill)), count)
             if count ge invalid_count_max then begin
 
             ;- scan was almost all invalid
