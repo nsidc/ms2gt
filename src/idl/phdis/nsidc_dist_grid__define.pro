@@ -10,6 +10,9 @@
 ; Initialization.
 ;
 ; $Log: nsidc_dist_grid__define.pro,v $
+; Revision 1.8  2001/03/15 22:37:57  haran
+; Dan fixed a bunch of stuff.
+;
 ; Revision 1.7  2001/03/14 00:05:29  haran
 ; replaced use of routine_info with file_which in finding usage and version
 ; text files
@@ -272,7 +275,7 @@ FUNCTION NSIDC_DIST_GRID::INIT, main_obj, file_obj, grid_id, grid_name, field_na
 
    ; Set up colors (true-color display !).
 
-   DEVICE, DECOMPOSED=0
+   DEVICE, /DECOMPOSED
 
    LOADCT, 0, NCOLORS=248
    TVLCT,   0, 255,   0, self.box_color
