@@ -46,15 +46,15 @@ the top of the grid and parallel to 180 E. We want the upper left corner
 of the grid at exactly 70 S 165 E and the lower right corner near 79 S
 160 W. We want the grid resolution to be 1 km and we want to use the WGS84
 ellipsoid (equatorial radius of 6378.137 km and an eccentricity of 0.081819190843).
-We want to grid all available <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
-"channels." We could simply order <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+We want to grid all available <a href="http://nsidc.org/data/mod293.html">MOD29</a>
+"channels." We could simply order <a href="http://nsidc.org/data/mod293.html">MOD29</a>
 data; however, as we can see in <a href="index.html#datasets">Supported
-Data Sets</a>, the latlon data are stored at only 5 km resolution in <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+Data Sets</a>, the latlon data are stored at only 5 km resolution in <a href="http://nsidc.org/data/mod293.html">MOD29</a>
 granules. We could have <a href="index.html#mod29">mod29.pl</a> work with
-only the <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+only the <a href="http://nsidc.org/data/mod293.html">MOD29</a>
 granules (i.e. by setting latlonlistfile to "none"); we decide that 5 km
 resolution for the latlon data is good enough for our purposes, so we won't
-order any <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+order any <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03.shtml">MOD03</a>
 granules.
 <p>NOTE: To run this example, you'll need a machine with at least 100 MB
 of memory and at least 200 MB of free disk space.
@@ -143,7 +143,7 @@ the following two lines:
 files to be gridded.
 <h2>
 <a NAME="gpdfile"></a>Creating the gpd and mpp files</h2>
-See <a href="http://nsidc.org/NASA/GUIDE/docs/reference_documents/ppgc.html#parameters">Points,
+See <a href="http://cires.colorado.edu/~knowlesk/ppgc.html#parameters">Points,
 Pixels, Grids, and Cells</a> for a description of the gpd and mpp file
 formats used by the mapx library in defining a grid and its associated
 map projection. In <a href="tutorial_3.html">Tutorial 3</a>, we created
@@ -196,7 +196,7 @@ the map projection origin, namely the south pole.</li>
 
 <li>
 The next five lines (the sixth through tenth lines) specify parameters
-that would be useful to programs that produce graphic overlays (see <a href="http://nsidc.org/NASA/GUIDE/docs/reference_documents/ppgc.html#parameters">Points,
+that would be useful to programs that produce graphic overlays (see <a href="http://cires.colorado.edu/~knowlesk/ppgc.html#parameters">Points,
 Pixels, Grids, and Cells</a>). They are not used by the MS2GT software,
 but they need to be present in the mpp file as place holders.</li>
 
@@ -470,7 +470,7 @@ icer - channel 1 - Sea Ice by Reflectance - 8-bit unsigned</li>
 
 <ul>
 <li>
-See <a href="http://nsidc.org/NASA/GUIDE/docs/dataset_documents/modis_terra_l2_l3_day_and_night_1km_sea_ice_extent_dataset_document.gd.html#integer_key">MODIS/Terra
+See <a href="http://nsidc.org/data/docs/daac/mod29_modis_seaice.gd.html#integer_key">MODIS/Terra
 Sea Ice Extent L2 and L3 Day and Night 1 km</a> for a table of coded values.</li>
 </ul>
 
@@ -479,7 +479,7 @@ irqa - channel 2 - Sea Ice by Reflectance PixelQA - 8-bit unsigned</li>
 
 <ul>
 <li>
-See <a href="http://nsidc.org/NASA/GUIDE/MODIS/SEAICE/seaice_QA.html">MODIS
+See <a href="http://nsidc.org/data/docs/daac/mod29_modis_seaice/seaice_QA.html">MODIS
 Sea Ice Bit Processing</a> for a description of values.</li>
 </ul>
 
@@ -496,7 +496,7 @@ Resulting values in the range 0-255 represent coded values while 655.35
 represents the fill value; all other values represent temperatures in kelvin.</li>
 
 <li>
-See <a href="http://nsidc.org/NASA/GUIDE/docs/dataset_documents/modis_terra_l2_l3_day_and_night_1km_sea_ice_extent_dataset_document.gd.html#integer_key">MODIS/Terra
+See <a href="http://nsidc.org/data/docs/daac/mod29_modis_seaice.gd.html#integer_key">MODIS/Terra
 Sea Ice Extent L2 and L3 Day and Night 1 km</a> for a table of coded values.</li>
 </ul>
 
@@ -505,7 +505,7 @@ itqa - channel 4 - Ice Surface Temperature PixelQA - 8-bit unsigned</li>
 
 <ul>
 <li>
-See <a href="http://nsidc.org/NASA/GUIDE/MODIS/SEAICE/seaice_QA.html">MODIS
+See <a href="http://nsidc.org/data/docs/daac/mod29_modis_seaice/seaice_QA.html">MODIS
 Sea Ice Bit Processing</a> for a description of values.</li>
 </ul>
 
@@ -514,7 +514,7 @@ icet - channel 5 - Sea Ice by IST - 8-bit unsigned</li>
 
 <ul>
 <li>
-See <a href="http://nsidc.org/NASA/GUIDE/docs/dataset_documents/modis_terra_l2_l3_day_and_night_1km_sea_ice_extent_dataset_document.gd.html#integer_key">MODIS/Terra
+See <a href="http://nsidc.org/data/docs/daac/mod29_modis_seaice.gd.html#integer_key">MODIS/Terra
 Sea Ice Extent L2 and L3 Day and Night 1 km</a> for a table of coded values.</li>
 </ul>
 
@@ -523,7 +523,7 @@ icrt - channel 6 - Combined Sea Ice - 8-bit unsigned</li>
 
 <ul>
 <li>
-See <a href="http://nsidc.org/NASA/GUIDE/MODIS/SEAICE/MOD29_local_attributes.html#mod29_csi">MOD29
+See <a href="http://nsidc.org/data/docs/daac/mod29_modis_seaice/MOD29_local_attributes.html#mod29_csi">MOD29
 Local Attributes</a> for a table of coded values.</li>
 </ul>
 </ul>
@@ -535,13 +535,13 @@ Local Attributes</a> for a table of coded values.</li>
 &lt;rows> is the number of rows in the grid</li>
 </ul>
 
-<hr><font size=-1>Last updated: May 31, 2001 by</font>
+<hr><font size=-1>Last updated: January 2, 2002 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>
 <br><font size=-1>University of Colorado</font>
 <br><font size=-1>Boulder, CO 80309-0449</font>
 <br><font size=-1>303-492-1847</font>
-<br><font size=-1><a href="mailto:tharan@colorado.edu">tharan@colorado.edu</a></font>
+<br><font size=-1><a href="mailto:tharan@nsidc.org">tharan@nsidc.org</a></font>
 </body>
 </html>
