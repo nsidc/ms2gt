@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.26 2001/10/24 15:47:51 haran Exp $";
+static const char fornav_c_rcsid[] = "$Header: /data/haran/ms2gth/src/fornav/fornav.c,v 1.27 2003/08/04 17:41:36 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -34,6 +34,8 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fo
 "       defaults:     10000             .01               1.0\n"\
 "              [-D weight_delta_max] [-W weight_sum_min]\n"\
 "       defaults:       10.0               weight_min\n"\
+"              [-C swath_col_offset -R swath_row_offset\n"\
+"       defaults:         0                   0\n"\
 "              swath_cols swath_scans swath_rows_per_scan\n"\
 "              swath_col_file swath_row_file\n"\
 "              swath_chan_file_1 ... swath_chan_file_chan_count\n"\
@@ -108,6 +110,10 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fo
 "         W weight_sum_min: minimum weight sum value. Cells whose weight sums\n"\
 "             are less than weight_sum_min are set to the grid fill value.\n"\
 "             Default is weight_sum_min.\n"\
+"         C swath_col_offset: value to be subtracted from each value in\n"\
+"             swath_col_file. Default is 0.\n"\
+"         R swath_row_offset: value to be subtracted from each value in\n"\
+"             swath_row_file. Default is 0.\n"\
 "\n"
 
 /*
@@ -274,14 +280,24 @@ static void DeInitializeImage(image *ip)
     free(ip->buf);
 }
 
-static void ReadImage(image *ip)
+static void ReadImage(image *ip, float offset)
 {
+  float *ptr;
+  int n;
+  int i;
+
   if (very_verbose)
     fprintf(stderr, "Reading %s\n", ip->file);
   if (fread(ip->buf[0], ip->bytes_per_row, ip->rows, ip->fp) != ip->rows) {
     fprintf(stderr, "fornav: ReadImage: error reading %s\n", ip->file);
     perror("fornav");
     exit(ABORT);
+  }
+  if (offset) {
+    ptr = (float *)(ip->buf[0]);
+    n = ip->cols * ip->rows;
+    for (i = 0; i < n; i++)
+      *ptr++ -= offset;
   }
 }
 
@@ -827,6 +843,7 @@ main (int argc, char *argv[])
   bool  got_grid_fill;
   int   first_scan_with_data;
   int   last_scan_with_data;
+  int scans_with_data;
   int   weight_count;
   float weight_min;
   float weight_distance_max;
@@ -840,6 +857,8 @@ main (int argc, char *argv[])
   int   grid_rows;
   int   fill_count;
   float col_row_min;
+  float swath_col_offset;
+  float swath_row_offset;
 
   image  *swath_col_image;
   image  *swath_row_image;
@@ -877,7 +896,9 @@ main (int argc, char *argv[])
   weight_distance_max    = 1.0;
   weight_delta_max       = 10.0;
   got_weight_sum_min     = FALSE;
-  col_row_min           = 0.0;
+  col_row_min            = 0.0;
+  swath_col_offset       = 0.0;
+  swath_row_offset       = 0.0;
 
   /*
    *  Get channel count and use it to allocate images and set default values
@@ -1043,6 +1064,20 @@ main (int argc, char *argv[])
 	if (sscanf(*argv, "%f", &weight_sum_min) != 1)
 	  DisplayInvalidParameter("weight_sum_min");
 	break;
+      case 'C':
+	++argv; --argc;
+	if (argc <= 0)	  
+	  DisplayInvalidParameter("swath_col_offset");
+	if (sscanf(*argv, "%f", &swath_col_offset) != 1)
+	  DisplayInvalidParameter("swath_col_offset");
+	break;
+      case 'R':
+	++argv; --argc;
+	if (argc <= 0)	  
+	  DisplayInvalidParameter("swath_row_offset");
+	if (sscanf(*argv, "%f", &swath_row_offset) != 1)
+	  DisplayInvalidParameter("swath_row_offset");
+	break;
       default:
 	fprintf(stderr,"invalid option %c\n", *option);
 	DisplayUsage();
@@ -1125,6 +1160,8 @@ main (int argc, char *argv[])
     fprintf(stderr, "  weight_distance_max = %f\n", weight_distance_max);
     fprintf(stderr, "  weight_delta_max    = %f\n", weight_delta_max);
     fprintf(stderr, "  weight_sum_min      = %f\n", weight_sum_min);
+    fprintf(stderr, "  swath_col_offset    = %f\n", swath_col_offset);
+    fprintf(stderr, "  swath_row_offset    = %f\n", swath_row_offset);
     fprintf(stderr, "\n");
   }
 
@@ -1179,15 +1216,16 @@ main (int argc, char *argv[])
    */
   chan_scan_last = chan_scan_first + swath_scans - 1;
   first_scan_with_data = -1;
+  last_scan_with_data = -2;
   for (scan = chan_scan_first; scan <= chan_scan_last; scan++) {
     if (very_verbose)
       fprintf(stderr, "Processing scan %d\n", scan);
 
     /*
-     *  Read a scan from each col and row swath file
+     *  Read a scan from each col and row swath file, applying offsets
      */
-    ReadImage(swath_col_image);
-    ReadImage(swath_row_image);
+    ReadImage(swath_col_image, swath_col_offset);
+    ReadImage(swath_row_image, swath_row_offset);
 
     /*
      *  Compute ewa parameters for this scan
@@ -1198,7 +1236,7 @@ main (int argc, char *argv[])
      *  Read a scan from each channel swath file
      */
     for (i = 0; i < chan_count; i++)
-      ReadImage(&swath_chan_image[i]);
+      ReadImage(&swath_chan_image[i], 0.0);
 
     /*
      *  Compute ewa for this scan
@@ -1242,6 +1280,25 @@ main (int argc, char *argv[])
    */
   DeInitializeWeight(&ewaw);
 
+  scans_with_data = last_scan_with_data - first_scan_with_data + 1;
+  if (verbose) {
+    if (chan_scan_first != first_scan_with_data ||
+	swath_scans     != scans_with_data) {
+      fprintf(stderr, "On next call to fornav, use:\n");
+      fprintf(stderr, "  chan_scan_first:   %d\n", first_scan_with_data);
+      fprintf(stderr, "  colrow_scan_first: %d\n",
+	      colrow_scan_first + first_scan_with_data - chan_scan_first);
+      fprintf(stderr, "  swath_scans:       %d\n", scans_with_data);
+    }
+  }
+  if (scans_with_data == 0) {
+    for (i = 0; i < chan_count; i++) {
+      if (verbose)
+	fprintf(stderr, "Removing file: %s\n", grid_chan_io_image[i].file);
+      remove(grid_chan_io_image[i].file);
+    }
+  }
+
   /*
    *  Free allocated memory
    */
@@ -1253,18 +1310,5 @@ main (int argc, char *argv[])
   free(grid_weight_image);
   free(ewap);
 
-  if (verbose) {
-    int scans_with_data;
-
-    scans_with_data = last_scan_with_data - first_scan_with_data + 1;
-    if (chan_scan_first != first_scan_with_data ||
-	swath_scans     != scans_with_data) {
-      fprintf(stderr, "On next call to fornav, use:\n");
-      fprintf(stderr, "  chan_scan_first:   %d\n", first_scan_with_data);
-      fprintf(stderr, "  colrow_scan_first: %d\n",
-	      colrow_scan_first + first_scan_with_data - chan_scan_first);
-      fprintf(stderr, "  swath_scans:       %d\n", scans_with_data);
-    }
-  }
   exit(EXIT_SUCCESS);
 }
