@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.15 2004/08/27 00:40:09 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.16 2004/08/27 16:05:33 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -11,8 +11,12 @@ $|=1;
 
 $mod02_usage = "\n
 USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
-                [ancilfile [latlon_src [ancil_src [keep [rind [fix250]]]]]]
-       defaults:   none          1          1       0     50     0
+                [ancilfile [latlon_src [ancil_src [keep [rind
+       defaults:    none         1          1       0     50
+                [fix250 [fixcolfile [fixrowfile
+       defaults:    0       none        none
+                [tile_cols [tile_rows [tile_overlap]]]]]]]]]]]
+                     1          1          50
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
@@ -44,8 +48,8 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                   avg - use weighted averaging (default).
                   max - use maximum weighting.
               fill - specifies the output fill value. Default is 0.
-  NOTE: if first file in listfile is MOD03 or MYD02, then chanfile must be
-        \"none\", and both latlon_src and ancil_src are forced to 3.
+      NOTE: if first file in listfile is MOD03 or MYD02, then chanfile must be
+      \"none\", and both latlon_src and ancil_src are forced to 3.
   ancilfile: text file containing a list of ancillary parameters to be gridded,
         one line per parameter. The default is \"none\" indicating that no
         ancillary parameters should be gridded. Each line in ancilfile should
@@ -86,15 +90,15 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
               3: use 1 km lat-lon data from MOD03 or MYD03 file.
               H: use 1 km lat-lon data from MOD02HKM or MYD02HKM file.
               Q: use 1 km lat-lon data from MOD02QKM or MYD02HKM file.
-  NOTE: if latlon_src is set to 3, then ancil_src is forced to 3.
+      NOTE: if latlon_src is set to 3, then ancil_src is forced to 3.
   ancil_src: 1: use 5 km ancillary data from MOD021KM or MYD021KM file
                 (default).
              3: use 1 km ancillary data from MOD03 or MYD03 file.
-  NOTE: if ancil_src is set to 3, then latlon_src is forced to 3.
+      NOTE: if ancil_src is set to 3, then latlon_src is forced to 3.
   keep: 0: delete intermediate chan, lat, lon, col, and row files (default).
         1: do not delete intermediate chan, lat, lon, col, and row files.
   rind: number of pixels to add around intermediate grid to eliminate
-        holes in final grid. Default is 50.
+        holes in final grid. Default is 50. Must be greater than 0.
       NOTE: If rind is 0, then no check for min/max columns and rows is
       performed. For direct broadcast data which may contain missing lines,
       you should set rind to 0.
@@ -106,7 +110,27 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
              undo solar zenith correction.
           3: apply solar zenith correction only for MOD02QKM or MYD02QKM data.
       NOTE: If fix250 is not 0, then param must be set to soze (Solar Zenith)
-      and conversion must be set to scaled (decimal degrees) in ancilfile.\n\n";
+      and conversion must be set to scaled (decimal degrees) in ancilfile.
+  fixcolfile: Specifies the name of an input text file containing a set of
+        intercepts and slopes to be used for performing a de-striping fix for
+        the columns in a set of MOD02QKM or MYD02QKM data.
+  fixrowfile: Specifies the name of an input text file containing a set of
+        intercepts and slopes to be used for performing a de-striping fix for
+        the rows in a set of MOD02QKM or MYD02QKM data.
+      NOTE: If fixcolfile or fixrowfile is \"none\" (the default) then the
+      corresponding col or row regressions will be performed and written to an
+      output file. This file may then be specified as fixcolfile or fixrowfile
+      in a subsequent call to mod02.pl.
+      NOTE: If fix250 is not 1 or 2, then fixcolfile and fixrowfile are ignored.
+  tile_cols: number of segments to use horizontally in breaking the specified
+        grid into tiles. Default is 1. Must be greater than 0.
+  tile_rows: number of segments to use vertically in breaking the specified
+        grid into tiles. Default is 1. Must be greater than 0.
+      NOTE: The total number of tiles produced will be tile_cols x tile_rows.
+      If both tile_cols and tile_rows are equal to 1 (the defaults) then no
+      tiling will be performed.
+  tile_overlap: number of pixels to add around each tile edge that borders
+        another tile. Default is 50. Must be greater than 0.\n\n";
 
 # this makes the routine work properly using require in other programs
-1;
+1
