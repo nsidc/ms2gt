@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.2 2001/01/02 23:20:28 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.3 2001/01/03 00:30:21 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -40,6 +40,7 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/for
 "         swath_cols: number of columns in each input swath file.\n"\
 "         swath_scans: number of scans in each input swath file.\n"\
 "         swath_rows_per_scan: number of swath rows constituting a scan.\n"\
+"           Must be at least 2.\n"\
 "         swath_col_file: file containing the projected column number of each\n"\
 "           swath cell and consisting of swatch_cols x swath_rows of 4 byte\n"\
 "           floating-point numbers.\n"\
@@ -83,12 +84,13 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/for
 "             for any unmapped cells in each grid file. The default value is the\n"\
 "             corresponding swath fill value.\n"\
 "         c weight_count: number of elements to create in the gaussian weight\n"\
-"             table. Default is 10000.\n"\
+"             table. Default is 10000. Must be at least 2.\n"\
 "         w weight_min: the minimum value to store in the last position of the\n"\
 "             weight table. Default is 0.01, which, with a weight_distance_max\n"\
 "             of 1.0 produces a weight of 0.01 at a grid cell distance of 1.0.\n"\
+"             Must be greater than 0.\n"\
 "         d weight_distance_max: distance in grid cell units at which to apply a\n"\
-"             weight of weight_min. Default is 1.0.\n"\
+"             weight of weight_min. Default is 1.0. Must be greater than 0.\n"\
 "         W weight_sum_min: minimum weight sum value. Cells whose weight sums\n"\
 "             are less than weight_sum_min are set to the grid fill value.\n"\
 "             Default is weight_sum_min.\n"\
@@ -115,7 +117,26 @@ typedef struct {
   int   rows;
   int   bytes_per_row;
   void  **buf;
-} item;
+} image;
+
+typedef struct {
+  float a;
+  float b;
+  float c;
+  float f;
+  float delu;
+  float delv;
+} ewa_parameters;
+
+typedef struct {
+  int   count;
+  float min;
+  float distance_max;
+  float sum_min;
+  float qmax;
+  float qfactor;
+  float *wtab;
+} ewa_weight;
 
 static int verbose;
 static int very_verbose;
@@ -131,9 +152,9 @@ static void DisplayInvalidParameter(char *param)
   DisplayUsage();
 }
 
-static void InitializeItem(item *ip, char *name, char *open_type_str,
-			   char *data_type_str, int cols, int rows,
-			   int swath_scan_first)
+static void InitializeImage(image *ip, char *name, char *open_type_str,
+			    char *data_type_str, int cols, int rows,
+			    int swath_scan_first)
 {
   if (very_verbose)
     fprintf(stderr, "Initializing %s\n", name);
@@ -141,7 +162,7 @@ static void InitializeItem(item *ip, char *name, char *open_type_str,
   ip->open_type_str = strdup(open_type_str);
   if (strlen(ip->open_type_str)) {
     if ((ip->fp = fopen(ip->file, ip->open_type_str)) == NULL) {
-      fprintf(stderr, "fornav: InitializeItem: error opening %s\n", ip->file);
+      fprintf(stderr, "fornav: InitializeImage: error opening %s\n", ip->file);
       perror("fornav");
       exit(ABORT);
     }
@@ -178,7 +199,7 @@ static void InitializeItem(item *ip, char *name, char *open_type_str,
     break;
   case TYPE_UNDEF:
   default:
-    error_exit("fornav: InitializeItem: Undefined data type");
+    error_exit("fornav: InitializeImage: Undefined data type");
     break;
   }
 
@@ -188,7 +209,7 @@ static void InitializeItem(item *ip, char *name, char *open_type_str,
   ip->buf = matrix(ip->rows, ip->cols, ip->bytes_per_cell, 0);
   if (ip->buf == NULL) {
     fprintf(stderr, "Error initializing %s\n", name);
-    error_exit("fornav: InitializeItem: can't allocate memory for buffer");
+    error_exit("fornav: InitializeImage: can't allocate memory for buffer");
   }
   if (!strcmp(ip->open_type_str, "r")) {
     int offset;
@@ -196,7 +217,8 @@ static void InitializeItem(item *ip, char *name, char *open_type_str,
     if (very_verbose)
       fprintf(stderr, "seeking to byte %d in %s\n", offset, ip->file);
     if (fseek(ip->fp, offset, 0) != 0) {
-      fprintf(stderr, "fornav: InitializeItem: error seeking to byte %d in %s\n",
+      fprintf(stderr,
+	      "fornav: InitializeImage: error seeking to byte %d in %s\n",
 	      offset, ip->file);
       perror("fornav");
       exit(ABORT);
@@ -204,7 +226,7 @@ static void InitializeItem(item *ip, char *name, char *open_type_str,
   }
 }
 
-static void DeInitializeItem(item *ip)
+static void DeInitializeImage(image *ip)
 {
   if (very_verbose)
     fprintf(stderr, "DeInitializing %s\n", ip->name);
@@ -220,15 +242,67 @@ static void DeInitializeItem(item *ip)
     free(ip->buf);
 }
 
-static void ReadItem(item *ip)
+static void ReadImage(image *ip)
 {
   if (very_verbose)
     fprintf(stderr, "Reading %s\n", ip->name);
   if (fread(ip->buf[0], ip->bytes_per_row, ip->rows, ip->fp) != ip->rows) {
-    fprintf(stderr, "fornav: ReadItem: error reading %s\n", ip->file);
+    fprintf(stderr, "fornav: ReadImage: error reading %s\n", ip->file);
     perror("fornav");
     exit(ABORT);
   }
+}
+
+static void InitializeWeight(ewa_weight *ewaw, int weight_count,
+			     float weight_min, float weight_distance_max,
+			     float weight_sum_min)
+{
+  double alpha_qmax;
+  double t;
+  double tinc;
+  float  *wptr;
+  int    i;
+
+  if (very_verbose)
+    fprintf(stderr, "Initializing weight structure");
+  ewaw->count        = weight_count;
+  ewaw->min          = weight_min;
+  ewaw->distance_max = weight_distance_max;
+  ewaw->sum_min      = weight_sum_min;
+  ewaw->wtab         = calloc(weight_count, sizeof(float));
+  if (ewaw->wtab == NULL)
+    error_exit("fornav: InitializeWeight: can't allocate memory for wtab");
+  if (weight_count < 2)
+    error_exit("fornav: InitializeWeight: weight_count must be at least 2");
+  if (weight_min <= 0.0)
+    error_exit("fornav: InitializeWeight: weight_min must be greater than 0");
+  if (weight_distance_max <= 0.0)
+    error_exit("fornav: InitializeWeight: weight_distance_max must be greater than 0");
+  ewaw->qmax = ewaw->distance_max * ewaw->distance_max;
+  alpha_qmax = -log(ewaw->min);
+  wptr = ewaw->wtab;
+  t = 0.0;
+  tinc = 1.0 / weight_count;
+  for (i = 0, t = 0.0; i < weight_count; i++, t += tinc)
+    *wptr++ = exp(-alpha_qmax * t);
+
+  /*
+   *  Use i = (int)(q * ewaw->qfactor) to get element number i of wtab
+   *  corresponding to q.
+   *  Then for 0 < q < ewaw->qmax
+   *    we have:
+   *      0   < i              <  ewaw->count
+   *      1.0 > ewaw->wtab[i]  >= ewaw->min
+   */
+
+  ewaw->qfactor = ewaw->count / ewaw->qmax;
+}
+
+static void DeInitializeWeight(ewa_weight *ewaw)
+{
+  if (very_verbose)
+    fprintf(stderr, "DeInitializing weight structure");
+  free(ewaw->wtab);
 }
 
 main (int argc, char *argv[])
@@ -252,13 +326,16 @@ main (int argc, char *argv[])
   int   grid_cols;
   int   grid_rows;
 
-  item  *swath_col_item;
-  item  *swath_row_item;
-  item  *swath_chan_item;
-  item  *grid_chan_io_item;
-  item  *grid_chan_item;
-  item  *grid_weight_item;
-  item  *ip;
+  image  *swath_col_image;
+  image  *swath_row_image;
+  image  *swath_chan_image;
+  image  *grid_chan_io_image;
+  image  *grid_chan_image;
+  image  *grid_weight_image;
+  image  *ip;
+
+  ewa_parameters *ewap;
+  ewa_weight     ewaw;
 
   int   i;
   int   swath_scan_last;
@@ -281,7 +358,7 @@ main (int argc, char *argv[])
   got_weight_sum_min     = FALSE;
 
   /*
-   *  Get channel count and use it to allocate items and set default values
+   *  Get channel count and use it to allocate images and set default values
    */
 
   ++argv; --argc;
@@ -290,25 +367,25 @@ main (int argc, char *argv[])
   if (sscanf(*argv, "%d", &chan_count) != 1)
     DisplayInvalidParameter("chan_count");
 
-  if ((swath_col_item = (item *)malloc(sizeof(item))) == NULL)
-    error_exit("fornav: can't allocate swath_col_item\n");
-  if ((swath_row_item = (item *)malloc(sizeof(item))) == NULL)
-    error_exit("fornav: can't allocate swath_row_item\n");
-  if ((swath_chan_item = (item *)calloc(chan_count, sizeof(item))) == NULL)
-    error_exit("fornav: can't allocate swath_chan_item\n");
-  if ((grid_chan_io_item = (item *)calloc(chan_count, sizeof(item))) == NULL)
-    error_exit("fornav: can't allocate grid_chan_io_item\n");
-  if ((grid_chan_item = (item *)calloc(chan_count, sizeof(item))) == NULL)
-    error_exit("fornav: can't allocate grid_chan_item\n");
-  if ((grid_weight_item = (item *)malloc(sizeof(item))) == NULL)
-    error_exit("fornav: can't allocate grid_weight_item\n"); 
+  if ((swath_col_image = (image *)malloc(sizeof(image))) == NULL)
+    error_exit("fornav: can't allocate swath_col_image\n");
+  if ((swath_row_image = (image *)malloc(sizeof(image))) == NULL)
+    error_exit("fornav: can't allocate swath_row_image\n");
+  if ((swath_chan_image = (image *)calloc(chan_count, sizeof(image))) == NULL)
+    error_exit("fornav: can't allocate swath_chan_image\n");
+  if ((grid_chan_io_image = (image *)calloc(chan_count, sizeof(image))) == NULL)
+    error_exit("fornav: can't allocate grid_chan_io_image\n");
+  if ((grid_chan_image = (image *)calloc(chan_count, sizeof(image))) == NULL)
+    error_exit("fornav: can't allocate grid_chan_image\n");
+  if ((grid_weight_image = (image *)malloc(sizeof(image))) == NULL)
+    error_exit("fornav: can't allocate grid_weight_image\n"); 
 
   for (i = 0; i < chan_count; i++) {
-    ip = &swath_chan_item[i];
+    ip = &swath_chan_image[i];
     ip->data_type_str = "s2";
     ip->fill = 0.0;
 
-    ip = &grid_chan_io_item[i];
+    ip = &grid_chan_io_image[i];
     ip->data_type_str = "s2";
     ip->fill = 0.0;
   }
@@ -358,7 +435,7 @@ main (int argc, char *argv[])
 	      strcmp(*argv, "s4") &&
 	      strcmp(*argv, "f4"))
 	    DisplayInvalidParameter("swath_data_type");
-	  swath_chan_item[i].data_type_str = *argv;
+	  swath_chan_image[i].data_type_str = *argv;
 	}
 	break;
       case 'T':
@@ -374,7 +451,7 @@ main (int argc, char *argv[])
 	      strcmp(*argv, "s4") &&
 	      strcmp(*argv, "f4"))
 	    DisplayInvalidParameter("grid_data_type");
-	  grid_chan_io_item[i].data_type_str = *argv;
+	  grid_chan_io_image[i].data_type_str = *argv;
 	}
 	break;
       case 'f':
@@ -382,7 +459,7 @@ main (int argc, char *argv[])
 	  ++argv; --argc;
 	  if (argc <= 0)
 	    DisplayInvalidParameter("swath_fill");
-	  if (sscanf(*argv, "%f", &swath_chan_item[i].fill) != 1)
+	  if (sscanf(*argv, "%f", &swath_chan_image[i].fill) != 1)
 	    DisplayInvalidParameter("swath_fill");
 	}
 	break;
@@ -392,7 +469,7 @@ main (int argc, char *argv[])
 	  ++argv; --argc;
 	  if (argc <= 0)
 	    DisplayInvalidParameter("grid_fill");
-	  if (sscanf(*argv, "%f", &grid_chan_io_item[i].fill) != 1)
+	  if (sscanf(*argv, "%f", &grid_chan_io_image[i].fill) != 1)
 	    DisplayInvalidParameter("grid_fill");
 	}
 	break;
@@ -433,10 +510,10 @@ main (int argc, char *argv[])
   }
   if (!got_grid_data_type)
     for (i = 0; i < chan_count; i++)
-      grid_chan_io_item[i].data_type_str = swath_chan_item[i].data_type_str;
+      grid_chan_io_image[i].data_type_str = swath_chan_image[i].data_type_str;
   if (!got_grid_fill)
     for (i = 0; i < chan_count; i++)
-      grid_chan_io_item[i].fill = swath_chan_item[i].fill;
+      grid_chan_io_image[i].fill = swath_chan_image[i].fill;
   if (!got_weight_sum_min)
     weight_sum_min = weight_min;
 
@@ -453,16 +530,16 @@ main (int argc, char *argv[])
     DisplayInvalidParameter("swath_scans");
   if (sscanf(*argv++, "%d", &swath_rows_per_scan) != 1)
     DisplayInvalidParameter("swath_rows_per_scan");
-  swath_col_item->file = *argv++;
-  swath_row_item->file = *argv++;
+  swath_col_image->file = *argv++;
+  swath_row_image->file = *argv++;
   for (i = 0; i < chan_count; i++)
-    swath_chan_item[i].file = *argv++;
+    swath_chan_image[i].file = *argv++;
   if (sscanf(*argv++, "%d", &grid_cols) != 1)
     DisplayInvalidParameter("grid_cols");
   if (sscanf(*argv++, "%d", &grid_rows) != 1)
     DisplayInvalidParameter("grid_rows");
   for (i = 0; i < chan_count; i++)
-    grid_chan_io_item[i].file = *argv++;
+    grid_chan_io_image[i].file = *argv++;
 
   if (verbose) {
     fprintf(stderr, "fornav:\n");
@@ -470,15 +547,16 @@ main (int argc, char *argv[])
     fprintf(stderr, "  swath_cols          = %d\n", swath_cols);
     fprintf(stderr, "  swath_scans         = %d\n", swath_scans);
     fprintf(stderr, "  swath_rows_per_scan = %d\n", swath_rows_per_scan);
-    fprintf(stderr, "  swath_col_file      = %s\n", swath_col_item->file);
-    fprintf(stderr, "  swath_row_file      = %s\n", swath_row_item->file);
+    fprintf(stderr, "  swath_col_file      = %s\n", swath_col_image->file);
+    fprintf(stderr, "  swath_row_file      = %s\n", swath_row_image->file);
     for (i = 0; i < chan_count; i++)
-      fprintf(stderr, "  swath_chan_file[%d]  = %s\n", i, swath_chan_item[i].file);
+      fprintf(stderr, "  swath_chan_file[%d]  = %s\n", i,
+	      swath_chan_image[i].file);
     fprintf(stderr, "  grid_cols           = %d\n", grid_cols);
     fprintf(stderr, "  grid_rows           = %d\n", grid_rows);
     for (i = 0; i < chan_count; i++)
       fprintf(stderr, "  grid_chan_file[%d]   = %s\n", i,
-	      grid_chan_io_item[i].file);
+	      grid_chan_io_image[i].file);
     fprintf(stderr, "\n");
     fprintf(stderr, "  maximum_weight_mode = %d\n", maximum_weight_mode);
     fprintf(stderr, "  swath_scan_first    = %d\n", swath_scan_first);
@@ -486,16 +564,16 @@ main (int argc, char *argv[])
     fprintf(stderr, "  grid_row_start      = %d\n", grid_row_start);
     for (i = 0; i < chan_count; i++)
       fprintf(stderr, "  swath_data_type[%d]  = %s\n", i,
-	      swath_chan_item[i].data_type_str);
+	      swath_chan_image[i].data_type_str);
     for (i = 0; i < chan_count; i++)
       fprintf(stderr, "  grid_data_type[%d]   = %s\n", i,
-	      grid_chan_io_item[i].data_type_str);
+	      grid_chan_io_image[i].data_type_str);
     for (i = 0; i < chan_count; i++)
       fprintf(stderr, "  swath_fill[%d]       = %f\n", i,
-	      swath_chan_item[i].fill);
+	      swath_chan_image[i].fill);
     for (i = 0; i < chan_count; i++)
       fprintf(stderr, "  grid_fill[%d]        = %f\n", i,
-	      grid_chan_io_item[i].fill);
+	      grid_chan_io_image[i].fill);
     fprintf(stderr, "\n");
     fprintf(stderr, "  weight_count        = %d\n", weight_count);
     fprintf(stderr, "  weight_min          = %f\n", weight_min);
@@ -505,30 +583,45 @@ main (int argc, char *argv[])
   }
 
   /*
-   *  Initialize items
+   *  Initialize images
    */
-  InitializeItem(swath_col_item, "swath_col_item", "r", "f4",
-		 swath_cols, swath_rows_per_scan, swath_scan_first);
+  if (swath_rows_per_scan < 2)
+    error_exit("fornav: swath_rows_per_scan must be at least 2");
+  InitializeImage(swath_col_image, "swath_col_image", "r", "f4",
+		  swath_cols, swath_rows_per_scan, swath_scan_first);
 
-  InitializeItem(swath_row_item, "swath_row_item", "r", "f4",
-		 swath_cols, swath_rows_per_scan, swath_scan_first);
+  InitializeImage(swath_row_image, "swath_row_image", "r", "f4",
+		  swath_cols, swath_rows_per_scan, swath_scan_first);
   for (i = 0; i < chan_count; i++) {
     char name[100];
-    sprintf(name, "swath_chan_item %d", i); 
-    InitializeItem(&swath_chan_item[i], name, "r",
-		   swath_chan_item[i].data_type_str,
-		   swath_cols, swath_rows_per_scan, swath_scan_first);
-    sprintf(name, "grid_chan_io_item %d", i); 
-    InitializeItem(&grid_chan_io_item[i], name, "w",
-		   grid_chan_io_item[i].data_type_str,
-		   grid_cols, 1, 0);
-    sprintf(name, "grid_chan_item %d", i); 
-    InitializeItem(&grid_chan_item[i], name, "", "f4",
-		   grid_cols, grid_rows, 0);
+    sprintf(name, "swath_chan_image %d", i); 
+    InitializeImage(&swath_chan_image[i], name, "r",
+		    swath_chan_image[i].data_type_str,
+		    swath_cols, swath_rows_per_scan, swath_scan_first);
+    sprintf(name, "grid_chan_io_image %d", i); 
+    InitializeImage(&grid_chan_io_image[i], name, "w",
+		    grid_chan_io_image[i].data_type_str,
+		    grid_cols, 1, 0);
+    sprintf(name, "grid_chan_image %d", i); 
+    InitializeImage(&grid_chan_image[i], name, "", "f4",
+		    grid_cols, grid_rows, 0);
   }
 
-  InitializeItem(grid_weight_item, "grid_weight_item", "", "f4",
-		 grid_cols, grid_rows, 0);
+  InitializeImage(grid_weight_image, "grid_weight_image", "", "f4",
+		  grid_cols, grid_rows, 0);
+
+  /*
+   *  Allocate an array of ewa parameters, one element per swath column
+   */
+  ewap = (ewa_parameters *)calloc(swath_cols, sizeof(ewa_parameters));
+  if (ewap == NULL)
+    error_exit("fornav: can't allocate ewa parameters\n");
+
+  /*
+   *  Initialize the ewa weight structure
+   */
+  InitializeWeight(&ewaw, weight_count, weight_min, weight_distance_max,
+		   weight_sum_min);
 
   /*
    *  Process each scan
@@ -541,30 +634,38 @@ main (int argc, char *argv[])
     /*
      *  Read a scan from each swath file
      */
-    ReadItem(swath_col_item);
-    ReadItem(swath_row_item);
+    ReadImage(swath_col_image);
+    ReadImage(swath_row_image);
     for (i = 0; i < chan_count; i++)
-      ReadItem(&swath_chan_item[i]);
-  }
+      ReadImage(&swath_chan_image[i]);
+
+  } /* for (scan = swath_scan_first; scan <= swath_scan_last; scan++) */
 
   /*
-   *  De-Initialize items
+   *  De-Initialize images
    */
-  DeInitializeItem(swath_col_item);
-  DeInitializeItem(swath_row_item);
+  DeInitializeImage(swath_col_image);
+  DeInitializeImage(swath_row_image);
   for (i = 0; i < chan_count; i++) {
-    DeInitializeItem(&swath_chan_item[i]);
-    DeInitializeItem(&grid_chan_io_item[i]);
-    DeInitializeItem(&grid_chan_item[i]);
+    DeInitializeImage(&swath_chan_image[i]);
+    DeInitializeImage(&grid_chan_io_image[i]);
+    DeInitializeImage(&grid_chan_image[i]);
   }
+  DeInitializeImage(grid_weight_image);
+
+  /*
+   *  De-Initialize the weight structure
+   */
+  DeInitializeWeight(&ewaw);
 
   /*
    *  Free allocated memory
    */
-  free(swath_col_item);
-  free(swath_row_item);
-  free(swath_chan_item);
-  free(grid_chan_io_item);
-  free(grid_chan_item);
-  free(grid_weight_item);
+  free(swath_col_image);
+  free(swath_row_image);
+  free(swath_chan_image);
+  free(grid_chan_io_image);
+  free(grid_chan_image);
+  free(grid_weight_image);
+  free(ewap);
 }
