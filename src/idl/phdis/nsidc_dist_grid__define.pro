@@ -211,17 +211,17 @@ FUNCTION NSIDC_DIST_GRID::INIT, main_obj, file_obj, grid_id, grid_name, field_na
    help_version_bttn = WIDGET_BUTTON(help_menu, VALUE='Version', $
                           UNAME='help_version_bttn')
 
-   row_base = WIDGET_BASE(self.grid_base, /ROW, XPAD=1, YPAD=1, SPACE=1)
-   wid = WIDGET_LABEL(row_base, VALUE='Lon,Lat,Img:')
+   col_base = WIDGET_BASE(self.grid_base, /COLUMN, XPAD=1, YPAD=1, SPACE=1)
+   wid = WIDGET_LABEL(col_base, VALUE='Lon,Lat,Img:')
    pt = STRING(0.0,format='(f10.5)') + ', ' + STRING(0.0,format='(f9.5)') + ', ' + STRING(0L)
-   self.pos_text = WIDGET_TEXT(row_base, VALUE=pt, XSIZE=32)
+   self.pos_text = WIDGET_TEXT(col_base, VALUE=pt, XSIZE=32)
    IF (self.n_fields GT 1) THEN BEGIN
-      self.field_drop = WIDGET_DROPLIST(row_base, VALUE=(*self.field_names_ptr), $
+      self.field_drop = WIDGET_DROPLIST(col_base, VALUE=(*self.field_names_ptr), $
                       UNAME='field_drop', TITLE='Field')
       WIDGET_CONTROL, self.field_drop, SET_DROPLIST_SELECT=self.curr_field
    ENDIF
    IF (self.n_images GT 1) THEN BEGIN
-      self.image_drop = WIDGET_DROPLIST(row_base, VALUE=STRING(INDGEN(self.n_images)+1), $
+      self.image_drop = WIDGET_DROPLIST(col_base, VALUE=STRING(INDGEN(self.n_images)+1), $
                       UNAME='image_drop', TITLE='Image')
       WIDGET_CONTROL, self.image_drop, SET_DROPLIST_SELECT=self.curr_image
    ENDIF
