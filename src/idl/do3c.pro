@@ -1,6 +1,8 @@
 pro do3c, cols_in, rows_in, file_in, file_out, $
           shrink_factor=shrink_factor, min_in=min_in, max_in=max_in, $
-          bytes_per_cell=bytes_per_cell, color_table=color_table, $
+          bytes_per_cell=bytes_per_cell, $
+          soze_in=soze_in, $
+          color_table=color_table, $
           histeq=histeq
 
 !order = 1
@@ -9,7 +11,7 @@ if n_params() ne 4 then $
                          "shrink_factor=shrink_factor, " + $
                          "min_in=min_in, max_in=max_in, " + $
                          "bytes_per_cell=bytes_per_cell, " + $
-                         "color_table=color_table"
+                         "color_table=color_table, histeq=histeq"
 
 if n_elements(shrink_factor) eq 0 then $
   shrink_factor = 1
@@ -55,6 +57,18 @@ endif else begin
 endelse
 cols_out = cols_in / shrink_factor
 rows_out = rows_in / shrink_factor
+if n_elements(soze_in) eq 1 then begin
+    soze = fltarr(cols_in, rows_in)
+    openr, lun, soze_in, /get_lun
+    readu, lun, soze
+    free_lun, lun
+    i = where(abs(90.0 - soze) lt 0.000001, icount)
+    j = where(abs(90.0 - soze) ge 0.000001, jcount)
+    if icount gt 0 then $
+      soze[i] = 0
+    if jcount gt 0 then $
+      soze[j] = 1.0 / cos(soze[j] * !dtor)
+endif
 if n_elements(file_in) eq 1 then begin
     if bytes_per_cell eq 4 then $
       img_in = fltarr(cols_in, rows_in) $
@@ -65,6 +79,21 @@ if n_elements(file_in) eq 1 then begin
     openr, lun, file_in, /get_lun
     readu, lun, img_in
     free_lun, lun
+    if n_elements(soze_in) eq 1 then begin
+        img_in = img_in * soze
+        if bytes_per_cell eq 1 then begin
+            i = where (img_in gt 255.0, count)
+            if count gt 0 then $
+              img_in[i] = 255.0
+            img_in = byte(img_in)
+        endif
+        if bytes_per_cell eq 2 then begin
+            i = where (img_in gt 32767.0, count)
+            if count gt 0 then $
+              img_in[i] = 32767.0
+            img_in = fix(img_in)
+        endif
+    endif
     img_in = congrid(img_in, cols_out, rows_out)
     if n_elements(min_in) eq 0 then $
       min_in = min(img_in)
@@ -98,6 +127,21 @@ endif else begin
         openr, lun, file_in[i], /get_lun
         readu, lun, img_in
         free_lun, lun
+        if n_elements(soze_in) eq 1 then begin
+            img_in = img_in * soze
+            if bytes_per_cell eq 1 then begin
+                i = where (img_in gt 255.0, count)
+                if count gt 0 then $
+                  img_in[i] = 255.0
+                img_in = byte(img_in)
+            endif
+            if bytes_per_cell eq 2 then begin
+                i = where (img_in gt 32767.0, count)
+                if count gt 0 then $
+                  img_in[i] = 32767.0
+                img_in = fix(img_in)
+            endif
+        endif
         img_in = congrid(img_in, cols_out, rows_out)
         if n_elements(min_in) eq 0 then $
             min = min(img_in) $
