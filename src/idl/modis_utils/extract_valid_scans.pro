@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.6 2004/11/23 02:53:51 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.7 2004/11/23 03:18:51 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -115,12 +115,15 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
 
         ;- count gets number of invalid
         ;  treat fill values for channel data (i.e. band_index ge 0)
-        ;  as valid
+        ;  as valid because apparently lat-lon is valid when chan eq fill
             image_scan = image[first:last]
-            j = where(((image_scan lt valid_range[0]) or $
-                       (image_scan gt valid_range[1])) and $
-                      ((band_index ge 0) or $
-                       (image_scan ne fill)), count)
+            test_scan0 = ((image_scan lt valid_range[0]) or $
+                          (image_scan gt valid_range[1]))
+            if band_index ge 0 then $
+              test_scan1 = image_scan ne fill $
+            else $
+              test_scan1 = test_scan0
+            j = where((test_scan0 and test_scan1) eq 1, count)
             if count ge invalid_count_max then begin
 
             ;- scan was almost all invalid
