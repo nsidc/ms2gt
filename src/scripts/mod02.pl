@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.61 2004/12/27 21:18:07 haran Exp haran $
+# $Id: mod02.pl,v 1.62 2005/01/11 22:38:14 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -51,6 +51,7 @@ my $tile_rows = 1;
 my $tile_overlap = 300;
 my $maskfile = "none";
 my $mask_factor = 6;
+my $mask_keep = 0;
 
 if (@ARGV < 4) {
     print $mod02_usage;
