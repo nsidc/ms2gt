@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.50 2004/11/10 22:47:45 haran Exp haran $
+# $Id: mod02.pl,v 1.51 2004/11/21 20:02:11 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -48,13 +48,15 @@ my $fixrowfile1 = "none";
 my $fixrowfile2 = "none";
 my $tile_cols = 1;
 my $tile_rows = 1;
-my $tile_overlap = 60;
+my $tile_overlap = 300;
+my $maskfile = "none";
+my $mask_factor = 6;
 
 if (@ARGV < 4) {
     print $mod02_usage;
     exit 1;
 }
-if (@ARGV <= 18) {
+if (@ARGV <= 20) {
     $dirinout = shift(@ARGV);
     $tag = shift(@ARGV);
     $listfile = shift(@ARGV);
@@ -134,6 +136,15 @@ if (@ARGV <= 18) {
 	    print "invalid tile_overlap\n$mod02_usage";
 	}
     }
+    if (@ARGV) {
+	$maskfile = shift(@ARGV);
+    }
+    if (@ARGV) {
+	$mask_factor = shift(@ARGV);
+	if ($mask_factor < 1) {
+	    print "invalid mask_factor\n$mod02_usage";
+	}
+    }
 } else {
     print $mod02_usage;
     exit 1;
@@ -158,7 +169,9 @@ print_stderr("\n".
 	     "> fixrowfile2      = $fixrowfile2\n".
              "> tile_cols        = $tile_cols\n".
              "> tile_rows        = $tile_rows\n".
-             "> tile_overlap     = $tile_overlap\n");
+             "> tile_overlap     = $tile_overlap\n".
+             "> maskfile         = $maskfile\n".
+	     "> mask_factor      = $mask_factor\n");
 
 if ($chanfile eq "none" && $ancilfile eq "none") {
     diemail("$script: FATAL: chanfile and ancilfile must not both be none");
@@ -902,6 +915,27 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 				     $tile_col_offset, $tile_row_offset);
 	    }
 	}
+	my $command;
+	my $mask_tile = "";
+	if ($maskfile ne "none") {
+	    $mask_tile = sprintf("%s_mask_%s_%05d_%05d.img",
+				 $tag, $tile_ext,
+				 $tile_grid_cols_this,
+				 $tile_grid_rows_this);
+	    my $mask_bytes_per_cell = 1;
+	    my $mask_cols_in = $grid_cols / $mask_factor;
+	    my $mask_rows_in = $grid_rows / $mask_factor;
+	    my $mask_col_start_in = $tile_col_offset / $mask_factor;
+	    my $mask_row_start_in = $tile_row_offset / $mask_factor;
+	    my $mask_cols_in_region = $tile_grid_cols_this / $mask_factor;
+	    my $mask_rows_in_region = $tile_grid_rows_this / $mask_factor;
+	    $command = "make_mask -v -d -F $mask_factor " .
+		"$mask_bytes_per_cell $mask_cols_in $mask_rows_in " .
+		"$mask_col_start_in $mask_row_start_in " .
+		"$mask_cols_in_region $mask_rows_in_region " .
+		"$maskfile $mask_tile";
+	    do_or_die($command);
+	}
 	my $grid_file = "";
 	for ($i = 0; $i < $chan_count; $i++) {
 	    my $chan_file = $chan_files[$i];
@@ -964,7 +998,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		my $data_type_in = "data_type_in=\"'$data_type'\"";
 		my $data_type_out = "data_type_out=\"'$data_type'\"";
 		
-		my $command = "idl_sh.pl modis_adjust $swath_cols $swath_scans " .
+		$command = "idl_sh.pl modis_adjust $swath_cols $swath_scans " .
 		    "\"'$chan_file_unfixed'\" \"'$chan_file'\" " .
 		    "file_soze=\"'$soze_file'\" " .
 		    "$interp_cols $reg_cols $reg_col_offset " .
@@ -979,7 +1013,8 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		    system("rm -f $chan_file_unfixed");
 		}
 	    }
-	    if (!$grid_file || -e $grid_file) {
+	    if ((!$grid_file || -e $grid_file) &&
+		(!$mask_tile || -e $mask_tile)) {
 		my $tagext = substr($chan_conversions[$i], 0, 3);
 		my $m_option;
 		if ($chan_weight_types[$i] eq "avg") {
@@ -1014,6 +1049,16 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 			  "$cols_file $rows_file $chan_file " .
 			  "$tile_grid_cols_this $tile_grid_rows_this " .
 			  "$grid_file");
+		if ($mask_tile) {
+		    my $grid_file_unmasked = $grid_file . ".unmasked";
+		    do_or_die("mv $grid_file $grid_file_unfixed");
+		    do_or_die("apply_mask -v $t_option " .
+			      "tile_grid_cols_this $tile_grid_rows_this " .
+			      "$mask_tile $grid_file_unmasked $grid_file");
+		    if (!$keep) {
+			system("rm -f $grid_file_unfixed");
+		    }
+		}
 	    }
 	    if (!$keep &&
 		$tile_col == $tile_cols - 1 &&
@@ -1025,7 +1070,8 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 	for ($i = 0; $i < $ancil_count; $i++) {
 	    my $ancil_file = $ancil_files[$i];
 	    if (!$ancil_deletes[$i] &&
-		(!$grid_file || -e $grid_file)) {
+		(!$grid_file || -e $grid_file) &&
+		(!$mask_tile || -e $mask_tile)) {
 		my $ancil = $ancils[$i];
 		my $tagext = substr($ancil_conversions[$i], 0, 3);
 		my $m_option;
@@ -1065,12 +1111,25 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 			  "$cols_file $rows_file $ancil_file " .
 			  "$tile_grid_cols_this $tile_grid_rows_this " .
 			  "$grid_file");
+		if ($mask_tile) {
+		    my $grid_file_unmasked = $grid_file . ".unmasked";
+		    do_or_die("mv $grid_file $grid_file_unfixed");
+		    do_or_die("apply_mask -v $t_option " .
+			      "tile_grid_cols_this $tile_grid_rows_this " .
+			      "$mask_tile $grid_file_unmasked $grid_file");
+		    if (!$keep) {
+			system("rm -f $grid_file_unfixed");
+		    }
+		}
 	    }
 	    if ($ancil_deletes[$i] && !$keep &&
 		$tile_col == $tile_cols - 1 &&
 		$tile_row == $tile_rows - 1) {
 		do_or_die("rm -f $ancil_file");
 	    }
+	}
+	if (!$keep && $mask_tile) {
+	    do_or_die("rm -f $mask_tile");
 	}
     }
 }

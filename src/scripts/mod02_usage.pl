@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.18 2004/10/31 03:18:53 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.19 2004/11/10 22:47:14 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -15,8 +15,10 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
        defaults:    none         1          1       0     50
                 [fix250 [fixcolfile1 [fixcolfile2 [fixrowfile1 [fixrowfile2
        defaults:    0        none         none         none         none
-                [tile_cols [tile_rows [tile_overlap]]]]]]]]]]]]]
-                     1          1          60
+                [tile_cols [tile_rows [tile_overlap
+                     1          1          300
+                [maskfile [mask_factor]]]]]]]]]]]]]]]
+       defaults:   none        6
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
@@ -135,7 +137,11 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
       If both tile_cols and tile_rows are equal to 1 (the defaults) then no
       tiling will be performed.
   tile_overlap: number of pixels to add around each tile edge that borders
-        another tile. Default is 60. Must be greater than 0.\n\n";
+        another tile. Default is 300. Must be greater than 0.
+  maskfile: one byte per pixel image having 0 as the mask value.
+  mask_factor: indicates the factor to use in expanding the mask file to
+        match the dimensions of the grid defined by gpdfile. Must be greater
+        than 0. The default value is 6.\n\n";
 
 # this makes the routine work properly using require in other programs
 1
