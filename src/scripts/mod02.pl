@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.35 2003/03/18 16:57:14 haran Exp haran $
+# $Id: mod02.pl,v 1.36 2003/07/31 21:54:24 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -290,12 +290,14 @@ my $ancil_rows_per_scan;
 my $this_ancil_cols;
 my $this_ancil_rows = 0;
 my $ancil_interp_factor;
-my $ancil_offset = 0;
+my $ancil_col_offset = 0;
+my $ancil_row_offset = 0;
 my $ancil_col_extra = 0;
 
 my $latlon_rows_per_scan;
 my $latlon_interp_factor;
-my $latlon_offset = 0;
+my $latlon_col_offset = 0;
+my $latlon_row_offset = 0;
 my $latlon_col_extra = 0;
 
 my $case;
@@ -333,11 +335,13 @@ for ($line = 0; $line < @list; $line++) {
 	$swath_resolution = "1";
 	$swath_rows_per_scan = 10;
 	$ancil_interp_factor = 5;
-	$ancil_offset = 2;
+	$ancil_col_offset = 2;
+	$ancil_row_offset = 2;
 	$ancil_col_extra = 1;
 	$ancil_rows_per_scan = 2;
 	$latlon_interp_factor = 5;
-	$latlon_offset = 2;
+	$latlon_col_offset = 2;
+	$latlon_row_offset = 2;
 	$latlon_col_extra = 1;
 	$latlon_rows_per_scan = 2;
     }
@@ -345,7 +349,8 @@ for ($line = 0; $line < @list; $line++) {
 	$swath_resolution = "1";
 	$swath_rows_per_scan = 10;
 	$ancil_interp_factor = 5;
-	$ancil_offset = 2;
+	$ancil_col_offset = 2;
+	$ancil_row_offset = 2;
 	$ancil_col_extra = 1;
 	$ancil_rows_per_scan = 2;
 	$latlon_interp_factor = 1;
@@ -357,17 +362,20 @@ for ($line = 0; $line < @list; $line++) {
 	$swath_rows_per_scan = 20;
 	$ancil_interp_factor = 10;
 	$ancil_filestem =~ s/D02HKM/D021KM/;
-	$ancil_offset = 4;
+	$ancil_col_offset = 4;
+	$ancil_row_offset = 4;
 	$ancil_col_extra = 1;
 	$ancil_rows_per_scan = 2;
 	$latlon_interp_factor = 2;
+	$latlon_row_offset = 0.5;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 4) {
 	$swath_resolution = "1";
 	$swath_rows_per_scan = 10;
 	$ancil_interp_factor = 5;
-	$ancil_offset = 2;
+	$ancil_col_offset = 2;
+	$ancil_row_offset = 2;
 	$ancil_col_extra = 1;
 	$ancil_rows_per_scan = 2;
 	$latlon_interp_factor = 1;
@@ -378,11 +386,13 @@ for ($line = 0; $line < @list; $line++) {
 	$swath_resolution = "Q";
 	$swath_rows_per_scan = 40;
 	$ancil_interp_factor = 20;
-	$ancil_offset = 8;
+	$ancil_col_offset = 8;
+	$ancil_row_offset = 8;
 	$ancil_col_extra = 1;
 	$ancil_filestem =~ s/D02QKM/D021KM/;
 	$ancil_rows_per_scan = 2;
 	$latlon_interp_factor = 4;
+	$latlon_row_offset = 1.5;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 6) {
@@ -399,9 +409,11 @@ for ($line = 0; $line < @list; $line++) {
 	$swath_resolution = "H";
 	$swath_rows_per_scan = 20;
 	$ancil_interp_factor = 2;
+	$ancil_row_offset = 0.5;
 	$ancil_filestem =~ s/D02HKM/D03/;
 	$ancil_rows_per_scan = 10;
 	$latlon_interp_factor = 2;
+	$latlon_row_offset = 0.5;
 	$latlon_filestem =~ s/D02HKM/D03/;
 	$latlon_rows_per_scan = 10;
     }
@@ -409,9 +421,11 @@ for ($line = 0; $line < @list; $line++) {
 	$swath_resolution = "Q";
 	$swath_rows_per_scan = 40;
 	$ancil_interp_factor = 4;
+	$ancil_row_offset = 1.5;
 	$ancil_filestem =~ s/D02QKM/D03/;
 	$ancil_rows_per_scan = 10;
 	$latlon_interp_factor = 4;
+	$latlon_row_offset = 1.5;
 	$latlon_filestem =~ s/D02QKM/D03/;
 	$latlon_rows_per_scan = 10;
     }
@@ -546,7 +560,7 @@ if ($latlon_interp_factor > 1) {
 	      "\"'$cols_file'\" \"'$rows_file'\" " .
 	      "$swath_cols \"'$tag'\" " .
 	      $grid_check .
-	      "col_offset=$latlon_offset row_offset=$latlon_offset");
+	      "col_offset=$latlon_col_offset row_offset=$latlon_row_offset");
     do_or_die("rm -f $cols_file");
     do_or_die("rm -f $rows_file");
 
@@ -742,7 +756,7 @@ if ($ancil_interp_factor > 1) {
 		  "$ancil_rows_per_scan \"'$ancil_file'\" " .
 		  "$swath_cols \"'$filestem_ancil_conv'\" " .
 		  "data_type=\"'$data_type'\" " .
-		  "col_offset=$ancil_offset row_offset=$ancil_offset " .
+		  "col_offset=$ancil_col_offset row_offset=$ancil_row_offset " .
 		  "$nearest_neighbor");
 
 	my @ancil_glob = glob("$filestem_ancil_conv*");
