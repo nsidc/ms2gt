@@ -358,27 +358,18 @@ my $swath_scan_first = $cr_scan_first;
 
 my $chan_file_param;
 my $grid_file_param;
-my $t_option = "-t";
-my $f_option = "-f";
+my $t_option = "-t u1";
+my $f_option = "-f 255";
 for ($i = 0; $i < $chan_count; $i++) {
-    if ($i > 0) {
-	$chan_file_param .= " ";
-	$grid_file_param .= " ";
-    }
     my $chan_file = $chan_files[$i];
     my $chan = $chans[$i];
     my $grid_file = "$tag\_ch$chan\_grid\_$grid_cols\_$grid_rows.img";
-    $chan_file_param .= $chan_file;
-    $grid_file_param .= $grid_file;
-    $t_option .= " u1";
-    $f_option .= " 255";
+    do_or_die("fornav 1 -v -m $t_option $f_option " .
+	      "-s $swath_scan_first 0 " .
+	      "$swath_cols $swath_scans $swath_rows_per_scan " .
+	      "$cols_file $rows_file $chan_file " .
+	      "$grid_cols $grid_rows $grid_file");
 }
-do_or_die("fornav $chan_count -v -m $t_option $f_option " .
-	  "-s $swath_scan_first 0 " .
-	  "$swath_cols $swath_scans $swath_rows_per_scan " .
-	  "$cols_file $rows_file $chan_file_param " .
-	  "$grid_cols $grid_rows $grid_file_param");
-
 if (!$keep) {
     for ($i = 0; $i < $chan_count; $i++) {
 	do_or_die("rm -f $chan_files[$i]");
