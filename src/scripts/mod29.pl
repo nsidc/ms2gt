@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: mod29.pl,v 1.8 2001/04/23 20:38:05 haran Exp haran $
+# $Id: mod29.pl,v 1.9 2001/04/26 20:29:30 haran Exp haran $
 
 #========================================================================
 # mod29.pl - grids MOD29 data
@@ -33,15 +33,15 @@ USAGE: mod29.pl dirinout tag listfile gpdfile
   gpdfile: .gpd file that defines desired output grid.
   chanlist: string specifying channel numbers to be gridded. The default
             is 1, i.e. grid channel 1 only. The channel numbers are:
-              1: Sea Ice by Reflectance - 8-bit unsigned
-              2: Sea Ice by Reflectance PixelQA - 8-bit unsigned
-              3: Ice Surface Temperature - 16-bit unsigned (Kelvin * 100)
-              4: Ice Surface Temperature PixelQA - 8-bit unsigned
-              5: Sea Ice by IST - 8-bit unsigned
-              6: Combined Sea Ice - 8-bit unsigned
+              1: icrf Sea Ice by Reflectance - 8-bit unsigned
+              2: irqa Sea Ice by Reflectance PixelQA - 8-bit unsigned
+              3: temp Ice Surface Temperature - 16-bit unsigned (Kelvin * 100)
+              4: tmqa Ice Surface Temperature PixelQA - 8-bit unsigned
+              5: ictm Sea Ice by IST - 8-bit unsigned
+              6: icrt Combined Sea Ice - 8-bit unsigned
   latlonlistfile: text file containing a list of MOD02 or MOD03 files whose
             latitude and longitude data should be used in place of the latlon
-            data in the corresponding MOD29 file in listfile. The default is
+            data in the corresponding MOD29 files in listfile. The default is
             \"none\" indicating that the latlon data in each MOD29 file
             should be used without substitution.
   keep: 0: delete intermediate chan, lat, lon, col, and row files (default).
@@ -107,6 +107,28 @@ print_stderr("\n".
 
 chdir_or_die($dirinout);
 
+my $chan_count = length($chanlist);
+my @chan_cat;
+my @chans;
+my $i;
+my @chan_names_table = ("icrf", "irqa", "temp", "tmqa", "ictm", "icrt");
+my @chan_names;
+for ($i = 0; $i < $chan_count; $i++) {
+    $chan_cat[$i] = "cat ";
+    my $channum = substr($chanlist, $i, 1);
+    if ($channum ne "1" &&
+	$channum ne "2" &&
+	$channum ne "3" &&
+	$channum ne "4" &&
+	$channum ne "5" &&
+	$channum ne "6") {
+	print "invalid chanlist\n$Usage";
+	exit 1;
+    }
+    $chans[$i] = sprintf("%02d", $channum);
+    $chan_names[$i] = $chan_names_table[$channum - 1];
+}
+
 my @list;
 open_or_die("LISTFILE", "$listfile");
 print_stderr("contents of listfile:\n");
@@ -130,6 +152,19 @@ if ($latlonlistfile ne "none") {
     close(LATLONLISTFILE);
 }
 
+my @gridsize = `gridsize $gpdfile`;
+my ($grid_cols) = ($gridsize[0] =~ /cols:\s*(\d+)/);
+my ($grid_rows) = ($gridsize[1] =~ /rows:\s*(\d+)/);
+if (!defined($grid_cols) || $grid_cols == 0 ||
+    !defined($grid_rows) || $grid_rows == 0) {
+    diemail("$script: FATAL: " .
+	    "error opening gpdfile: $gpdfile\n");
+}
+$grid_cols = sprintf("%05d", $grid_cols);
+$grid_rows = sprintf("%05d", $grid_rows);
+print_stderr("$script: MESSAGE:\n" .
+	     "grid will contain $grid_cols cols and $grid_rows rows\n");
+
 my $hdf;
 my $swath_cols = 0;
 my $swath_rows = 0;
@@ -137,14 +172,6 @@ my $latlon_cols = 0;
 my $latlon_rows = 0;
 my $lat_cat = "cat ";
 my $lon_cat = "cat ";
-my $chan_count = length($chanlist);
-my @chan_cat;
-my @chans;
-my $i;
-for ($i = 0; $i < $chan_count; $i++) {
-    $chan_cat[$i] = "cat ";
-    $chans[$i] = sprintf("%02d", substr($chanlist, $i, 1));
-}
 my $swath_rows_per_scan = 10;
 my $this_swath_cols;
 my $this_swath_rows;
@@ -309,14 +336,6 @@ my $cr_scans = $this_cols_scans;
 my $cr_scan_first = $this_cols_scan_first;
 my $cr_rows_per_scan = $this_cols_rows_per_scan;
 
-open_or_die("GPDFILE", "$ENV{PATHMPP}/$gpdfile");
-my $line = <GPDFILE>;
-$line = <GPDFILE>;
-close(GPDFILE);
-my ($grid_cols, $grid_rows) = ($line =~ /(\S+)\s+(\S+)/);
-$grid_cols = sprintf("%05d", $grid_cols);
-$grid_rows = sprintf("%05d", $grid_rows);
-
 if ($interp_factor > 1) {
     my $col_min = -$rind;
     my $col_max = $grid_cols + $rind - 1;
@@ -379,11 +398,11 @@ my $swath_scan_first = $cr_scan_first;
 
 for ($i = 0; $i < $chan_count; $i++) {
     my $chan_file = $chan_files[$i];
-    my $chan = $chans[$i];
+    my $chan_name = $chan_names[$i];
     my $t_option;
     my $f_option;
     my $tagext = "rawm";
-    my $grid_file = "$tag\_$tagext\_ch$chan\_$grid_cols\_$grid_rows.img";
+    my $grid_file = "$tag\_$tagext\_$chan_name\_$grid_cols\_$grid_rows.img";
     if ($chan != 3) {
 	$t_option = "-t u1";
 	$f_option = "-f 255";
