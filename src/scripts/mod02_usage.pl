@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.6 2001/04/26 20:38:21 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.7 2001/05/25 21:31:39 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -23,22 +23,22 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
   chanfile: text file containing a list of channels to be gridded, one line
         per channel. If chanfile is \"none\" then no channel data will be
         gridded and ancilfile must not be \"none\". Each line in chanfile
-        should have the following format:
+        should consist of up to four fields:
           chan conversion weight_type fill
-            where
+            where the fields are defined as follows:
               chan - specifies a channel number (1-36).
-              conversion is a string that specifies the type of conversion
+              conversion - a string that specifies the type of conversion
                 that should be performed on the channel. The string must be
                 one of the following:
                   raw - raw HDF values (16-bit unsigned integers) (default).
                   corrected - corrected counts (floating-point).
-                  radiance - Watts per square meter per steradian per micron
-                    (floating-point).
+                  radiance - watts per square meter per steradian per
+                    micrometer (floating-point).
                   reflectance - (channels 1-19 and 26) reflectance without
                     solar zenith angle correction (floating-point).
                   temperature - (channels 20-25 and 27-36) brightness
-                    temperatue in Kelvins (floating-point).
-              weight_type - is a string that specifies the type of weighting
+                    temperature in kelvin (floating-point).
+              weight_type - a string that specifies the type of weighting
                 that should be perfomed on the channel. The string must be one
                 of the following:
                   avg - use weighted averaging (default).
@@ -49,10 +49,10 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
   ancilfile: text file containing a list of ancillary parameters to be gridded,
         one line per parameter. The default is \"none\" indicating that no
         ancillary parameters should be gridded. Each line in ancilfile should
-        have the following format:
+        consist of up to four fields:
           param conversion weight_type fill
-            where
-              param is a string that specifies an ancillary parameter to be
+            where the fields are defined as follows:
+              param - a string that specifies an ancillary parameter to be
                 gridded, and must be one of the following 4 character strings:
                   hght - Height
                   seze - SensorZenith
@@ -62,7 +62,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                   soaz - SolarAzimuth
                   lmsk - Land/SeaMask (available in MOD03 only)
                   gflg - gflags
-              conversion is a string that specifies the type of conversion
+              conversion - a string that specifies the type of conversion
                 that should be performed on the channel. The string must be
                 one of the following:
                   raw - raw HDF values (16-bit signed integers except that
@@ -71,7 +71,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                   scaled - raw values multiplied by a parameter-specific
                     scale factor (floating-point). Note that scaling factor
                     for Height, Land/SeaMask, and gflags is 1.
-              weight_type - is a string that specifies the type of weighting
+              weight_type - a string that specifies the type of weighting
                 that should be perfomed on the channel. The string must be one
                 of the following:
                   avg - use weighted averaging (default for all except
