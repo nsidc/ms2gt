@@ -1,3 +1,4 @@
 rcp $MS2GT_HOME/doc/index.html bipolar:/WEB/Other/PROJECTS/HDFEOS/MS2GT
 rcp $MS2GT_HOME/doc/tutorials.html bipolar:/WEB/Other/PROJECTS/HDFEOS/MS2GT
 rcp $MS2GT_HOME/doc/tutorial_1.html bipolar:/WEB/Other/PROJECTS/HDFEOS/MS2GT
+rcp $MS2GT_HOME/doc/tutorial_2.html bipolar:/WEB/Other/PROJECTS/HDFEOS/MS2GT

@@ -4,7 +4,7 @@
 # 12-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /export/data/ms2gth/Makefile,v 1.4 2001/04/19 21:03:09 haran Exp haran $
+RCSID = $Header: /export/data/ms2gth/Makefile,v 1.5 2001/04/20 00:10:48 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -12,8 +12,8 @@ RCSID = $Header: /export/data/ms2gth/Makefile,v 1.4 2001/04/19 21:03:09 haran Ex
 #
 #       define current version and release
 #
-VERSION = 00
-RELEASE = 00
+VERSION = 0
+RELEASE = 1
 
 #
 #	installation directories
@@ -26,6 +26,7 @@ INCDIR = $(TOPDIR)/include
 LIBDIR = $(TOPDIR)/lib
 SRCDIR = $(TOPDIR)/src
 TU1DIR = $(TOPDIR)/tutorial_1
+TU2DIR = $(TOPDIR)/tutorial_2
 
 NAVDIR = $(SRCDIR)/fornav
 GSZDIR = $(SRCDIR)/gridsize
@@ -48,6 +49,7 @@ TINCDIR = $(TARDIR)/include
 TLIBDIR = $(TARDIR)/lib
 TSRCDIR = $(TARDIR)/src
 TTU1DIR = $(TARDIR)/tutorial_1
+TTU1DIR = $(TARDIR)/tutorial_2
 
 TNAVDIR = $(TSRCDIR)/fornav
 TGSZDIR = $(TSRCDIR)/gridsize
@@ -124,6 +126,7 @@ HDRS = $(INCDIR)/*.h
 GRDS = $(GPDSRCS) $(MPPSRCS)
 SRCS = $(SRCMAKE) $(NAVSRCS) $(IDLSRCS) $(LL2SRCS) $(MAPSRCS) $(SCTSRCS)
 TU1S = $(TU1DIR)/*.txt $(TU1DIR)/*.gpd $(TU1DIR)/*.csh
+TU2S = $(TU2DIR)/*.txt $(TU2DIR)/*.gpd $(TU2DIR)/*.csh
 
 all:	srcs
 
@@ -142,7 +145,7 @@ tar:
 	$(MKDIR) $(TSRCDIR)
 	$(MKDIR) $(TNAVDIR) $(TGSZDIR) $(TLL2DIR) $(TMAPDIR) $(TSCTDIR)
 	$(MKDIR) $(TIDLDIR) $(TL1BDIR) $(TUTLDIR)
-	$(MKDIR) $(TTU1DIR)
+	$(MKDIR) $(TTU1DIR) $(TTU2DIR)
 	$(CP) $(TOPS) $(TARDIR)
 	$(CP) $(DOCS) $(TDOCDIR)
 	$(CP) $(HDRS) $(TINCDIR)
@@ -156,6 +159,7 @@ tar:
 	$(CP) $(MAPSRCS) $(TMAPDIR)
 	$(CP) $(SCTSRCS) $(TSCTDIR)
 	$(CP) $(TU1S) $(TTU1DIR)
+	$(CP) $(TU2S) $(TTU2DIR)
 	$(TAR) cvf $(TARFILE) $(TARDIR)
 	$(RM) $(TARFILE).gz
 	$(COMPRESS) $(TARFILE)
