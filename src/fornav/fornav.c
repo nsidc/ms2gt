@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.5 2001/01/03 22:40:51 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.6 2001/01/04 01:05:04 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -316,49 +316,69 @@ static void ComputeEwaParameters(image *iu, image *iv, ewa_weight *ewaw,
 				 ewa_parameters *ewap)
 {
   int rowsm1;
+  int colsm1;
+  int rowsov2;
   int col;
-  float *u_first;
-  float *u_last;
-  float *v_first;
-  float *v_last;
+  float *u_frst_row_this_col;
+  float *u_last_row_this_col;
+  float *v_frst_row_this_col;
+  float *v_last_row_this_col;
+  float *u_midl_row_this_col;
+  float *u_midl_row_next_col;
+  float *v_midl_row_this_col;
+  float *v_midl_row_next_col;
   ewa_parameters *this_ewap;
-  float ux;
-  float uy;
-  float vx;
-  float vy;
-  float f_scale;
+  double ux;
+  double uy;
+  double vx;
+  double vy;
+  double f_scale;
   float qmax;
   float a;
   float b;
   float c;
   float d;
 
-  if (very_verbose)
+  if (very_verbose) {
     fprintf(stderr, "Computing ewa parameters\n");
+    fprintf(stderr,
+	    " col            ux            vx            uy            vy             a             b             c         u_del         v_del\n");
+  }
   rowsm1 = iu->rows - 1;
+  colsm1 = iu->cols - 1;
+  rowsov2 = iu->rows / 2;
   qmax = ewaw->qmax;
-  for (col = 0,
-	 u_first = (float *)(iu->buf[0]),
-	 u_last  = (float *)(iu->buf[rowsm1]),
-	 v_first = (float *)(iv->buf[0]),
-	 v_last  = (float *)(iv->buf[rowsm1]),
-	 this_ewap = ewap;
-       col < iu->cols;
+  u_frst_row_this_col = (float *)(iu->buf[0]);
+  u_last_row_this_col = (float *)(iu->buf[rowsm1]);
+  v_frst_row_this_col = (float *)(iv->buf[0]);
+  v_last_row_this_col = (float *)(iv->buf[rowsm1]);
+  u_midl_row_this_col = (float *)(iu->buf[rowsov2]);
+  u_midl_row_next_col = u_midl_row_this_col + 1;
+  v_midl_row_this_col = (float *)(iv->buf[rowsov2]);
+  v_midl_row_next_col = v_midl_row_this_col + 1;
+  for (col = 0, this_ewap = ewap;
+       col < colsm1;
        col++, this_ewap++) {
-    ux = *u_last++ - *u_first++;
-    vx = *v_last++ - *v_first++;
-    uy = ux / rowsm1;
-    vy = vx / rowsm1;
+    ux = *u_midl_row_next_col++ - *u_midl_row_this_col++;
+    vx = *v_midl_row_next_col++ - *v_midl_row_this_col++;
+    uy = (*u_last_row_this_col++ - *u_frst_row_this_col++) / rowsm1;
+    vy = (*v_last_row_this_col++ - *v_frst_row_this_col++) / rowsm1;
 
     /*
      *  scale a, b, c, and f equally so that f = qmax
      */
     f_scale = ux * vy - uy * vx;
     f_scale *= f_scale;
-    f_scale = (f_scale > EPSILON) ? qmax / f_scale : 1.0;
-    a = (vx * vx + vy * vy) * f_scale;
-    b = -2.0 * (ux * vx + uy * vy) * f_scale;
-    c = (ux * ux + uy * uy) * f_scale;
+    if (f_scale > EPSILON) {
+      f_scale = qmax / f_scale;
+      a = (vx * vx + vy * vy) * f_scale;
+      b = -2.0 * (ux * vx + uy * vy) * f_scale;
+      c = (ux * ux + uy * uy) * f_scale;
+    } else {
+      a = 1.0;
+      b = 0.0;
+      c = 1.0;
+    }
     d = 4.0 * a * c - b * b;
     d = (d > EPSILON) ? 4.0 * qmax / d : 1.0;
     this_ewap->a = a;
@@ -368,12 +388,22 @@ static void ComputeEwaParameters(image *iu, image *iv, ewa_weight *ewaw,
     this_ewap->u_del = sqrt(c * d);
     this_ewap->v_del = sqrt(a * d);
     if (very_verbose &&
-	(col == 0 || col == iu->cols / 2 || col == iu->cols - 1)) {
-      fprintf(stderr, "a: %f  b: %f  c: %f\n", a, b, c);
-      fprintf(stderr, "u_del: %f  v_del: %f\n",
+	(col == 10 || col == iu->cols / 2 || col == iu->cols - 11))
+      fprintf(stderr,
+	      "%4d %13e %13e %13e %13e %13e %13e %13e %13e %13e\n",
+	      col, ux, vx, uy, vy, a, b, c,
 	      this_ewap->u_del, this_ewap->v_del);
-    }
   }
+
+  /*
+   *  Copy the parameters from the penultimate column to the last column
+   */
+  this_ewap->a = (this_ewap - 1)->a;
+  this_ewap->b = (this_ewap - 1)->b;
+  this_ewap->c = (this_ewap - 1)->c;
+  this_ewap->f = (this_ewap - 1)->f;
+  this_ewap->u_del = (this_ewap - 1)->u_del;
+  this_ewap->v_del = (this_ewap - 1)->v_del;
 }
 
 main (int argc, char *argv[])
