@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.5 2002/04/18 23:39:48 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.6 2002/11/22 23:59:55 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -174,6 +174,7 @@
 Pro modis_adjust, cols, scans, file_in, file_out, $
                   rows_per_scan=rows_per_scan, $
                   data_type=data_type, $
+                  file_soze=file_soze, $
                   undo_soze=undo_soze, $
                   reg_col_detectors=reg_col_detectors, $
                   reg_col_stride=reg_col_stride, $
@@ -274,8 +275,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   print, '  data_type:            ', data_type
   print, '  file_soze:            ', file_soze
   print, '  undo_soze:            ', undo_soze
-  for i = 0, reg_col_detectors_count - 1 do $
-    print, '  reg_col_detectors[', i, ']: ', reg_col_detectors[i]
+  for i = 0, reg_col_detectors_count - 1 do begin
+      s = string(i, format='(i1)')
+      print, '  reg_col_detectors[' + s + ']: ', reg_col_detectors[i]
+  endfor
   print, '  reg_col_stride:       ', reg_col_stride
   print, '  reg_col_offset:       ', reg_col_offset
   print, '  reg_rows:             ', reg_rows
@@ -300,7 +303,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     message, 'rows_per_scan must be 40, 20, or 10'
 
   for i = 0, reg_col_detectors_count - 1 do begin
-      if reg_col_detector[i] ge rows_per_scan then $
+      if reg_col_detectors[i] ge rows_per_scan then $
         message, 'Each element of reg_col_detector ' + $
                  'must be less than rows_per_scan' + $
                  usage
@@ -395,12 +398,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       ;  perform row regressions
 
       ;  compute the number of double-sided scans,
-      ;  the number of rows per double-sided scan, and
-      ;  the number of cells for a single-side detector 
+      ;  and the number of rows per double-sided scan
 
       ds_scans = scans / 2
       rows_per_ds_scan = 2 * rows_per_scan
-      cells_per_ss_det = cols * ds_scans
 
       ;  if scans is odd, then increment the number of double scans,
       ;  duplicate the penultimate scan, and concatenate it onto the end
@@ -413,6 +414,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
           swath = [temporary(swath), ipen]
           ipen = 0
       endif
+
+      ;  calculate the number of cells for a double-sided detector
+
+      cells_per_ds_det = long(cols) * ds_scans
 
       ; reform swath so that it holds double-sided scans
 
@@ -435,6 +440,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
           if reg_count_mod_2 eq 1 then $
             mean_count = mean_count - 1
           reg_ctr = 0
+          help, pass_ctr
           for mean_ctr = 0, mean_count - 1 do begin
               vectors_per_mean = 2
               if (reg_count_mod_2 eq 1) and $
@@ -461,14 +467,17 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               endelse
               weight_per_vector = 1.0 / vectors_per_mean
               mean_this = 0
-              vectors = fltarr(cells_per_ss_det, vectors_per_mean)
+              vectors = fltarr(cells_per_ds_det, vectors_per_mean)
+              help, mean_ctr
               for vec_ctr = 0, vectors_per_mean - 1 do begin
-                  if mean_ctr eq 0 then $
+                  help, reg_ctr
+                  help, vec_ctr
+                  if pass_ctr eq 0 then $
                     mean_old_this = reform(swath[*, reg_ctr + vec_ctr, *], $
-                                           1, cells_per_ss_det) $
+                                           1, cells_per_ds_det) $
                   else $
-                    mean_old_this = reform(mean_old[*, reg_ctr + vec_ctr], $
-                                           1, cells_per_ss_det)
+                    mean_old_this = reform(mean_old[*, reg_ctr + vec_ctr, *], $
+                                           1, cells_per_ds_det)
                   mean_this = mean_old_this * weight_per_vector + mean_this
                   vectors[*, vec_ctr] = reform(mean_old_this, /overwrite)
               endfor ; vec_ctr
@@ -479,8 +488,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                     plot_tag = string(plot_tag + '_', pass_ctr, '_', reg_ctr, $
                                       format='(a, i1.1, a, i2.2)')
                   xtitle=string('pass_ctr: ', pass_ctr, $
-                                'mean_ctr: ', mean_ctr, $
-                                format='(a, i2.2, a, i2.2)')
+                                '  mean_ctr: ', mean_ctr, $
+                                format='(a, i1, a, i2.2)')
                   ytitle=string('reg_ctr: ', reg_ctr, $
                                 format='(a, i2.2)')
                   modis_regress, mean_this, mean_old_this, $
@@ -494,7 +503,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                                  plot_titles=[xtitle,ytitle]
 
                   ; accumulate the new slope and intercept values
-                  ; into what we have so far for each ss detector
+                  ; into what we have so far for each ds detector
                   ; that contributed to this mean
 
                   if pass_ctr eq 0 then begin
@@ -517,25 +526,24 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                   mean = [mean, temporary(mean_this)]
               endelse
           endfor ; mean_ctr
-          mean_old = reform(mean, cells_per_ss_det, mean_count, /overwrite)
+          mean_old = reform(mean, cols, mean_count, ds_scans, /overwrite)
           idx_first_old = temporary(idx_first)
           idx_last_old  = temporary(idx_last)
-          pass_ctr = pass_ctr + 1
           reg_count = mean_count
       endfor ; pass_ctr
       mean = 0
       mean_old = 0
 
-      ; apply slope and intercept corrections for each ss detector
+      ; apply slope and intercept corrections for each ds detector
 
-      for ss_det_ctr = 0, rows_per_ds_scan - 1 do begin
-          slope_this = slope[ss_det_ctr]
+      for ds_det_ctr = 0, rows_per_ds_scan - 1 do begin
+          slope_this = slope[ds_det_ctr]
           if abs(slope_this) ge epsilon then begin
-              y = reform(swath[*, ss_det_ctr, *])
-              swath[*, ss_det_ctr, *] = $
-                (y - intercept[ss_det_ctr]) / slope_this
+              y = reform(swath[*, ds_det_ctr, *])
+              swath[*, ds_det_ctr, *] = $
+                (y - intcp[ds_det_ctr]) / slope_this
           endif
-      endfor ; ss_det_ctr
+      endfor ; ds_det_ctr
 
       ; reform the swath array back into its original structure
 
