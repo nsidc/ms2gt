@@ -4,7 +4,7 @@
 # 12-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/haran/ms2gth/Makefile,v 1.19 2004/08/25 22:57:21 haran Exp haran $
+RCSID = $Header: /data/haran/ms2gth/Makefile,v 1.20 2004/08/25 23:09:45 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -59,7 +59,7 @@ TNAVDIR = $(TSRCDIR)/fornav
 TGSZDIR = $(TSRCDIR)/gridsize
 TIDLDIR = $(TSRCDIR)/idl
 TLL2DIR = $(TSRCDIR)/ll2cr
-TMAPDIR = $(TSRCDIR)/maps
+TMAPDIR = $(TSRCDIR)/mapx
 TSCTDIR = $(TSRCDIR)/scripts
 
 TL1BDIR = $(TIDLDIR)/level1b_read
