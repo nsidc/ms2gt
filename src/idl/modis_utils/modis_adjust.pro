@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.52 2004/12/08 22:02:10 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.53 2004/12/08 23:02:36 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -82,8 +82,9 @@
 ;           u4: unsigned 32-bit integer.
 ;           s4: signed 32-bit integer.
 ;           f4: 32-bit floating-point (default).
-;       file_soze: file containing solar zenith values in 32-bit floating-point
-;         degrees. Should have the same number of cols and scans as file_in.
+;       file_soze: file containing solar zenith values in 16-bit signed
+;         integer format representing decimal degrees times 100.
+;         Should have the same number of cols and scans as file_in.
 ;         Each input value is divided by the cosine of the corresponding
 ;         solar zenith value before any regressions are performed. The default
 ;         value of file_soze is a null string indicating that no solar zenith
@@ -193,7 +194,7 @@
 ;       idl_sh.pl modis_adjust 5416 53 \
 ;         "'inst_ref_ch01_5416_02120.img'" \
 ;         "'inst_ref_ch01_5416_02120_adj0.img'" \
-;         "file_soze='inst_soze_scaa_05416_00053_00000_40.img'" \
+;         "file_soze='inst_soze_rawa_05416_00053_00000_40.img'" \
 ;         "/reg_cols" \
 ;         "reg_col_offset=3" \
 ;         "file_reg_cols_out='inst_ch01_col_adj0.txt'" \
@@ -216,7 +217,7 @@
 ;       idl_sh.pl modis_adjust 5416 53 \
 ;         "'inst_ref_ch02_5416_02120.img'" \
 ;         "'inst_ref_ch02_5416_02120_adj0.img'" \
-;         "file_soze='inst_soze_scaa_05416_00053_00000_40.img'" \
+;         "file_soze='inst_soze_rawa_05416_00053_00000_40.img'" \
 ;         "/reg_cols" \
 ;         "reg_col_offset=0" \
 ;         "file_reg_cols_out='inst_ch02_col_adj0.txt'" \
@@ -378,7 +379,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.52 2004/12/08 22:02:10 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.53 2004/12/08 23:02:36 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -554,7 +555,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     swath[i_max_in] = max_in
 
   if file_soze ne '' then begin
-      soze = fltarr(cells_per_swath)
+      soze = intarr(cells_per_swath)
 
       openr, lun, file_soze, /get_lun
       readu, lun, soze
@@ -563,7 +564,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       ;  normalize with respect to solar zenith (soze)
       ;  compute cos(soze)
       
-      soze = cos(temporary(soze) * !dtor)
+      soze = cos(temporary(soze) * 0.01 * !dtor)
 
       ;  don't divide by small or negative cosines
       ;  and set swath to max value for such cosines
