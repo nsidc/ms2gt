@@ -5,7 +5,7 @@
 # 27-Feb-2001 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /export/data/ms2gth/src/idl/grids/Makefile,v 1.2 2001/06/12 22:59:25 haran Exp haran $
+RCSID = $Header: /export/data/ms2gth/src/idl/grids/Makefile,v 1.3 2001/10/18 17:45:17 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -102,8 +102,8 @@ all :
 			"F77=@echo \"NOT Implemented for example: f77 \"" \
 			"C_LD=ld" \
 			"F_LD=@echo \"NOT Implemented for example: f77 \"" \
-			"CFLAGS=-KPIC -ansi -32" \
-			"C_LD_FLAGS=-shared -32";; \
+			"CFLAGS=-KPIC -ansi -n32" \
+			"C_LD_FLAGS=-shared -n32";; \
 	   "OSF1" )  make libs \
 			"SHL_EXT=so" \
 			"CC=cc -O" \
