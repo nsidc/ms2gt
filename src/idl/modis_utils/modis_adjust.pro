@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.17 2002/11/26 16:29:41 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.18 2002/11/27 17:38:27 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -330,7 +330,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds) 
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.17 2002/11/26 16:29:41 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.18 2002/11/27 17:38:27 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -487,13 +487,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   ; perform column regressions
 
       if file_reg_cols_in ne '' then begin
-          skip_first_regression = 1
           line = ''
           openr, lun, file_reg_cols_in, /get_lun
           readf, lun, line
-      endif else begin
-          skip_first_regression = 0
-      endelse
+      endif
 
       swath = reform(swath, cols, rows_per_scan, scans, /overwrite)
 
@@ -529,7 +526,9 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               readf, lun, det_test, slope, intcp
               if det_test eq det then begin
                   if abs(slope) ge epsilon then $
-                    target = (target - intcp) / slope
+                    target = (target - intcp) / slope                  
+                  reg_cols_slope[det] = slope
+                  reg_cols_intcp[det] = intcp
               endif else begin
                   message, 'Entry for detector ' + string(det, format='(i2)') + $
                            ' missing from ' + file_reg_cols_in
@@ -554,7 +553,6 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                             format='(a, i2.2)')
               modis_regress, mean, target, $
                              slope, intcp, $
-                             skip_first_regression=skip_first_regression, $
                              y_tolerance=col_y_tolerance, $
                              slope_delta_max=col_slope_delta_max, $
                              regression_max=col_regression_max, $
@@ -564,13 +562,13 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                             plot_titles=[xtitle,ytitle]
               if abs(slope) ge epsilon then $
                 swath[[cols_target], det, *] = (target - intcp) / slope
+              reg_cols_slope[det] = slope * reg_cols_slope[det]
+              reg_cols_intcp[det] = slope * reg_cols_intcp[det] + intcp
               if det_ctr lt det_count - 1 then $
                 det_ctr = det_ctr + 1
           endif else begin      ; if (reg_cols ne 0) and (det_target eq det)
               swath[[cols_target], det, *] = target
           endelse
-          reg_cols_slope[det] = slope * reg_cols_slope[det]
-          reg_cols_intcp[det] = slope * reg_cols_intcp[det] + intcp
       endfor                    ; det
       if file_reg_cols_in ne '' then $
         free_lun, lun
