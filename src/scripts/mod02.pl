@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.57 2004/11/25 23:34:40 haran Exp haran $
+# $Id: mod02.pl,v 1.58 2004/11/27 05:33:32 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -888,9 +888,10 @@ my $tile_col;
 my $tile_row;
 for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
     my $tile_row_offset = $tile_row * $tile_grid_rows;
+    my $tile_row_offset_this = $tile_row_offset;
     my $tile_grid_rows_this = $tile_grid_rows + $tile_overlap;
     if ($tile_row > 0) {
-	$tile_row_offset -= $tile_overlap;
+	$tile_row_offset_this -= $tile_overlap;
 	$tile_grid_rows_this += $tile_overlap;
     }
     if ($tile_row == $tile_rows - 1) {
@@ -898,9 +899,10 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
     }
     for ($tile_col = 0; $tile_col < $tile_cols; $tile_col++) {
 	my $tile_col_offset = $tile_col * $tile_grid_cols;
+	my $tile_col_offset_this = $tile_col_offset;
 	my $tile_grid_cols_this = $tile_grid_cols + $tile_overlap;
 	if ($tile_col > 0) {
-	    $tile_col_offset -= $tile_overlap;
+	    $tile_col_offset_this -= $tile_overlap;
 	    $tile_grid_cols_this += $tile_overlap;
 	}
 	if ($tile_col == $tile_cols - 1) {
@@ -908,33 +910,57 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 	}
 	my $tile_num = $tile_row * $tile_cols + $tile_col;
 	my $tile_ext = "";
+	my $tile_ext_this = "";
 	if ($tile_cols > 1 && $tile_rows > 1) {
 	    $tile_ext = sprintf("_%02d", $tile_num);
+	    $tile_ext_this = $tile_ext;
 	    if ($tile_overlap > 0) {
-		$tile_ext .= sprintf("_%05d_%05d",
-				     $tile_col_offset, $tile_row_offset);
+		$tile_ext_this .= sprintf("_%05d_%05d",
+					  $tile_col_offset_this,
+					  $tile_row_offset_this);
 	    }
 	}
 	my $command;
 	my $mask_tile = "";
 	if ($maskfile ne "none") {
+	    #
+	    #  First try to make a low-res mask without overlap.
+	    #  If it exists, then make make the high-res mask with overlap.
+	    #
 	    $mask_tile = sprintf("%s_mask%s_%05d_%05d.img",
 				 $tag, $tile_ext,
-				 $tile_grid_cols_this,
-				 $tile_grid_rows_this);
+				 $tile_grid_cols,
+				 $tile_grid_rows);
 	    my $mask_bytes_per_cell = 1;
 	    my $mask_cols_in = $grid_cols / $mask_factor;
 	    my $mask_rows_in = $grid_rows / $mask_factor;
 	    my $mask_col_start_in = $tile_col_offset / $mask_factor;
 	    my $mask_row_start_in = $tile_row_offset / $mask_factor;
-	    my $mask_cols_in_region = $tile_grid_cols_this / $mask_factor;
-	    my $mask_rows_in_region = $tile_grid_rows_this / $mask_factor;
-	    $command = "make_mask -v -d -F $mask_factor " .
+	    my $mask_cols_in_region = $tile_grid_cols / $mask_factor;
+	    my $mask_rows_in_region = $tile_grid_rows / $mask_factor;
+	    $command = "make_mask -v -d " .
 		"$mask_bytes_per_cell $mask_cols_in $mask_rows_in " .
 		"$mask_col_start_in $mask_row_start_in " .
 		"$mask_cols_in_region $mask_rows_in_region " .
 		"$maskfile $mask_tile";
 	    do_or_die($command);
+	    if (-e $mask_tile) {
+		system("rm -f $mask_tile");
+		$mask_tile = sprintf("%s_mask%s_%05d_%05d.img",
+				     $tag, $tile_ext_this,
+				     $tile_grid_cols_this,
+				     $tile_grid_rows_this);
+		$mask_col_start_in = $tile_col_offset_this / $mask_factor;
+		$mask_row_start_in = $tile_row_offset_this / $mask_factor;
+		$mask_cols_in_region = $tile_grid_cols_this / $mask_factor;
+		$mask_rows_in_region = $tile_grid_rows_this / $mask_factor;
+		$command = "make_mask -v -d -F $mask_factor " .
+		    "$mask_bytes_per_cell $mask_cols_in $mask_rows_in " .
+		    "$mask_col_start_in $mask_row_start_in " .
+		    "$mask_cols_in_region $mask_rows_in_region " .
+		    "$maskfile $mask_tile";
+		do_or_die($command);
+	    }
 	}
 	my $grid_file = "";
 	for ($i = 0; $i < $chan_count; $i++) {
@@ -1024,7 +1050,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		    $m_option = "-m";
 		    $tagext .= "m";
 		}
-		$tagext .= $tile_ext;
+		$tagext .= $tile_ext_this;
 		$grid_file = sprintf("%s_%s_ch%s_%05d_%05d.img",
 				     $tag, $tagext, $chan,
 				     $tile_grid_cols_this,
@@ -1043,8 +1069,8 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		}
 		my $fill = $chan_fills[$i];
 		my $F_option = "-F $fill";
-		my $C_option = "-C $tile_col_offset";
-		my $R_option = "-R $tile_row_offset";
+		my $C_option = "-C $tile_col_offset_this";
+		my $R_option = "-R $tile_row_offset_this";
 		do_or_die("fornav 1 -v $t_option $f_option " .
 			  "$m_option $F_option " .
 			  "-d $weight_distance_max $C_option $R_option " .
@@ -1087,7 +1113,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		    $m_option = "-m";
 		    $tagext .= "m";
 		}
-		$tagext .= $tile_ext;
+		$tagext .= $tile_ext_this;
 		$grid_file = sprintf("%s_%s_%s_%05d_%05d.img",
 				     $tag, $tagext, $ancil,
 				     $tile_grid_cols_this,
@@ -1112,8 +1138,8 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		my $f_option = "-f $fill_in";
 		my $fill_out = $ancil_fills[$i];
 		my $F_option = "-F $fill_out";
-		my $C_option = "-C $tile_col_offset";
-		my $R_option = "-R $tile_row_offset";
+		my $C_option = "-C $tile_col_offset_this";
+		my $R_option = "-R $tile_row_offset_this";
 		do_or_die("fornav 1 -v $t_option $f_option " .
 			  "$m_option $F_option " .
 			  "-d $weight_distance_max $C_option $R_option " .
