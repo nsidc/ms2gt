@@ -3,7 +3,7 @@
 ;*
 ;* 28-Feb-2001  Terry Haran  tharan@kryos.colorado.edu  303-492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/grids/grid_class__define.pro,v 1.7 2001/10/22 17:58:25 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/grids/grid_class__define.pro,v 1.8 2003/04/28 22:07:53 haran Exp $
 ;*========================================================================*/
 
 ;+
@@ -77,7 +77,7 @@ end
 ;       None.
 ;
 ; RESULT:
-;       A two element float array containing the column and row numbers of the
+;       A two element double array containing the column and row numbers of the
 ;       grid origin relative to the center of the upper left pixel of the
 ;       grid which is considered to be at column 0, row 0.
 ;
@@ -111,7 +111,7 @@ end
 ;       None.
 ;
 ; RESULT:
-;       A two element float array containing the horizontal and vertical
+;       A two element double array containing the horizontal and vertical
 ;       grid scales.
 ;
 ; EXAMPLE:
@@ -123,11 +123,11 @@ function grid_class::get_grid_scales
     if self.gcs.cols_per_map_unit gt 1e-10 then $
       col_scale = self.gcs.scale / self.gcs.cols_per_map_unit $
     else $
-      col_scale = 0.0
+      col_scale = 0.0D
     if self.gcs.rows_per_map_unit gt 1e-10 then $
       row_scale = self.gcs.scale / self.gcs.rows_per_map_unit $
     else $
-      row_scale = 0.0
+      row_scale = 0.0D
     return, [col_scale, row_scale]
 end
 
@@ -217,7 +217,7 @@ end
 ;       None.
 ;
 ; RESULT:
-;       An anonymous structure containing four float tags named:
+;       An anonymous structure containing four double tags named:
 ;         lat0: latitude of first standard parallel.
 ;         lon0: longitude of first standard meridian.
 ;         lat1: latitude of second standard parallel.
@@ -254,7 +254,7 @@ end
 ;       None.
 ;
 ; RESULT:
-;       A float representing the grid rotation.
+;       A double representing the grid rotation.
 ;
 ; EXAMPLE:
 ;       og = obj_new('grid_class', 'Gl1250.gpd')
@@ -287,7 +287,7 @@ end
 ;       None.
 ;
 ; RESULT:
-;       An anonymous structure containing four float tags named:
+;       An anonymous structure containing four double tags named:
 ;         south: southern-most latitude.
 ;         north: northern-most latitude.
 ;         west: western-most longitude.
@@ -325,7 +325,7 @@ end
 ;       None.
 ;
 ; RESULT:
-;       An anonymous structure containing two float tags named:
+;       An anonymous structure containing two double tags named:
 ;         center_lat: latitude of the projection center.
 ;         center_lon: longitude of the projection center.
 ;
@@ -360,7 +360,7 @@ end
 ;       None.
 ;
 ; RESULT:
-;       An anonymous structure containing two float tags named:
+;       An anonymous structure containing two double tags named:
 ;         label_lat: latitude label.
 ;         label_lon: longitude label.
 ;
@@ -396,7 +396,7 @@ end
 ;       None.
 ;
 ; RESULT:
-;       An anonymous structure containing two float tags named:
+;       An anonymous structure containing two double tags named:
 ;         lat_interval: latitude interval.
 ;         lon_interval: longitude interval.
 ;
@@ -484,6 +484,39 @@ end
 
 ;+
 ; NAME:
+;	grid_class::get_polar_radius
+;
+; PURPOSE:
+;       Return the polar radius associated with a grid_class object
+;       instance.
+;
+; CATEGORY:
+;	nsidc modis tools package.
+;
+; CALLING SEQUENCE:
+;       Result = grid_class_object_instance->get_polar_radius()
+;
+; ARGUMENTS:
+;       None.
+;
+; KEYWORDS:
+;       None.
+;
+; RESULT:
+;       A double containing the polar radius associated with a grid. 
+;
+; EXAMPLE:
+;       og = obj_new('grid_class', 'Gl1250.gpd')
+;       polar_radius = og->get_polar_radius()
+;-
+
+function grid_class::get_polar_radius
+    return, self.gcs.polar_radius
+end
+
+
+;+
+; NAME:
 ;	grid_class::get_eccentricity
 ;
 ; PURPOSE:
@@ -514,6 +547,36 @@ end
 
 ;+
 ; NAME:
+;	grid_class::get_eccentricity_squared
+;
+; PURPOSE:
+;       Return the eccentricity_squared associated with a grid_class object
+;       instance.
+;
+; CATEGORY:
+;	nsidc modis tools package.
+;
+; CALLING SEQUENCE:
+;       Result = grid_class_object_instance->get_eccentricity_squared()
+;
+; ARGUMENTS:
+;       None.
+;
+; RESULT:
+;       A double containing the eccentricity_squared associated with the grid.
+;
+; EXAMPLE:
+;       og = obj_new('grid_class', 'Gl1250.gpd')
+;       eccentricity_squared = og->get_eccentricity_squared()
+;-
+
+function grid_class::get_eccentricity_squared
+    return, self.gcs.eccentricity_squared
+end
+
+
+;+
+; NAME:
 ;	grid_class::get_map_origin
 ;
 ; PURPOSE:
@@ -532,7 +595,7 @@ end
 ;       None.
 ;
 ; RESULT:
-;       A two element float array containing the translated map x,y origin
+;       A two element double array containing the translated map x,y origin
 ;       in map units.
 ;
 ; EXAMPLE:
@@ -566,7 +629,7 @@ end
 ;       None.
 ;
 ; RESULT:
-;       A two element float array containing the offset map x,y origin
+;       A two element double array containing the offset map x,y origin
 ;       in map units.
 ;
 ; EXAMPLE:
@@ -597,7 +660,7 @@ end
 ;       None.
 ;
 ; RESULT:
-;       A float containing the center_scale associated with the grid.
+;       A double containing the center_scale associated with the grid.
 ;
 ; EXAMPLE:
 ;       og = obj_new('grid_class', 'Gl1250.gpd')
@@ -723,10 +786,10 @@ end
 ;       Result = grid_class_object_instance->forward(lat, lon, col, row)
 ;
 ; ARGUMENTS:
-;       lat: float latitude array to be used as input.
-;       lon: float longitude array to be used as input.
-;       col: float array of column numbers to be used as output.
-;       row: float array of row numbers to be used as output.
+;       lat: double latitude array to be used as input.
+;       lon: double longitude array to be used as input.
+;       col: double array of column numbers to be used as output.
+;       row: double array of row numbers to be used as output.
 ;    NOTE: all the above arrays must be allocated prior to calling
 ;          grid_class::forward(), and must all have the same dimensions.
 ;
@@ -741,8 +804,8 @@ end
 ;
 ; EXAMPLE:
 ;       og = obj_new('grid_class', 'Gl1250.gpd')
-;       lat = [ 70.0,   70.0]
-;       lon = [-40.0, -100.0]
+;       lat = [ 70.0D,   70.0D]
+;       lon = [-40.0D, -100.0D]
 ;       col = lat
 ;       row = lon
 ;       status = og->forward(lat, lon, col, row)
@@ -768,16 +831,16 @@ function grid_class::forward, lat, lon, col, row
        (n_elements(row) ne n) then $
       message, 'lat, lon, col, and row must all have the same element count'
 
-    ; make sure that each input array is floating-point
+    ; make sure that each input array is double
 
-    if size(lat, /type) ne 4 then $
-      lat = float(lat)
-    if size(lon, /type) ne 4 then $
-      lat = float(lon)
-    if size(col, /type) ne 4 then $
-      lat = float(col)
-    if size(row, /type) ne 4 then $
-      lat = float(row)
+    if size(lat, /type) ne 5 then $
+      lat = temporary(double(lat))
+    if size(lon, /type) ne 5 then $
+      lon = temporary(double(lon))
+    if size(col, /type) ne 5 then $
+      col = temporary(double(col))
+    if size(row, /type) ne 5 then $
+      row = temporary(double(row))
 
     ; create a byte array for status the same size as the lat array
 
@@ -811,10 +874,10 @@ end
 ;       Result = grid_class_object_instance->inverse(col, row, lat, lon)
 ;
 ; ARGUMENTS:
-;       col: float array of column numbers to be used as input.
-;       row: float array of row numbers to be used as input.
-;       lat: float latitude array to be used as output.
-;       lon: float longitude array to be used as output.
+;       col: double array of column numbers to be used as input.
+;       row: double array of row numbers to be used as input.
+;       lat: double latitude array to be used as output.
+;       lon: double longitude array to be used as output.
 ;    NOTE: all the above arrays must be allocated prior to calling
 ;          grid_class::inverse(), and must all have the same dimensions.
 ;
@@ -830,8 +893,8 @@ end
 ;
 ; EXAMPLE:
 ;       og = obj_new('grid_class', 'Gl1250.gpd')
-;       lat = [ 70.0,   70.0]
-;       lon = [-40.0, -100.0]
+;       lat = [ 70.0D,   70.0D]
+;       lon = [-40.0D, -100.0D]
 ;       col = lat
 ;       row = lon
 ;       status = og->inverse(lat, lon, col, row)
@@ -857,16 +920,16 @@ function grid_class::inverse, col, row, lat, lon
        (n_elements(lon) ne n) then $
       message, 'col, row, lat, and lon must all have the same element count'
 
-    ; make sure that each input array is floating-point
+    ; make sure that each input array is double
 
-    if size(col, /type) ne 4 then $
-      lat = float(col)
-    if size(row, /type) ne 4 then $
-      lat = float(row)
-    if size(lat, /type) ne 4 then $
-      lat = float(lat)
-    if size(lon, /type) ne 4 then $
-      lat = float(lon)
+    if size(col, /type) ne 5 then $
+      col = temporary(double(col))
+    if size(row, /type) ne 5 then $
+      row = temporary(double(row))
+    if size(lat, /type) ne 5 then $
+      lat = temporary(double(lat))
+    if size(lon, /type) ne 5 then $
+      lon = temporary(double(lon))
 
     ; create a byte array for status the same size as the lat array
 
@@ -950,23 +1013,24 @@ pro grid_class_struct__define
 ;
 ;  public members of grid_class instance initialized by grid_init
 ;
-               map_origin_col: 0.0, map_origin_row: 0.0, $
-               cols_per_map_unit: 0.0, rows_per_map_unit: 0.0, $
+               map_origin_col: 0.0D, map_origin_row: 0.0D, $
+               cols_per_map_unit: 0.0D, rows_per_map_unit: 0.0D, $
                cols: 0L, rows: 0L, $
                gpd_filename: '', $
 ;
 ;  public members of mapx_class instance initialized by grid_init
 ;
-               lat0: 0.0, lon0: 0.0, lat1: 0.0, lon1: 0.0, $
-               rotation: 0.0, scale: 0.0, $
-               south: 0.0, north: 0.0, west: 0.0, east: 0.0, $
-               center_lat: 0.0, center_lon: 0.0, $
-               label_lat: 0.0, label_lon: 0.0, $
-               lat_interval: 0.0, lon_interval: 0.0, $
+               lat0: 0.0D, lon0: 0.0D, lat1: 0.0D, lon1: 0.0D, $
+               rotation: 0.0D, scale: 0.0D, $
+               south: 0.0D, north: 0.0D, west: 0.0D, east: 0.0D, $
+               center_lat: 0.0D, center_lon: 0.0D, $
+               label_lat: 0.0D, label_lon: 0.0D, $
+               lat_interval: 0.0D, lon_interval: 0.0D, $
                cil_detail: 0L, bdy_detail: 0L, riv_detail: 0L, $
-               equatorial_radius: 0.0D, eccentricity: 0.0D, $
-               x0: 0.0, y0: 0.0, false_easting: 0.0, false_northing: 0.0, $
-               center_scale: 0.0, $
+               equatorial_radius: 0.0D, polar_radius: 0.0D, $
+	       eccentricity: 0.0D, eccentricity_squared: 0.0D, $
+               x0: 0.0D, y0: 0.0D, false_easting: 0.0D, false_northing: 0.0D, $
+               center_scale: 0.0D, $
                utm_zone: 0L, $
                isin_nzone: 0L, isin_justify: 0L, $
                projection_name: '' $
