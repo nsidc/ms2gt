@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.48 2004/11/09 21:18:45 haran Exp haran $
+# $Id: mod02.pl,v 1.49 2004/11/09 22:08:32 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -42,8 +42,10 @@ my $ancil_src = "1";
 my $keep = 0;
 my $rind = 50;
 my $fix250 = 0;
-my $fixcolfile = "none";
-my $fixrowfile = "none";
+my $fixcolfile1 = "none";
+my $fixcolfile2 = "none";
+my $fixrowfile1 = "none";
+my $fixrowfile2 = "none";
 my $tile_cols = 1;
 my $tile_rows = 1;
 my $tile_overlap = 60;
@@ -52,7 +54,7 @@ if (@ARGV < 4) {
     print $mod02_usage;
     exit 1;
 }
-if (@ARGV <= 16) {
+if (@ARGV <= 18) {
     $dirinout = shift(@ARGV);
     $tag = shift(@ARGV);
     $listfile = shift(@ARGV);
@@ -103,10 +105,16 @@ if (@ARGV <= 16) {
 	}
     }
     if (@ARGV) {
-	$fixcolfile = shift(@ARGV);
+	$fixcolfile1 = shift(@ARGV);
     }
     if (@ARGV) {
-	$fixrowfile = shift(@ARGV);
+	$fixcolfile2 = shift(@ARGV);
+    }
+    if (@ARGV) {
+	$fixrowfile1 = shift(@ARGV);
+    }
+    if (@ARGV) {
+	$fixrowfile2 = shift(@ARGV);
     }
     if (@ARGV) {
 	$tile_cols = shift(@ARGV);
@@ -144,8 +152,10 @@ print_stderr("\n".
 	     "> keep             = $keep\n".
 	     "> rind             = $rind\n".
 	     "> fix250           = $fix250\n".
-	     "> fixcolfile       = $fixcolfile\n".
-	     "> fixrowfile       = $fixrowfile\n".
+	     "> fixcolfile1      = $fixcolfile1\n".
+	     "> fixcolfile2      = $fixcolfile2\n".
+	     "> fixrowfile1      = $fixrowfile1\n".
+	     "> fixrowfile2      = $fixrowfile2\n".
              "> tile_cols        = $tile_cols\n".
              "> tile_rows        = $tile_rows\n".
              "> tile_overlap     = $tile_overlap\n");
@@ -909,8 +919,21 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		my $file_reg_rows_in = "";
 		my $file_reg_rows_out = "";
 		my $reg_row_mirror_side = "";
+		my $fixcolfile = "";
+		my $fixrowfile = "";
 		if ($fix250 == 1 || $fix250 == 2) {
-		    $reg_col_offset = "reg_col_offset=" . (($chan == 1) ? "3" : "0");
+		    if ($chan == 1) {
+			$reg_col_offset = "reg_col_offset=3";
+			$fixcolfile = $fixcolfile1;
+			$fixrowfile = $fixrowfile1;
+		    } elsif ($chan == 2) {
+			$reg_col_offset = "reg_col_offset=0";
+			$fixcolfile = $fixcolfile2;
+			$fixrowfile = $fixrowfile2;
+		    } else {
+			diemail("$script: FATAL: " .
+				"chan must be 1 or 2 if fix250 is 1 or 2");
+		    }
 		    if ($fixcolfile eq "none") {
 			if ($platform eq "terra") {
 			    $interp_cols = "/interp_cols";
