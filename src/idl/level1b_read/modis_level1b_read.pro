@@ -135,7 +135,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; MODIFICATION HISTORY:
 ; Liam.Gumley@ssec.wisc.edu
 ; http://cimss.ssec.wisc.edu/~gumley
-; $Id: modis_level1b_read.pro,v 1.3 2001/12/05 20:04:34 haran Exp haran $
+; $Id: modis_level1b_read.pro,v 1.4 2004/11/19 23:59:44 haran Exp haran $
 ;
 ; Copyright (C) 1999, 2000 Liam E. Gumley
 ;
@@ -154,7 +154,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ;-
 
-rcs_id = '$Id: modis_level1b_read.pro,v 1.3 2001/12/05 20:04:34 haran Exp haran $'
+rcs_id = '$Id: modis_level1b_read.pro,v 1.4 2004/11/19 23:59:44 haran Exp haran $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -340,7 +340,7 @@ if (band ne 26) then begin
   
 endif else begin
 
-  band_index = 0
+  band_index = -1
   
 endelse
 
@@ -348,33 +348,12 @@ endelse
 ;- READ IMAGE DATA
 ;-------------------------------------------------------------------------------
 
-;- Get information about the image array
-varinfo = hdf_sd_varinfo(sd_id, sds_name)
-if (varinfo.name eq '') then $
-  message, 'Image array was not found: ' + sds_name
-npixels_across = varinfo.dims[0]
-npixels_along  = varinfo.dims[1]
+;- Get valid scans for the channel data
+image = extract_valid_scans(sd_id, sds_name, lines_per_scan, band_index, $
+                            area=area)
 
-;- Set start and count values
-start = [0L, 0L, band_index]
-count = [npixels_across, npixels_along, 1L]
-if (band eq 26) then begin
-  start = start[0 : 1]
-  count = count[0 : 1]
-endif
-
-;- Use AREA keyword if it was supplied
-if (n_elements(area) eq 4) then begin
-  start[0] = (long(area[0]) > 0L) < (npixels_across - 1L)
-  start[1] = (long(area[1]) > 0L) < (npixels_along  - 1L)
-  count[0] = (long(area[2]) > 1L) < (npixels_across - start[0])
-  count[1] = (long(area[3]) > 1L) < (npixels_along  - start[1])
-endif
-
-;- Read the image array (hdf_sd_varread not used because of bug in IDL 5.1)
-var_id = hdf_sd_select(sd_id, hdf_sd_nametoindex(sd_id, sds_name))
-hdf_sd_getdata, var_id, image, start=start, count=count
-hdf_sd_endaccess, var_id
+if band eq 26 then $
+  band_index = 0
 
 ;-------------------------------------------------------------------------------
 ;- READ IMAGE ATTRIBUTES
