@@ -3,7 +3,7 @@
 ;*
 ;* 11-Jan-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/congridx.pro,v 1.3 2001/01/19 01:16:46 haran Exp haran $
+;* $Header$
 ;*========================================================================*/
 
 ;+
@@ -20,11 +20,10 @@
 ;
 ; CALLING SEQUENCE:
 ;       result = CONGRIDX(array, interp_factor, cols_out, rows_out,
-;                         [, col_offset=col_offset]
-;                         [, row_offset=row_offset]
-;                         [, cubic=value{-1 to 0}]
-;                         [, /interp]
-;                         [, /minus_one])
+;                             [, col_offset=col_offset]
+;                             [, row_offset=row_offset]
+;                             [, cubic=value{-1 to 0}]
+;                             [, /interp])
 ;
 ; ARGUMENTS:
 ;    Inputs:
@@ -45,14 +44,17 @@
 ;    row_offset: the row number in the final array which will contain
 ;       the values from row 0 in the original array. The default is 0.
 ;       row_offset must be less than rows_out / rows_in.
-;    cubic, /interp, and /minus_one if present are passed to congrid.
+;    cubic, /interp, and /minus_one if present are passed to congrid,
+;       if col_offset and row_offset are both integers or neither
+;       cubic nor interp are present; otherwise cubic if present is
+;       passed to interpolate.
 ;
 ; EXAMPLE:
 ;      scan_of_cols_out = congridx(scan_of_cols, interp_factor, $
-;                                  cols_out, rows_out, $
-;                                  col_offset=col_offset, $
-;                                  row_offset=row_offset, $
-;                                  cubic=0.5)
+;                                      cols_out, rows_out, $
+;                                      col_offset=col_offset, $
+;                                      row_offset=row_offset, $
+;                                      cubic=0.5)
 ;
 ; ALGORITHM:
 ;
@@ -89,14 +91,22 @@ usage = 'usage: result = CONGRIDX(array, interp_factor, ' + $
   if n_elements(interp) eq 0 then $
     interp = 0
 
+  ; don't allow offsets >= interp_factor
+  if abs(col_offset) ge interp_factor then $
+    message, 'abs(col_offset) must be less than interp_factor'
+  if abs(row_offset) ge interp_factor then $
+    message, 'abs(row_offset) must be less than interp_factor'
+
   ; array_x will contain the extrapolated array
 
+  col_offset_x = col_offset
+  row_offset_x = row_offset
   cols_in_x = cols_in + 2
   rows_in_x = rows_in + 2
   array_x = fltarr(cols_in_x, rows_in_x)
   array_x[1:cols_in_x-2, 1:rows_in_x-2] = array
 
-  if (interp eq 0) and n_elements(cubic) eq 0 then begin
+  if (interp eq 0) and (n_elements(cubic) eq 0) then begin
 
   ; **** use nearest neighbor extrapolation ****
 
@@ -127,6 +137,10 @@ usage = 'usage: result = CONGRIDX(array, interp_factor, ' + $
 
   ; compute the lower right cell
       array_x[cols_in_x-1, rows_in_x-1] = array_x[cols_in_x-2, rows_in_x-2]
+
+  ; find nearest integer col_offset_x and row_offset_x
+      col_offset_x = round(col_offset_x)
+      row_offset_x = round(row_offset_x)
 
   endif else begin
 
@@ -189,14 +203,36 @@ usage = 'usage: result = CONGRIDX(array, interp_factor, ' + $
   ; array_x will be replaced by the interpolated array
   cols_out_x = fix(interp_factor * cols_in_x)
   rows_out_x = fix(interp_factor * rows_in_x)
-  array_x = congrid(array_x, cols_out_x, rows_out_x, $
-                    cubic=cubic, interp=interp, minus_one=minus_one)
 
-  ; return the portion of array_x specified by cols_out, rows_out,
-  ; col_offset, and row_offset
-  col_first_out = fix(interp_factor) - col_offset
-  row_first_out = fix(interp_factor) - row_offset
-  col_last_out = col_first_out + cols_out - 1
-  row_last_out = row_first_out + rows_out - 1
+  ; if col_offset_x and row_offset_x are both integers,
+  ; then we will call congrid
+
+  if (col_offset_x eq fix(col_offset_x)) and $
+     (row_offset_x eq fix(row_offset_x)) then begin
+
+      array_x = congrid(array_x, cols_out_x, rows_out_x, $
+                        cubic=cubic, interp=interp, minus_one=minus_one)
+
+      ; return the portion of array_x specified by cols_out, rows_out,
+      ; col_offset_x, and row_offset_x
+      col_first_out = fix(interp_factor) - col_offset_x
+      row_first_out = fix(interp_factor) - row_offset_x
+      col_last_out = col_first_out + cols_out - 1
+      row_last_out = row_first_out + rows_out - 1
+  endif else begin
+
+      ; col_offset_x and/or row_offset_x is not an integer,
+      ; so setup index arrays before calling interpolate
+
+      cols = (findgen(cols_out_x) - col_offset_x) / interp_factor + 1
+      rows = (findgen(rows_out_x) - row_offset_x) / interp_factor + 1
+      array_x = interpolate(array_x, cols, rows, /grid, cubic=cubic)
+
+      ; return the portion of array_x specified by cols_out, rows_out
+      col_first_out = 0
+      row_first_out = 0
+      col_last_out = cols_out - 1
+      row_last_out = rows_out - 1
+  endelse
   return, array_x[col_first_out:col_last_out, row_first_out:row_last_out]
 END ; congridx
