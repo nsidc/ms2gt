@@ -59,7 +59,27 @@ MS2GT: The MODIS Swath-to-Grid Toolbox</h1></center>
 
 <ul>
 <li>
-The current version of MS2GT is 0.3 released May 1, 2001.</li>
+The current version of MS2GT is 0.4 released May 3, 2001.</li>
+
+<ul>
+<li>
+Fixed bugs in fornav related to fill value processing.</li>
+
+<li>
+Enhanced modis_ice_read.pro to allow processing by <a href="#mod29_usage">mod29.pl</a>
+of "dark" MOD29 granules which do not include Sea Ice by Reflectance, Sea
+Ice by Reflectance PixelQA, nor Combined Sea Ice channels. Gridded arrays
+containing the fill value of 255 are now returned when these channels are
+specified for dark MOD29 granules.</li>
+
+<li>
+Modified <a href="#building">Building the Executables</a> so that the make
+is run from the ms2gt/src directory rather than the ms2gt directory due
+to an unresolved problem on Linux platforms.</li>
+</ul>
+
+<li>
+Version 0.3 released May 1, 2001.</li>
 
 <ul>
 <li>
@@ -81,7 +101,7 @@ Added <a href="tutorial_4.html">Tutorial 4</a>.</li>
 </ul>
 
 <li>
-Version MS2GT 0.2 released April 27, 2001:</li>
+Version 0.2 released April 27, 2001:</li>
 
 <ul>
 <li>
@@ -264,17 +284,17 @@ from a single MOD02QKM file takes about three minutes on the above machine.
 
 <h2>
 <a NAME="obtaining"></a>Obtaining the Software</h2>
-The software and associated documentation can be downloaded from <a href="ftp://baikal.colorado.edu/pub/NSIDC/ms2gt0.3.tar.gz">ftp://baikal.colorado.edu/pub/NSIDC/ms2gt.0.3.tar.gz</a>,
-where 0.3 is the current version and release. Save this file in some directory,
+The software and associated documentation can be downloaded from <a href="ftp://baikal.colorado.edu/pub/NSIDC/ms2gt0.4.tar.gz">ftp://baikal.colorado.edu/pub/NSIDC/ms2gt.0.4.tar.gz</a>,
+where 0.4 is the current version and release. Save this file in some directory,
 change to that directory, and then type:
-<p><b><tt>gunzip ms2gt0.3.tar.gz</tt></b><b><tt></tt></b>
+<p><b><tt>gunzip ms2gt0.4.tar.gz</tt></b>
 <p>If you have a previous version of MS2GT installed in the same directory,
 you should either remove it or rename it. For example:
 <p><b><tt>rm -fr ms2gt</tt></b>
 <p>or something like:
 <p><b><tt>mv ms2gt ms2gt.old</tt></b>
 <p>Then type:
-<p><b><tt>tar xvf ms2gt0.3.tar</tt></b>
+<p><b><tt>tar xvf ms2gt0.4.tar</tt></b>
 <p>This will create a directory in the current directory called ms2gt which
 will contain several subdirectories. Further instructions on the installation
 and use of MS2GT can be then found in html files in the ms2gt/doc subdirectory.
@@ -282,7 +302,7 @@ At this point you can delete the tar file if you want. Point your browser
 to ms2gt/doc/index.html (this document).
 <h2>
 <a NAME="building"></a>Building the Executables</h2>
-Change the current working directory to the ms2gt directory and type:
+Change the current working directory to the ms2gt/src directory and type:
 <p><b><tt>make all</tt></b>
 <p>This will build and install the MS2GT executables under the ms2gt directory.
 The only write privileges required are the ability to write into the ms2gt
@@ -593,7 +613,7 @@ eliminate</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; holes in final grid.
 Default is 50.</tt>
 <br>
-<hr><font size=-1>Last updated: May 1, 2001 by</font>
+<hr><font size=-1>Last updated: May 3, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>
