@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.25 2002/12/02 15:07:40 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.26 2002/12/03 15:20:05 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -16,11 +16,13 @@
 ;       2) Optionally compute a regression for every reg_col_stride column
 ;          relative to the mean of the preceding and following columns
 ;          for a particular set of detectors at a given column offset.
-;       3) Optionally compute a regression for each pair of detectors
+;       3) Optionally normalize the mean of each detector relative to
+;          the overall mean.
+;       4) Optionally compute a regression for each pair of detectors
 ;          relative to their mean, then regress each pair of means
 ;          against its mean, and so on until only one mean is left,
 ;          and then adjust the data accordingly.
-;       4) Optionally undo the solar zenith correction.
+;       5) Optionally undo the solar zenith correction.
 ;
 ; CATEGORY:
 ;	Modis.
@@ -354,7 +356,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.25 2002/12/02 15:07:40 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.26 2002/12/03 15:20:05 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -423,6 +425,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   if (reg_row_mirror_side ne 0) and (reg_row_mirror_side ne 1) then $
     message, 'reg_row_mirror_side must be 0 or 1'
 
+  ; calculate the number of cells in the entire swath
+
   rows = scans * rows_per_scan
   cells_per_scan = long(cols) * rows_per_scan
   cells_per_swath = cells_per_scan * scans
@@ -481,7 +485,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   if data_type_in ne 'f4' then $
     swath = float(temporary(swath))
 
-  ; open, read, and close input files
+  ; open, read, and close input raster files
 
   openr, lun, file_in, /get_lun
   readu, lun, swath
@@ -491,6 +495,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       readu, lun, soze
       free_lun, lun
       
+      ;  normalize with respect to solar zenith (soze)
       ;  compute cos(soze)
       
       soze = cos(temporary(soze) * !dtor)
@@ -516,7 +521,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   if (file_reg_cols_in ne '') or (reg_cols ne 0) then begin
 
-  ; perform column regressions
+  ; perform correction for the "fourth pixel" artifact
 
       if file_reg_cols_in ne '' then begin
           line = ''
@@ -526,8 +531,9 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
       swath = reform(swath, cols, rows_per_scan, scans, /overwrite)
 
-      cells_per_det_target = long(cols) * scans / reg_col_stride
+      ; cols_target is an array of column numbers for the "bad" pixels
 
+      cells_per_det_target = long(cols) * scans / reg_col_stride
       i = indgen(cols)
       cols_target = where((i mod reg_col_stride) eq reg_col_offset, $
                           cols_per_target)
@@ -535,6 +541,12 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
         message, 'No cells targeted for column regressions'
 
       if reg_cols ne 0 then begin
+
+          ; "before" are the pixels to the left of the target
+          ; "after" are the pixels to the right of the target
+
+          ; handle special cases on each end of the scan
+
           cols_before = cols_target - 1
           if cols_before[0] lt 0 then $
             cols_before[0] = i[1]
@@ -552,6 +564,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
           target = reform(swath[[cols_target], det, *], $
                           cells_per_det_target)
           if file_reg_cols_in ne '' then begin
+
+              ; read in previously computed column slopes and intercepts
+              ; and apply them to the swath
+
               det_test = 0L
               slope = 1.0
               intcp = 0.0
@@ -569,6 +585,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
           endif
           det_target = reg_col_detectors[det_ctr]
           if (reg_cols ne 0) and (det_target eq det) then begin
+
+              ; perform column regressions using the mean of
+              ; the before and after vectors
+
               before = reform(swath[[cols_before], det, *], $
                               1, cells_per_det_target)
               after =  reform(swath[[cols_after],  det, *], $
@@ -593,8 +613,16 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                              plot_tag=plot_tag, $
                              plot_max=col_plot_max, $
                             plot_titles=[xtitle,ytitle]
+
+              ; use the calculated slope and intercept to correct the
+              ; target vector
+
               if abs(slope) ge epsilon then $
                 swath[[cols_target], det, *] = (target - intcp) / slope
+
+              ; accumulate the calculated slope and intercept into the
+              ; previous values
+
               reg_slope[det] = slope * reg_slope[det]
               reg_intcp[det] = slope * reg_intcp[det] + intcp
               if det_ctr lt det_count - 1 then $
@@ -611,16 +639,22 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   endif ; if reg_cols ne 0
 
   if file_reg_cols_out ne '' then begin
-     openw, lun, file_reg_cols_out, /get_lun
-     printf, lun, 'SS_Detector  Col_Slope        Col_Intercept'
-     for det = 0, rows_per_scan - 1 do $
-       printf, lun, det, reg_intcp[det], reg_slope[det], $
-                    format='(i2.2, 11X, e15.8, 2x, e15.8)'
-     free_lun, lun
+
+      ; write the column slopes and intercepts to a file
+
+      openw, lun, file_reg_cols_out, /get_lun
+      printf, lun, 'SS_Detector  Col_Slope        Col_Intercept'
+      for det = 0, rows_per_scan - 1 do $
+        printf, lun, det, reg_intcp[det], reg_slope[det], $
+                format='(i2.2, 11X, e15.8, 2x, e15.8)'
+      free_lun, lun
   endif
 
   if (file_reg_cols_in ne '') or (file_reg_cols_out ne '') or $
      (reg_cols ne 0) then begin
+
+      ; print the column slopes and intercepts
+
       print, 'SS_Detector  Col_Slope        Col_Intercept'
       for det = 0, rows_per_scan - 1 do $
         print, det, reg_intcp[det], reg_slope[det], $
@@ -700,6 +734,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       endif                     ; if file_reg_rows_in ne ''
 
       if nor_rows ne 0 then begin
+
+          ; normalize the mean of each double-scan detector vector
+          ; with respect to the mean of the entire image
+
           mean_total = total(swath, /double) / $
                        (cells_per_ds_det * rows_per_ds_scan)
           for ds_det = 0, rows_per_ds_scan - 1 do begin
@@ -712,27 +750,51 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       endif                     ; if nor_rows ne 0
 
       if reg_rows ne 0 then begin
+
+          ; if we're performing row regressions, then compute the
+          ; number of passes
+
           case rows_per_scan of
               40: pass_count = 6
               20: pass_count = 5
               10: pass_count = 4
           endcase
       endif else begin
+
+          ; if we're not performing row regressions, then there aren't
+          ; any passes to perform
+
           pass_count = 0
       endelse
       mean_count = rows_per_ds_scan
       y_tol_ctr = 0
       for pass_ctr = 0, pass_count - 1 do begin
+
+          ; perform row regressions
+          ; calculate the number of means to use for this pass
+
           mean_count = mean_count / 2
           if mean_count eq 5 then $
             mean_count = mean_count - 1
+
+          ; caluculate how many vectors will contribute to each
+          ; mean in this pass
+
           vectors_per_mean = rows_per_ds_scan / mean_count
           ds_det = 0
+
+          ; we will have one vector for each double-scan detector
+
           cells_per_vector = cells_per_ds_det
+
           for mean_ctr = 0, mean_count - 1 do begin
               weight_per_vector = 1.0 / vectors_per_mean
               mean = 0
               vectors = fltarr(cells_per_ds_det, vectors_per_mean)
+
+              ; first assemble the vectors for this mean and
+              ; calculate the mean for this group of vectors
+
               for vec_ctr = 0, vectors_per_mean - 1 do begin
                   vector = reform(swath[*, ds_det + vec_ctr, *], $
                                        1, cells_per_ds_det)
@@ -740,6 +802,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                     mean = vector * weight_per_vector + mean
                   vectors[*, vec_ctr] = temporary(vector)
               endfor ; vec_ctr
+
+              ; now perform a set of regressions for each vector
+              ; in the group against the mean of the group
+
               for vec_ctr = 0, vectors_per_mean - 1 do begin
                   vector = reform(vectors[*, vec_ctr])
                   plot_tag = row_plot_tag
@@ -761,8 +827,16 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                                  plot_tag=plot_tag, $
                                  plot_max=row_plot_max, $
                                  plot_titles=[xtitle,ytitle]
+
+                  ; use the calculated slope and intercept to correct the
+                  ; current vector
+
                   if abs(slope) ge epsilon then $
                     swath[*, ds_det, *] = (temporary(vector) - intcp) / slope
+
+                  ; accumulate the calculated slope and intercept into the
+                  ; previous values
+
                   reg_slope[ds_det] = slope * reg_slope[ds_det]
                   reg_intcp[ds_det] = slope * reg_intcp[ds_det] + intcp
                   ds_det = ds_det + 1
@@ -772,6 +846,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               mean = 0
           endfor ; mean_ctr
           if row_plot_tag ne '' then begin
+
+              ; save each set of plots for a particular pass in a separate
+              ; directory
+
               dir = string(row_plot_tag, '_', pass_ctr, $
                            format='(a, a, i1.1)')
               spawn, 'mkdir ' + dir, /sh
@@ -805,6 +883,9 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   endif  ; if reg_rows ne 0
 
   if file_reg_rows_out ne '' then begin
+
+     ; write the row slopes and intercepts to a file
+
      openw, lun, file_reg_rows_out, /get_lun
      printf, lun, 'DS_Detector  Row_Intercept    Row_Slope'
      for ds_det = 0, rows_per_ds_scan - 1 do $
@@ -815,13 +896,16 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   if (file_reg_rows_in ne '') or (file_reg_rows_out ne '') or $
      (nor_rows ne 0) or (reg_rows ne 0) then begin
+
+      ; print the row slopes and intercepts
+
       print, 'DS_Detector  Row_Intercept    Row_Slope'
       for ds_det = 0, rows_per_ds_scan - 1 do $
         print, ds_det, reg_intcp[ds_det], reg_slope[ds_det], $
                format='(i2.2, 11X, e15.8, 2x, e15.8)'
   endif
 
-  ;  undo soze normalization if required
+  ;  undo solar zenith normalization if required
 
   if (file_soze ne '') and (undo_soze ne 0) then begin
       swath = temporary(swath) / soze
