@@ -3,7 +3,7 @@
 ;*
 ;* 28-Feb-2001  Terry Haran  tharan@kryos.colorado.edu  303-492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/grids/grid_class__define.pro,v 1.4 2001/03/22 16:04:11 haran Exp haran $
+;$Header: /export/data/modis/src/idl/grids/grid_class__define.pro,v 1.5 2001/03/22 23:51:40 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -600,6 +600,183 @@ function grid_class::get_projection_name, passthru=passthru
         endcase
     endelse
     return, projection_name
+end
+
+
+;+
+; NAME:
+;	grid_class::forward
+;
+; PURPOSE:
+;       Perform a forward mapping of latitude-longitude pairs to
+;       column-row pairs.
+;
+; CATEGORY:
+;	nsidc modis tools package.
+;
+; CALLING SEQUENCE:
+;       Result = grid_class_object_instance->forward(lat, lon, col, row)
+;
+; ARGUMENTS:
+;       lat: float latitude array to be used as input.
+;       lon: float longitude array to be used as input.
+;       col: float array of column numbers to be used as output.
+;       row: float array of row numbers to be used as output.
+;    NOTE: all the above arrays must be allocated prior to calling
+;          grid_class::forward(), and must all have the same dimensions.
+;
+; KEYWORDS:
+;       None.
+;
+; RESULT:
+;       A byte array having the same dimensions as the output arrays. Each
+;       element of the Result array is as follows:
+;         1B: corresponding column-row pair is in the grid.
+;         0B: otherwise.
+;
+; EXAMPLE:
+;       og = obj_new('grid_class', 'Gl1250.gpd')
+;       lat = [ 70.0,   70.0]
+;       lon = [-40.0, -100.0]
+;       col = lat
+;       row = lon
+;       status = og->forward(lat, lon, col, row)
+;       print, 'status: ', status
+;       print, 'col: ', col
+;       print, 'row: ', row
+;-
+
+function grid_class::forward, lat, lon, col, row
+
+    ; check for correct number of parameters
+
+    if n_params() ne 4 then begin
+        message, 'incorrect number of params', /informational
+        return, 0
+    endif
+
+    ; check that all input arrays are the same size
+
+    n = n_elements(lat)
+    if (n_elements(lon) ne n) or $
+       (n_elements(col) ne n) or $
+       (n_elements(row) ne n) then $
+      message, 'lat, lon, col, and row must all have the same element count'
+
+    ; make sure that each input array is floating-point
+
+    if size(lat, /type) ne 4 then $
+      lat = float(lat)
+    if size(lon, /type) ne 4 then $
+      lat = float(lon)
+    if size(col, /type) ne 4 then $
+      lat = float(col)
+    if size(row, /type) ne 4 then $
+      lat = float(row)
+
+    ; create a byte array for status the same size as the lat array
+
+    status = byte(lat)
+    
+    ; call the function
+
+    gcs = self.gcs
+    forward_ok = call_external('call_grids.so', 'call_forward_grid', $
+                               gcs, n, lat, lon, col, row, status)
+    if not forward_ok then begin
+        message, 'call_forward_grid failed', /informational
+        return, 0
+    endif
+    return, status
+end
+
+
+;+
+; NAME:
+;	grid_class::inverse
+;
+; PURPOSE:
+;       Perform a inverse mapping of column-row pairs to
+;       latitude-longitude pairs.
+;
+; CATEGORY:
+;	nsidc modis tools package.
+;
+; CALLING SEQUENCE:
+;       Result = grid_class_object_instance->inverse(col, row, lat, lon)
+;
+; ARGUMENTS:
+;       col: float array of column numbers to be used as input.
+;       row: float array of row numbers to be used as input.
+;       lat: float latitude array to be used as output.
+;       lon: float longitude array to be used as output.
+;    NOTE: all the above arrays must be allocated prior to calling
+;          grid_class::inverse(), and must all have the same dimensions.
+;
+; KEYWORDS:
+;       None.
+;
+; RESULT:
+;       A byte array having the same dimensions as the output arrays. Each
+;       element of the Result array is as follows:
+;         1B: corresponding latitude-longitude pair is within the map
+;             boundaries.
+;         0B: otherwise.
+;
+; EXAMPLE:
+;       og = obj_new('grid_class', 'Gl1250.gpd')
+;       lat = [ 70.0,   70.0]
+;       lon = [-40.0, -100.0]
+;       col = lat
+;       row = lon
+;       status = og->inverse(lat, lon, col, row)
+;       print, 'status: ', status
+;       print, 'col: ', col
+;       print, 'row: ', row
+;-
+
+function grid_class::inverse, col, row, lat, lon
+
+    ; check for correct number of parameters
+
+    if n_params() ne 4 then begin
+        message, 'incorrect number of params', /informational
+        return, 0
+    endif
+
+    ; check that all input arrays are the same size
+
+    n = n_elements(col)
+    if (n_elements(row) ne n) or $
+       (n_elements(lat) ne n) or $
+       (n_elements(lon) ne n) then $
+      message, 'col, row, lat, and lon must all have the same element count'
+
+    ; make sure that each input array is floating-point
+
+    if size(col, /type) ne 4 then $
+      lat = float(col)
+    if size(row, /type) ne 4 then $
+      lat = float(row)
+    if size(lat, /type) ne 4 then $
+      lat = float(lat)
+    if size(lon, /type) ne 4 then $
+      lat = float(lon)
+
+    ; create a byte array for status the same size as the lat array
+
+    status = byte(col)
+    
+    ; call the function
+
+    gcs = self.gcs
+    inverse_ok = call_external('call_grids.so', 'call_inverse_grid', $
+                               gcs, n, col, row, lat, lon, status)
+    if not inverse_ok then begin
+        message, 'call_inverse_grid failed', /informational
+        return, 0
+    endif
+    return, status
 end
 
 

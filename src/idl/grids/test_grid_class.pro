@@ -28,6 +28,24 @@ pro test_grid_class, help=help
     og = obj_new('grid_class', 'Gl1250.gpd', help=help)
     if obj_valid(og) then begin
         print_grid_class_object_instance, og
+        lat = [ 70.0,   70.0]
+        lon = [-40.0, -100.0]
+        col = lat
+        row = lon
+        status = og->forward(lat, lon, col, row)
+        print, 'forward:'
+        print, '  lat:', lat
+        print, '  lon:', lon
+        print, '  col:', col
+        print, '  row:', row
+        print, '  status:', status
+        status = og->inverse(col, row, lat, lon)
+        print, 'inverse:'
+        print, '  col:', col
+        print, '  row:', row
+        print, '  lat:', lat
+        print, '  lon:', lon
+        print, '  status:', status
         obj_destroy, og, help=help
     endif
 

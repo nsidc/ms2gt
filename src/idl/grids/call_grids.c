@@ -8,7 +8,7 @@
  * 14-Mar-2001 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char call_grids_c_rcsid[] = "$Header: /export/data/modis/src/idl/grids/call_grids.c,v 1.3 2001/03/20 23:55:43 haran Exp haran $";
+static const char call_grids_c_rcsid[] = "$Header: /export/data/modis/src/idl/grids/call_grids.c,v 1.4 2001/03/21 14:57:00 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -128,6 +128,189 @@ long call_init_grid(short argc, void *argv[])
 
 
 /*------------------------------------------------------------------------
+ * call_forward_grid - call forward_grid()
+ *
+ * This function is called from an IDL program with the following statement:
+ * 
+ * ERROR = call_external('call_grids.so', 'call_forward_grid', $
+ *                       gcs, n, lat, lon, col, row, status)
+ *
+ *      input: gcs - grid_class_struct structure to be initialized.
+ *
+ *             n - long integer number of elements in each input and output
+ *                 array.
+ *             lat - float array of latitude values.
+ *             lon - float array of longitude values.
+ *
+ *      output:col - float array of column numbers.
+ *             row - float array of row numbers.
+ *             status - byte array of status values:
+ *                      1 if corresponding col and row are in the grid.
+ *                      0 otherwise.
+ *      NOTE: all input and output arrays must have been allocated prior to
+ *            calling call_forward_grid.
+ *
+ *      result: 1 if success.
+ *              0 otherwise.
+ *
+ *------------------------------------------------------------------------*/
+
+long call_forward_grid(short argc, void *argv[])
+{
+
+  /*
+   * parameters passed in from IDL
+   */
+
+  grid_class_struct *gcs;
+  IDL_LONG n;
+  float *lat;
+  float *lon;
+  float *col;
+  float *row;
+  byte1 *status;
+
+  /*
+   * local variables
+   */
+
+  int i;
+  grid_class *grid;
+  
+  /*
+   * Check that correct number of parameters was passed
+   */
+  
+  if (argc != 7)
+    return 0;
+
+  /*
+   * Cast passed parameters to local vars
+   */
+  
+  gcs = (grid_class_struct *)argv[0];
+  n = *((IDL_LONG *)argv[1]);
+  lat = (float *)argv[2];
+  lon = (float *)argv[3];
+  col = (float *)argv[4];
+  row = (float *)argv[5];
+  status = (byte1 *)argv[6];
+
+  /*
+   * Get pointer to grid object instance
+   */
+
+  grid = (grid_class *)(gcs->grid_class_ptr);
+
+  /*
+   * Loop through for each array element
+   */
+
+  for (i = 0; i < n; i++) {
+  
+    /*
+     * Call the function
+     */
+
+    status[i] = (byte1)forward_grid(grid, lat[i], lon[i], &col[i], &row[i]);
+  }
+  return 1;
+}
+
+
+/*------------------------------------------------------------------------
+ * call_inverse_grid - call inverse_grid()
+ *
+ * This function is called from an IDL program with the following statement:
+ * 
+ * ERROR = call_external('call_grids.so', 'call_inverse_grid', $
+ *                       gcs, n, lcol, row, lat, lon, status)
+ *
+ *      input: gcs - grid_class_struct structure to be initialized.
+ *
+ *             n - long integer number of elements in each input and output
+ *                 array.
+ *             col - float array of column numbers.
+ *             row - float array of row numbers.
+ *
+ *      output:lat - float array of latitude values.
+ *             lon - float array of longitude values.
+ *             status - byte array of status values:
+ *                      1 if corresponding lat and lon are within the map
+ *                        boundaries.
+ *                      0 otherwise.
+ *      NOTE: all input and output arrays must have been allocated prior to
+ *            calling call_inverse_grid.
+ *
+ *      result: 1 if success.
+ *              0 otherwise.
+ *
+ *------------------------------------------------------------------------*/
+
+long call_inverse_grid(short argc, void *argv[])
+{
+
+  /*
+   * parameters passed in from IDL
+   */
+
+  grid_class_struct *gcs;
+  IDL_LONG n;
+  float *col;
+  float *row;
+  float *lat;
+  float *lon;
+  byte1 *status;
+
+  /*
+   * local variables
+   */
+
+  int i;
+  grid_class *grid;
+  
+  /*
+   * Check that correct number of parameters was passed
+   */
+  
+  if (argc != 7)
+    return 0;
+
+  /*
+   * Cast passed parameters to local vars
+   */
+  
+  gcs = (grid_class_struct *)argv[0];
+  n = *((IDL_LONG *)argv[1]);
+  col = (float *)argv[2];
+  row = (float *)argv[3];
+  lat = (float *)argv[4];
+  lon = (float *)argv[5];
+  status = (byte1 *)argv[6];
+
+  /*
+   * Get pointer to grid object instance
+   */
+
+  grid = (grid_class *)(gcs->grid_class_ptr);
+
+  /*
+   * Loop through for each array element
+   */
+
+  for (i = 0; i < n; i++) {
+  
+    /*
+     * Call the function
+     */
+
+    status[i] = (byte1)inverse_grid(grid, col[i], row[i], &lat[i], &lon[i]);
+  }
+  return 1;
+}
+
+
+/*------------------------------------------------------------------------
  * call_close_grid - call close_grid()
  *
  * This function is called from an IDL program with the following statement:
@@ -152,7 +335,7 @@ long call_close_grid(short argc, void *argv[])
    */
 
   grid_class_struct *gcs;
-  
+
   /*
    * Check that correct number of parameters was passed
    */
