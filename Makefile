@@ -4,7 +4,7 @@
 # 12-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /export/data/ms2gth/Makefile,v 1.6 2001/04/23 21:46:34 haran Exp haran $
+RCSID = $Header: /export/data/ms2gth/Makefile,v 1.7 2001/04/23 21:50:38 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -13,7 +13,7 @@ RCSID = $Header: /export/data/ms2gth/Makefile,v 1.6 2001/04/23 21:46:34 haran Ex
 #       define current version and release
 #
 VERSION = 0
-RELEASE = 1
+RELEASE = 2
 
 #
 #	installation directories
@@ -27,6 +27,7 @@ LIBDIR = $(TOPDIR)/lib
 SRCDIR = $(TOPDIR)/src
 TU1DIR = $(TOPDIR)/tutorial_1
 TU2DIR = $(TOPDIR)/tutorial_2
+TU3DIR = $(TOPDIR)/tutorial_3
 
 NAVDIR = $(SRCDIR)/fornav
 GSZDIR = $(SRCDIR)/gridsize
@@ -50,6 +51,7 @@ TLIBDIR = $(TARDIR)/lib
 TSRCDIR = $(TARDIR)/src
 TTU1DIR = $(TARDIR)/tutorial_1
 TTU2DIR = $(TARDIR)/tutorial_2
+TTU2DIR = $(TARDIR)/tutorial_3
 
 TNAVDIR = $(TSRCDIR)/fornav
 TGSZDIR = $(TSRCDIR)/gridsize
@@ -127,6 +129,7 @@ GRDS = $(GPDSRCS) $(MPPSRCS)
 SRCS = $(SRCMAKE) $(NAVSRCS) $(IDLSRCS) $(LL2SRCS) $(MAPSRCS) $(SCTSRCS)
 TU1S = $(TU1DIR)/*.txt $(TU1DIR)/*.gpd $(TU1DIR)/*.csh
 TU2S = $(TU2DIR)/*.txt $(TU2DIR)/*.gpd $(TU2DIR)/*.csh
+TU3S = $(TU3DIR)/*.txt $(TU3DIR)/*.gpd $(TU3DIR)/*.csh
 
 all:	srcs
 
@@ -138,14 +141,14 @@ clean:
 	$(RM) $(LIBDIR)/libmaps.a
 
 tar:
-	- $(CO) $(TOPS) $(DOCS) $(HDRS) $(SRCS) $(TU1S)
+	- $(CO) $(TOPS) $(DOCS) $(HDRS) $(SRCS) $(TU1S) $(TU2S) $(TU3S)
 	- $(RMDIR) $(TARDIR)
 	$(MKDIR) $(TARDIR)
 	$(MKDIR) $(TBINDIR) $(TDOCDIR) $(TGRDDIR) $(TINCDIR) $(TLIBDIR)
 	$(MKDIR) $(TSRCDIR)
 	$(MKDIR) $(TNAVDIR) $(TGSZDIR) $(TLL2DIR) $(TMAPDIR) $(TSCTDIR)
 	$(MKDIR) $(TIDLDIR) $(TL1BDIR) $(TUTLDIR)
-	$(MKDIR) $(TTU1DIR) $(TTU2DIR)
+	$(MKDIR) $(TTU1DIR) $(TTU2DIR) $(TTU3DIR)
 	$(CP) $(TOPS) $(TARDIR)
 	$(CP) $(DOCS) $(TDOCDIR)
 	$(CP) $(HDRS) $(TINCDIR)
@@ -160,6 +163,7 @@ tar:
 	$(CP) $(SCTSRCS) $(TSCTDIR)
 	$(CP) $(TU1S) $(TTU1DIR)
 	$(CP) $(TU2S) $(TTU2DIR)
+	$(CP) $(TU3S) $(TTU3DIR)
 	$(TAR) cvf $(TARFILE) $(TARDIR)
 	$(RM) $(TARFILE).gz
 	$(COMPRESS) $(TARFILE)
