@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.63 2005/01/21 00:28:20 haran Exp haran $
+# $Id: mod02.pl,v 1.64 2005/01/21 17:02:46 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -362,7 +362,7 @@ my $this_swath_cols;
 my $this_swath_rows = 0;
 
 my $ancil_rows_per_scan;
-my $this_ancil_cols;
+my $this_ancil_cols = 0;
 my $this_ancil_rows = 0;
 my $this_ancil_mirror = 2;
 my $ancil_mirror_expected = 2;
@@ -813,8 +813,12 @@ $ancil_cols = sprintf("%05d", $ancil_cols);
 $ancil_rows = sprintf("%05d", $ancil_rows);
 
 my @chan_files;
+my $got_not_1_or_2 = 0;
 for ($i = 0; $i < $chan_count; $i++) {
     my $chan = $chans[$i];
+    if ($chan != 1 || $chan != 2) {
+	$got_not_1_or_2 = 1;
+    }
     my $chan_rm = $chan_cat[$i];
     my $tagext = substr($chan_conversions[$i], 0, 3);
     $chan_rm =~ s/cat/rm -f/;
@@ -822,9 +826,15 @@ for ($i = 0; $i < $chan_count; $i++) {
     do_or_die("$chan_cat[$i] >$chan_files[$i]");
     do_or_die("$chan_rm");
 }
+if (($fix250 == 1 || $fix250 == 2) && $got_not_1_or_2 == 1) {
+    diemail("$script: FATAL:" .
+	    " if fix250 is 1 or 2, then only channels 1 and/or 2 may be\n" .
+	    "  specified in chanfile");
+}
 
 my @ancil_files;
 my $soze_file = "";
+my $soze_conv = "";
 for ($i = 0; $i < $ancil_count; $i++) {
     my $ancil = $ancils[$i];
     my $ancil_rm = $ancil_cat[$i];
@@ -836,7 +846,14 @@ for ($i = 0; $i < $ancil_count; $i++) {
     do_or_die("$ancil_rm");
     if ($ancil eq "soze") {
 	$soze_file = $ancil_files[$i];
+	$soze_conv = $ancil_conversions[$i];
     }
+}
+
+if ($fix250 != 0 && ($soze_file eq "" || $soze_conv ne "raw")) {
+    diemail("$script: FATAL:" .
+	    " if fix250 is not 0, then soze must be specified in ancilfile,\n".
+	    "  and soze conversion must be set to raw");
 }
 
 if ($ancil_interp_factor > 1) {
