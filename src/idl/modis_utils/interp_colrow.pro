@@ -3,7 +3,7 @@
 ;*
 ;* 10-Jan-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/interp_colrow.pro,v 1.1 2001/01/11 15:34:55 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/interp_colrow.pro,v 1.2 2001/01/12 17:31:14 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -18,7 +18,7 @@
 ;
 ; CALLING SEQUENCE:
 ;       INTERP_COLROW, interp_factor, colsin, scansin, rowsperscanin,
-;               colfilein, rowfilein, tag
+;               colfilein, rowfilein, colsout, tag,
 ;               [, grid_check=[col_min, col_max, row_min, row_max]]
 ;               [, col_offset=col_offset]
 ;               [, row_offset=row_offset]
@@ -37,14 +37,16 @@
 ;         cell and consisting of cols x rows x rowsperscanin of 4 byte
 ;         floating-point numbers. 
 ;    Outputs:
+;       colsout: number of columns in each output file. Must be less than
+;         or equal to colsin * interp_factor.
 ;       tag: string used to construct output filenames:
-;         colfileout = tag_cols_colsin_scansout_scanfirst_rowsperscanout.img
-;         rowfileout = tag_rows_colsin_scansout_scanfirst_rowsperscanout.img
+;         colfileout = tag_cols_colsout_scansout_scanfirst_rowsperscanout.img
+;         rowfileout = tag_rows_colsout_scansout_scanfirst_rowsperscanout.img
 ;             where
 ;               scansout - number of scans written to each output file.
 ;               scanfirst - scan number of first scan written.
 ;               rowsperscanout = interp_factor * rowsperscanin.
-;           Each output file contains colsin * scansout * rowsperscanout
+;           Each output file contains colsout * scansout * rowsperscanout
 ;           4 byte floating-point numbers:
 ;             colfileout - grid of 4 byte floating-point column numbers.
 ;             rowfileout - grid of 4 byte floating-point row numbers.
@@ -76,7 +78,7 @@
 ;         interp_colrow, 4, 1354, 203, 10, $
 ;                        'neross250_2000334_cols_01354_00203_00000_10.img', $
 ;                        'neross250_2000334_rows_01354_00203_00000_10.img', $
-;                        'neross250_2000334', $
+;                        5416, 'neross250_2000334', $
 ;                        grid_check=[0, 3599, 0, 2999]
 ;
 ; ALGORITHM:
@@ -87,18 +89,18 @@
 forward_function congridx
 
 Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
-                   colfilein, rowfilein, tag, $
+                   colfilein, rowfilein, colsout, tag, $
                    grid_check=grid_check, $
                    col_offset=col_offset, row_offset=row_offset
 
   usage = 'usage: interp_colrow, ' + $
                   'interp_factor, colsin, scansin, rowsperscanin, ' + $
-                  'colfilein, rowfilein, tag' + $
+                  'colfilein, rowfilein, colsout, tag' + $
                   '[, grid_check=[col_min, col_max, row_min, row_max]]' + $
                   '[, col_offset=col_offset]' + $
                   '[, row_offset=row_offset]'
 
-  if n_params() ne 7 then $
+  if n_params() ne 8 then $
     message, usage
   if n_elements(grid_check) ne 4 then begin
       grid_check = 0
@@ -123,10 +125,14 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
   print, '  rowsperscanin: ', rowsperscanin
   print, '  colfilein:     ', colfilein
   print, '  rowfilein:     ', rowfilein
+  print, '  colsout:       ', colsout
   print, '  tag:           ', tag
   print, '  grid_check:    ', grid_check
   print, '  col_offset:    ', col_offset
   print, '  row_offset:    ', row_offset
+
+  if colsout gt colsin * interp_factor then $
+    message, 'colsout must be less than or equal to colsin * interp_factor'
 
   ; allocate arrays
 
@@ -145,7 +151,6 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
 
   scansout = scansin
   scanfirst = 0
-  colsout = colsin * interp_factor
   rowsperscanout = rowsperscanin * interp_factor
 
   suffix = string(colsout, format='(I5.5)') + '_' + $
@@ -176,14 +181,29 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
       readu, col_lun_in, scan_of_cols_in
       readu, row_lun_in, scan_of_rows_in
 
-      scan_of_cols_out = congridx(scan_of_cols_in, colsout, rowsperscanout, $
-                                  col_offset=col_offset, $
-                                  row_offset=row_offset, $
-                                  cubic=-0.5)
-      scan_of_rows_out = congridx(scan_of_rows_in, colsout, rowsperscanout, $
-                                  col_offset=col_offset, $
-                                  row_offset=row_offset, $
-                                  cubic=-0.5)
+      if rowsperscanin le 4 then begin
+          scan_of_cols_out = congridx(scan_of_cols_in, interp_factor, $
+                                      colsout, rowsperscanout, $
+                                      col_offset=col_offset, $
+                                      row_offset=row_offset, $
+                                      /interp)
+          scan_of_rows_out = congridx(scan_of_rows_in, interp_factor, $
+                                      colsout, rowsperscanout, $
+                                      col_offset=col_offset, $
+                                      row_offset=row_offset, $
+                                      /interp)
+      endif else begin
+          scan_of_cols_out = congridx(scan_of_cols_in, interp_factor, $
+                                      colsout, rowsperscanout, $
+                                      col_offset=col_offset, $
+                                      row_offset=row_offset, $
+                                      cubic=-0.5)
+          scan_of_rows_out = congridx(scan_of_rows_in, interp_factor, $
+                                      colsout, rowsperscanout, $
+                                      col_offset=col_offset, $
+                                      row_offset=row_offset, $
+                                      cubic=-0.5)
+      endelse
 
       if check_grid eq 1 then begin
           i = where((scan_of_cols_out ge col_min) and $
