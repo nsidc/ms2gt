@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.33 2001/04/26 20:28:48 haran Exp haran $
+# $Id: mod02.pl,v 1.34 2001/12/05 20:04:09 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -348,14 +348,14 @@ for ($line = 0; $line < @list; $line++) {
 	$ancil_col_extra = 1;
 	$ancil_rows_per_scan = 2;
 	$latlon_interp_factor = 1;
-	$latlon_filestem =~ s/MOD021KM/MOD02HKM/;
+	$latlon_filestem =~ s/D021KM/D02HKM/;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 3) {
 	$swath_resolution = "H";
 	$swath_rows_per_scan = 20;
 	$ancil_interp_factor = 10;
-	$ancil_filestem =~ s/MOD02HKM/MOD021KM/;
+	$ancil_filestem =~ s/D02HKM/D021KM/;
 	$ancil_offset = 4;
 	$ancil_col_extra = 1;
 	$ancil_rows_per_scan = 2;
@@ -370,7 +370,7 @@ for ($line = 0; $line < @list; $line++) {
 	$ancil_col_extra = 1;
 	$ancil_rows_per_scan = 2;
 	$latlon_interp_factor = 1;
-	$latlon_filestem =~ s/MOD021KM/MOD02QKM/; 
+	$latlon_filestem =~ s/D021KM/D02QKM/; 
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 5) {
@@ -379,7 +379,7 @@ for ($line = 0; $line < @list; $line++) {
 	$ancil_interp_factor = 20;
 	$ancil_offset = 8;
 	$ancil_col_extra = 1;
-	$ancil_filestem =~ s/MOD02QKM/MOD021KM/;
+	$ancil_filestem =~ s/D02QKM/D021KM/;
 	$ancil_rows_per_scan = 2;
 	$latlon_interp_factor = 4;
 	$latlon_rows_per_scan = 10;
@@ -388,30 +388,30 @@ for ($line = 0; $line < @list; $line++) {
 	$swath_resolution = "1";
 	$swath_rows_per_scan = 10;
 	$ancil_interp_factor = 1;
-	$ancil_filestem =~ s/MOD021KM/MOD03/;
+	$ancil_filestem =~ s/D021KM/D03/;
 	$ancil_rows_per_scan = 10;
 	$latlon_interp_factor = 1;
-	$latlon_filestem =~ s/MOD021KM/MOD03/;
+	$latlon_filestem =~ s/D021KM/D03/;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 7) {
 	$swath_resolution = "H";
 	$swath_rows_per_scan = 20;
 	$ancil_interp_factor = 2;
-	$ancil_filestem =~ s/MOD02HKM/MOD03/;
+	$ancil_filestem =~ s/D02HKM/D03/;
 	$ancil_rows_per_scan = 10;
 	$latlon_interp_factor = 2;
-	$latlon_filestem =~ s/MOD02HKM/MOD03/;
+	$latlon_filestem =~ s/D02HKM/D03/;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 8) {
 	$swath_resolution = "Q";
 	$swath_rows_per_scan = 40;
 	$ancil_interp_factor = 4;
-	$ancil_filestem =~ s/MOD02QKM/MOD03/;
+	$ancil_filestem =~ s/D02QKM/D03/;
 	$ancil_rows_per_scan = 10;
 	$latlon_interp_factor = 4;
-	$latlon_filestem =~ s/MOD02QKM/MOD03/;
+	$latlon_filestem =~ s/D02QKM/D03/;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 9) {
@@ -423,8 +423,8 @@ for ($line = 0; $line < @list; $line++) {
 	$latlon_rows_per_scan = 10;
 	if ($chan_count != 0) {
 	    diemail("$script: FATAL:\n" .
-		    "listfile $listfile must contain MOD02 files since " .
-		    "chanfile is not none");
+		    "listfile $listfile must contain MOD02 or MYD02 files " .
+		    "since chanfile is not none");
 	}
     }
 

@@ -1,4 +1,4 @@
-# $Id: mod02_case.pl,v 1.3 2001/04/26 20:31:18 haran Exp haran $
+# $Id: mod02_case.pl,v 1.4 2001/04/26 20:40:16 haran Exp haran $
 
 #========================================================================
 # mod02_case.pl - determines case for mod02.pl
@@ -12,7 +12,7 @@ sub mod02_case {
     my $case;
 
     my $prefix = substr($filestem, 0, 5);
-    if ($prefix eq "MOD03") {
+    if ($prefix eq "MOD03" || $prefix eq "MYD03") {
 	$filestem = substr($filestem, 0, 19);
 	$case = 9;
 	$latlon_src = 3;
@@ -25,18 +25,18 @@ sub mod02_case {
 	}
 	if ($ancil_src eq "3") {
 	    $latlon_src = "3";
-	    if ($prefix eq "MOD021KM") {
+	    if ($prefix eq "MOD021KM" || $prefix eq "MYD021KM") {
 		$case = 6;
-	    } elsif ($prefix eq "MOD02HKM") {
+	    } elsif ($prefix eq "MOD02HKM" || $prefix eq "MYD02HKM") {
 		$case = 7;
 	    } else {
 		$case = 8;
 	    }
 	} else {
 	    if ($latlon_src eq "1") {
-		if ($prefix eq "MOD021KM") {
+		if ($prefix eq "MOD021KM" || $prefix eq "MYD021KM") {
 		    $case = 1;
-		} elsif ($prefix eq "MOD02HKM") {
+		} elsif ($prefix eq "MOD02HKM" || $prefix eq "MYD02HKM") {
 		    $case = 3;
 		    $latlon_src = "H";
 		} else {
@@ -44,18 +44,18 @@ sub mod02_case {
 		    $latlon_src = "Q";
 		}
 	    } elsif ($latlon_src eq "H") {
-		if ($prefix eq "MOD021KM") {
+		if ($prefix eq "MOD021KM" || $prefix eq "MYD021KM") {
 		    $case = 2;
-		} elsif ($prefix eq "MOD02HKM") {
+		} elsif ($prefix eq "MOD02HKM" || $prefix eq "MYD02HKM") {
 		    $case = 3;
 		} else {
 		    $case = 5;
 		    $latlon_src = "Q";
 		}
 	    } else {
-		if ($prefix eq "MOD021KM") {
+		if ($prefix eq "MOD021KM" || $prefix eq "MYD021KM") {
 		    $case = 4;
-		} elsif ($prefix eq "MOD02HKM") {
+		} elsif ($prefix eq "MOD02HKM" || $prefix eq "MYD02HKM") {
 		    $case = 3;
 		    $latlon_src = "H";
 		} else {

@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.11 2001/05/30 17:43:27 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.12 2001/12/05 20:04:46 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -16,8 +16,8 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
-  listfile: text file containing a list of MOD02 or MOD03 files to be gridded.
-        All files in listfile must be of the same type (MOD02 or MOD03) and
+  listfile: text file containing a list of MOD02, MOD03, MYD02, or MYD03 files
+        to be gridded. All files in listfile must be of the same type and
         the same resolution.
   gpdfile: .gpd file that defines desired output grid.
   chanfile: text file containing a list of channels to be gridded, one line
@@ -44,8 +44,8 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                   avg - use weighted averaging (default).
                   max - use maximum weighting.
               fill - specifies the output fill value. Default is 0.
-  NOTE: if first file in listfile is MOD03, then chanfile must be \"none\",
-        and both latlon_src and ancil_src are forced to 3.
+  NOTE: if first file in listfile is MOD03 or MYD02, then chanfile must be
+        \"none\", and both latlon_src and ancil_src are forced to 3.
   ancilfile: text file containing a list of ancillary parameters to be gridded,
         one line per parameter. The default is \"none\" indicating that no
         ancillary parameters should be gridded. Each line in ancilfile should
@@ -60,7 +60,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                   rang - Range
                   soze - SolarZenith
                   soaz - SolarAzimuth
-                  lmsk - Land/SeaMask (available in MOD03 only)
+                  lmsk - Land/SeaMask (available in MOD03 or MYD03 only)
                   gflg - gflags
               conversion - a string that specifies the type of conversion
                 that should be performed on the channel. The string must be
@@ -79,20 +79,23 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                   max - use maximum weighting (default for Land/SeaMask and
                         gflags).
               fill - specifies the output fill value. Default is 0.
-  latlon_src: 1: use 5 km lat-lon data from MOD021KM file (default).
-              3: use 1 km lat-lon data from MOD03 file.
-              H: use 1 km lat-lon data from MOD02HKM file.
-              Q: use 1 km lat-lon data from MOD02QKM file.
+  latlon_src: 1: use 5 km lat-lon data from MOD021KM or MYD021KM file
+                 (default).
+              3: use 1 km lat-lon data from MOD03 or MYD03 file.
+              H: use 1 km lat-lon data from MOD02HKM or MYD02HKM file.
+              Q: use 1 km lat-lon data from MOD02QKM or MYD02HKM file.
   NOTE: if latlon_src is set to 3, then ancil_src is forced to 3.
-  ancil_src: 1: use 5 km ancillary data from MOD021KM file (default).
-             3: use 1 km ancillary data from MOD03 file.
+  ancil_src: 1: use 5 km ancillary data from MOD021KM or MYD021KM file
+                (default).
+             3: use 1 km ancillary data from MOD03 or MYD03 file.
   NOTE: if ancil_src is set to 3, then latlon_src is forced to 3.
   keep: 0: delete intermediate chan, lat, lon, col, and row files (default).
         1: do not delete intermediate chan, lat, lon, col, and row files.
   rind: number of pixels to add around intermediate grid to eliminate
         holes in final grid. Default is 50.
-  fix250: 0: do not apply fix for MOD02QKM channel 1 data (default).
-          1: apply fix for MOD02QKM channel 1 data.\n\n";
+  fix250: 0: do not apply fix for MOD02QKM or MYD02QKM channel 1 data
+             (default).
+          1: apply fix for MOD02QKM or MYD02QKM channel 1 data.\n\n";
 
 # this makes the routine work properly using require in other programs
 1;
