@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
-# $Id: mod10_l2.pl,v 1.11 2001/04/19 20:28:00 haran Exp haran $
+# $Id: mod10_l2.pl,v 1.12 2001/04/23 20:39:58 haran Exp haran $
 
 #========================================================================
 # mod10_l2.pl - grids MOD10_L2 data

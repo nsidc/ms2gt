@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.31 2001/04/23 20:35:52 haran Exp haran $
+# $Id: mod02.pl,v 1.32 2001/04/23 22:17:47 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data

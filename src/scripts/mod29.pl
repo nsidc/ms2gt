@@ -1,5 +1,5 @@
-#!/usr/local/bin/perl -w
-# $Id: mod29.pl,v 1.7 2001/04/19 20:29:04 haran Exp haran $
+#!/usr/bin/perl -w
+# $Id: mod29.pl,v 1.8 2001/04/23 20:38:05 haran Exp haran $
 
 #========================================================================
 # mod29.pl - grids MOD29 data
