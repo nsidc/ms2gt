@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod10_l2.pl,v 1.16 2002/10/10 17:14:12 haran Exp haran $
+# $Id: mod10_l2.pl,v 1.17 2003/08/06 20:10:31 haran Exp haran $
 
 #========================================================================
 # mod10_l2.pl - grids MOD10_L2 data
@@ -148,7 +148,8 @@ my $swath_rows_per_scan = 20;
 my $this_swath_cols;
 my $this_swath_rows;
 my $interp_factor;
-my $offset = 0;
+my $col_offset;
+my $row_offset;
 my $extra_latlon_col = 0;
 my $latlon_rows_per_scan = 2;
 my $list_index = 0;
@@ -169,11 +170,14 @@ foreach $hdf (@list) {
 	    if (scalar(@latlonlist) == 0) {
 		$get_latlon = "/get_latlon";
 		$interp_factor = 10;
-		$offset = 5;
+		$col_offset = 5;
+		$row_offset = 5;
 		$extra_latlon_col = 2;
 	    } else {
 		$latlon_rows_per_scan = 10;
 		$interp_factor = 2;
+		$col_offset = 0;
+		$row_offset = 0.5;
 		$hdf_latlon   = $latlonlist[$list_index++];
 		chomp $hdf_latlon;
 		my ($latlon_filestem) = ($hdf_latlon =~ /(.*)\.hdf/);
@@ -320,13 +324,13 @@ if ($interp_factor > 1) {
 #	      "\"'$cols_file'\" \"'$rows_file'\" " .
 #	      "$swath_cols \"'$tag'\" " .
 #	      "grid_check=[$col_min,$col_max,$row_min,$row_max] " .
-#	      "col_offset=$offset row_offset=$offset");
+#	      "col_offset=$col_offset row_offset=$row_offset");
 
     do_or_die("idl_sh.pl interp_colrow " .
 	      "$interp_factor $cr_cols $cr_scans $cr_rows_per_scan " .
 	      "\"'$cols_file'\" \"'$rows_file'\" " .
 	      "$swath_cols \"'$tag'\" " .
-	      "col_offset=$offset row_offset=$offset");
+	      "col_offset=$col_offset row_offset=$row_offset");
     do_or_die("rm -f $cols_file");
     do_or_die("rm -f $rows_file");
 
