@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.10 2004/12/04 19:16:01 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.11 2004/12/04 19:43:23 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -127,13 +127,11 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
         ;  when chan is equal to anything other than 65534
 
             image_scan = image[first:last]
-            test_scan0 = ((image_scan lt valid_range[0]) or $
-                          (image_scan gt valid_range[1]))
             if valid_fill then begin
-                test_scan1 = image_scan eq 65534
-                j = where((test_scan0 and test_scan1) eq 1, count)
+                j = where(image_scan eq 65534, count)
             endif else begin
-                j = where(test_scan0 eq 1, count)
+                j = where((image_scan lt valid_range[0]) or $
+                          (image_scan gt valid_range[1]), count)
             endelse
             if count ge invalid_count_max then begin
 
@@ -150,7 +148,8 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
                 npixels_along = npixels_along - lines_per_scan
             endif else begin
                 if valid_fill then $
-                  j = where(test_scan0 eq 1, count)
+                 j = where((image_scan lt valid_range[0]) or $
+                           (image_scan gt valid_range[1]), count)
                 if count gt 0 then begin
 
                 ;- set invalids to fill
