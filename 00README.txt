@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.11 --  7 January 2005
+Readme for MODIS Swath-to-Grid Toolbox 0.11 --  21 January 2005
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -60,4 +60,5 @@ several programs were also added including extract_valid_scans.pro,
 extract_region.c, insert_region.c, make_mask.c, and apply_mask.c.
 
 As of 0.11, several modifications were made to mod02.pl and
-modis_adjust.pro in support MOA version 11 and higher.
+modis_adjust.pro in support MOA version 11 and higher including keeping
+the mask file.
