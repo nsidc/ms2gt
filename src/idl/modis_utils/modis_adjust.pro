@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.3 2002/04/17 00:34:20 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.4 2002/04/17 15:19:29 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -269,16 +269,16 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
       n = long(cols) * scans
 
-      ;  y is all the data for the regress_sensor
+      ;  x is all the data for the regress_sensor
 
-      y = reform(swath[*, regress_sensor - 1, *], n)
+      x = reform(swath[*, regress_sensor - 1, *], 1, n)
 
       ;  if using weights, then compute y density parameters
 
       if density_bin_width gt 0 then begin
-          y_max = max(y, min=y_min)
-          y_bin_count = floor((y_max - y_min) / density_bin_width) + 1L
-          y_factor = y_bin_count / (y_max - y_min)
+          x_max = max(x, min=x_min)
+          x_bin_count = floor((x_max - x_min) / density_bin_width) + 1L
+          x_factor = x_bin_count / (x_max - x_min)
       endif
 
       ;  process one sensor at a time
@@ -286,19 +286,19 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       for sensor = 1, rows_per_scan do begin
           if sensor ne regress_sensor then begin
 
-              ;  x is all the data for the sensor
+              ;  y is all the data for the sensor
 
-              x = reform(swath[*, sensor - 1, *], 1, n)
-              slope = 0.0
+              y = reform(swath[*, sensor - 1, *], n)
+              slope = 1.0
               intercept = 0.0
               status = 0L
 
-              ;  if using weights, then compute x density parameters
+              ;  if using weights, then compute y density parameters
 
               if density_bin_width gt 0 then begin
-                  x_max = max(x, min=x_min)
-                  x_bin_count = floor((x_max - x_min) / density_bin_width) + 1L
-                  x_factor = x_bin_count / (x_max - x_min)
+                  y_max = max(y, min=y_min)
+                  y_bin_count = floor((y_max - y_min) / density_bin_width) + 1L
+                  y_factor = y_bin_count / (y_max - y_min)
                   h = long((x - x_min) * x_factor) * y_bin_count + $
                       long((y - y_min) * y_factor)
                   h = histogram(h, reverse_indices=r)
@@ -321,14 +321,18 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                   slope = regress(x, y, const=intercept, status=status)
               endelse
               regression_count = 1
+              if (status eq 0) and (y_tolerance gt 0) then $
+                final = '' $
+              else $
+                final = ' final'
               annot = string('sensor: ', sensor, $
                              '  regress: ', regression_count, $
                              '  status: ', status, $
                              '  intercept: ', intercept, $
-                             '  slope: ', slope[0], $
-                             format='(a,i2,a,i3,a,i2,a,e12.5,a,f8.5)')
+                             '  slope: ', slope[0], final, $
+                             format='(a,i2,a,i2,a,i2,a,e12.5,a,f8.5,a)')
               print, annot
-              if (status eq 0) and (y_tolerance gt 0) then begin
+              if final eq '' then begin
 
                   ; compare original y values to computed y values and
                   ; select only those within y_tolerance
@@ -342,14 +346,14 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                       i = where(abs(y - (slope[0] * x + intercept)) lt $
                                 y_tolerance, n2)
                       if n2 eq 0 then begin
-                          slope = 0.0
+                          slope = 1.0
                           intercept = 0.0
                           regression_count = regression_max
                       endif else begin
                           x2 = reform(x[i], 1, n2)
                           y2 = y[i]
                           status = 0L
-                          slope = 0.0
+                          slope = 1.0
                           intercept = 0.0
                           if density_bin_width gt 0 then begin
                               weight2 = weight[i]
@@ -370,17 +374,22 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                         slope_delta = abs(slope[0] - slope_old) / slope_old $
                       else $
                         slope_delta = 0.0
+                      if (slope_delta_max eq 0) or $
+                        (slope_delta le slope_delta_max) or $
+                        (regression_count ge regression_max) then $
+                        final = ' final' $
+                      else $
+                        final = ''
                       annot = string('sensor: ', sensor, $
                                      '  regress: ', regression_count, $
                                      '  status: ', status, $
                                      '  intercept: ', intercept, $
                                      '  slope: ', slope[0], $
-                                     '  slope_delta: ', slope_delta, $
-                                     format='(a,i2,a,i3,a,i2,a,e12.5,2(a,f8.5))')
+                                     '  slope_delta: ', slope_delta, final, $
+                                     format=$
+                                     '(a,i2,a,i2,a,i2,a,e12.5,2(a,f8.5),a)')
                       print, annot
-                  endrep until ((slope_delta_max eq 0) or $
-                                (slope_delta le slope_delta_max) or $
-                                (regression_count ge regression_max))
+                  endrep until (final ne '')
                   x2 = 0
                   y2 = 0
               endif  ; if (status eq 0) and (y_tolerance gt 0)
@@ -404,9 +413,9 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                   plot, x, y, psym=3, xstyle=1, ystyle=1, charsize=1.0, $
                     xrange=[x_min, plot_max], yrange=[x_min, plot_max], $
                     title=plot_file, $
-                    xtitle=string('sensor: ', sensor, $
+                    xtitle=string('sensor: ', regress_sensor, $
                                   format='(a, i2.2)'), $
-                    ytitle=string('sensor: ', regress_sensor, $
+                    ytitle=string('sensor: ', sensor, $
                                   format='(a, i2.2)')
                   xmm = [x_min, plot_max]
                   ymm = slope[0] * xmm + intercept
@@ -423,7 +432,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                   annot = string('regression count: ', regression_count)
                   xyouts, .12, .86, annot, charsize=1.0, /normal
               endif
-              swath[*, sensor - 1, *] = slope[0] * x + intercept
+              if abs(slope[0]) ge epsilon then $
+                swath[*, sensor - 1, *] = (y - intercept) / slope[0]
           endif ; if sensor ne regress_sensor
       endfor ; for sensor = 1, rows_per_scan
   endif ; if regress_sensor eq 0
