@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.10 2001/05/30 16:56:51 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.11 2001/05/30 17:43:27 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -11,8 +11,8 @@ $|=1;
 
 $mod02_usage = "\n
 USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
-                [ancilfile [latlon_src [ancil_src [keep [rind]]]]]
-       defaults:   none          1          1       0     50
+                [ancilfile [latlon_src [ancil_src [keep [rind [fix250]]]]]]
+       defaults:   none          1          1       0     50     0
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
@@ -90,7 +90,9 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
   keep: 0: delete intermediate chan, lat, lon, col, and row files (default).
         1: do not delete intermediate chan, lat, lon, col, and row files.
   rind: number of pixels to add around intermediate grid to eliminate
-        holes in final grid. Default is 50.\n\n";
+        holes in final grid. Default is 50.
+  fix250: 0: do not apply fix for MOD02QKM channel 1 data (default).
+          1: apply fix for MOD02QKM channel 1 data.\n\n";
 
 # this makes the routine work properly using require in other programs
 1;

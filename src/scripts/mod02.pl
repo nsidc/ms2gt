@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.32 2001/04/23 22:17:47 haran Exp haran $
+# $Id: mod02.pl,v 1.33 2001/04/26 20:28:48 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -41,12 +41,13 @@ my $latlon_src = "1";
 my $ancil_src = "1";
 my $keep = 0;
 my $rind = 50;
+my $fix250 = 0;
 
 if (@ARGV < 4) {
     print $mod02_usage;
     exit 1;
 }
-if (@ARGV <= 10) {
+if (@ARGV <= 11) {
     $dirinout = $ARGV[0];
     $tag = $ARGV[1];
     $listfile = $ARGV[2];
@@ -79,6 +80,13 @@ if (@ARGV <= 10) {
 			}
 			if (@ARGV >= 10) {
 			    $rind = $ARGV[9];
+			    if (@ARGV >= 11) {
+				$fix250 = $ARGV[10];
+				if ($fix250 ne "0" && $fix250 ne "1") {
+				    print "invalid fix250\n$mod02_usage";
+				    exit 1;
+				}
+			    }
 			}
 		    }
 		}
@@ -101,7 +109,8 @@ print_stderr("\n".
 	     "> latlon_src       = $latlon_src\n".
 	     "> ancil_src        = $ancil_src\n".
 	     "> keep             = $keep\n".
-	     "> rind             = $rind\n");
+	     "> rind             = $rind\n".
+	     "> fix250           = $fix250\n");
 
 if ($chanfile eq "none" && $ancilfile eq "none") {
     diemail("$script: FATAL: chanfile and ancilfile must not both be none");
@@ -600,11 +609,13 @@ for ($line = 0; $line < @list; $line++) {
 	    print_stderr("idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" " .
 		      "$chan conversion=\"'$conversion'\" " .
 		      "swath_rows=$this_swath_rows_max " .
-		      "swath_row_first=$this_swath_row_first");
+		      "swath_row_first=$this_swath_row_first " .
+                      "fix_250=$fix250");
 	    do_or_die("idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" " .
 		      "$chan conversion=\"'$conversion'\" " .
 		      "swath_rows=$this_swath_rows_max " .
-		      "swath_row_first=$this_swath_row_first");
+		      "swath_row_first=$this_swath_row_first " .
+                      "fix_250=$fix250");
 	    my @chan_glob = glob("$filestem_chan_conv*");
 	    if (@chan_glob == 0) {
 		diemail("$script: FATAL: $filestem_chan_conv* not found");
