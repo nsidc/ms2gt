@@ -4,7 +4,7 @@
  * 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char ll2cr_c_rcsid[] = "$Header: /export/data/ms2gth/src/ll2cr/ll2cr.c,v 1.11 2001/04/30 22:51:35 haran Exp haran $";
+static const char ll2cr_c_rcsid[] = "$Header: /export/data/ms2gth/src/ll2cr/ll2cr.c,v 1.12 2001/05/24 23:27:58 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -104,6 +104,7 @@ main (int argc, char *argv[])
   int col_max;
   int row_min;
   int row_max;
+  int status;
   grid_class *grid_def;
 
 /*
@@ -317,13 +318,18 @@ main (int argc, char *argv[])
 	  *colp = fill_out;
 	  *rowp = fill_out;
 	} else {
-	  forward_grid(grid_def, lat, lon, colp, rowp);
-	  if (!force &&
-	      *colp >= col_min && *colp <= col_max &&
-	      *rowp >= row_min && *rowp <= row_max) {
-	    if (scanfirst < 0)
-	      scanfirst = scan;
-	    scanlast = scan;
+	  status = forward_grid(grid_def, lat, lon, colp, rowp);
+	  if ((force && status) ||
+	      (!force && *colp >= col_min && *colp <= col_max &&
+	       *rowp >= row_min && *rowp <= row_max)) {
+	    if (!force) {
+	      if (scanfirst < 0)
+		scanfirst = scan;
+	      scanlast = scan;
+	    }
+	  } else {
+	    *colp = fill_out;
+	    *rowp = fill_out;
 	  }
 	}
       }
