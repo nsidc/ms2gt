@@ -11,7 +11,7 @@
  * 14-Mar-2001 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char call_grids_c_rcsid[] = "$Header: /export/data/ms2gth/src/idl/grids/call_grids.c,v 1.6 2001/06/12 22:43:07 haran Exp haran $";
+static const char call_grids_c_rcsid[] = "$Header: /export/data/ms2gth/src/idl/grids/call_grids.c,v 1.7 2003/04/28 22:08:35 haran Exp $";
 
 #include <stdio.h>
 #include <math.h>
@@ -126,7 +126,9 @@ long call_init_grid(short argc, void *argv[])
   gcs->bdy_detail = mapx->bdy_detail;
   gcs->riv_detail = mapx->riv_detail;
   gcs->equatorial_radius = mapx->equatorial_radius;
+  gcs->polar_radius = mapx->polar_radius;
   gcs->eccentricity = mapx->eccentricity;
+  gcs->eccentricity_squared = mapx->e2;
   gcs->x0 = mapx->x0;
   gcs->y0 = mapx->y0;
   gcs->false_easting = mapx->false_easting;
@@ -155,11 +157,11 @@ long call_init_grid(short argc, void *argv[])
  *
  *             n - long integer number of elements in each input and output
  *                 array.
- *             lat - float array of latitude values.
- *             lon - float array of longitude values.
+ *             lat - double array of latitude values.
+ *             lon - double array of longitude values.
  *
- *      output:col - float array of column numbers.
- *             row - float array of row numbers.
+ *      output:col - double array of column numbers.
+ *             row - double array of row numbers.
  *             status - byte array of status values:
  *                      1 if corresponding col and row are in the grid.
  *                      0 otherwise.
@@ -180,10 +182,10 @@ long call_forward_grid(short argc, void *argv[])
 
   grid_class_struct *gcs;
   IDL_LONG n;
-  float *lat;
-  float *lon;
-  float *col;
-  float *row;
+  double *lat;
+  double *lon;
+  double *col;
+  double *row;
   byte1 *status;
 
   /*
@@ -206,10 +208,10 @@ long call_forward_grid(short argc, void *argv[])
   
   gcs = (grid_class_struct *)argv[0];
   n = *((IDL_LONG *)argv[1]);
-  lat = (float *)argv[2];
-  lon = (float *)argv[3];
-  col = (float *)argv[4];
-  row = (float *)argv[5];
+  lat = (double *)argv[2];
+  lon = (double *)argv[3];
+  col = (double *)argv[4];
+  row = (double *)argv[5];
   status = (byte1 *)argv[6];
 
   /*
@@ -246,11 +248,11 @@ long call_forward_grid(short argc, void *argv[])
  *
  *             n - long integer number of elements in each input and output
  *                 array.
- *             col - float array of column numbers.
- *             row - float array of row numbers.
+ *             col - double array of column numbers.
+ *             row - double array of row numbers.
  *
- *      output:lat - float array of latitude values.
- *             lon - float array of longitude values.
+ *      output:lat - double array of latitude values.
+ *             lon - double array of longitude values.
  *             status - byte array of status values:
  *                      1 if corresponding lat and lon are within the map
  *                        boundaries.
@@ -272,10 +274,10 @@ long call_inverse_grid(short argc, void *argv[])
 
   grid_class_struct *gcs;
   IDL_LONG n;
-  float *col;
-  float *row;
-  float *lat;
-  float *lon;
+  double *col;
+  double *row;
+  double *lat;
+  double *lon;
   byte1 *status;
 
   /*
@@ -298,10 +300,10 @@ long call_inverse_grid(short argc, void *argv[])
   
   gcs = (grid_class_struct *)argv[0];
   n = *((IDL_LONG *)argv[1]);
-  col = (float *)argv[2];
-  row = (float *)argv[3];
-  lat = (float *)argv[4];
-  lon = (float *)argv[5];
+  col = (double *)argv[2];
+  row = (double *)argv[3];
+  lat = (double *)argv[4];
+  lon = (double *)argv[5];
   status = (byte1 *)argv[6];
 
   /*
@@ -406,7 +408,9 @@ long call_close_grid(short argc, void *argv[])
   gcs->bdy_detail = (IDL_LONG)0;
   gcs->riv_detail = (IDL_LONG)0;
   gcs->equatorial_radius = (double)0.0;
+  gcs->polar_radius = (double)0.0;
   gcs->eccentricity = (double)0.0;
+  gcs->eccentricity_squared = (double)0.0;
   gcs->x0 = 0.0;
   gcs->y0 = 0.0;
   gcs->false_easting = 0.0;
