@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.41 2004/10/29 21:49:54 haran Exp haran $
+# $Id: mod02.pl,v 1.42 2004/10/31 03:19:20 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -884,6 +884,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		$tile_ext .= sprintf("x%02d", $tile_overlap);
 	    }
 	}
+	my $grid_file = "";
 	for ($i = 0; $i < $chan_count; $i++) {
 	    my $chan_file = $chan_files[$i];
 	    my $chan = $chans[$i];
@@ -945,47 +946,52 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		    system("rm -f $chan_file_unfixed");
 		}
 	    }
-	    my $tagext = substr($chan_conversions[$i], 0, 3);
-	    my $m_option;
-	    if ($chan_weight_types[$i] eq "avg") {
-		$m_option = "";
-		$tagext .= "a";
-	    } else {
-		$m_option = "-m";
-		$tagext .= "m";
+	    if (!$grid_file || -e $grid_file) {
+		my $tagext = substr($chan_conversions[$i], 0, 3);
+		my $m_option;
+		if ($chan_weight_types[$i] eq "avg") {
+		    $m_option = "";
+		    $tagext .= "a";
+		} else {
+		    $m_option = "-m";
+		    $tagext .= "m";
+		}
+		$tagext .= $tile_ext;
+		$grid_file =
+		    "$tag\_$tagext\_ch$chan\_" .
+		    "$tile_grid_cols_this\_$tile_grid_rows_this.img";
+		my $t_option;
+		my $f_option;
+		if ($chan_conversions[$i] eq "raw") {
+		    $t_option = "-t u2";
+		    $f_option = "-f 65535";
+		} else {
+		    $t_option = "-t f4";
+		    $f_option = "-f 65535.0";
+		}
+		my $fill = $chan_fills[$i];
+		my $F_option = "-F $fill";
+		my $C_option = "-C $tile_col_offset";
+		my $R_option = "-R $tile_row_offset";
+		do_or_die("fornav 1 -v $t_option $f_option " .
+			  "$m_option $F_option " .
+			  "-d $weight_distance_max $C_option $R_option " .
+			  "$swath_cols $swath_scans $swath_rows_per_scan " .
+			  "$cols_file $rows_file $chan_file " .
+			  "$tile_grid_cols_this $tile_grid_rows_this " .
+			  "$grid_file");
 	    }
-	    $tagext .= $tile_ext;
-	    my $grid_file =
-		"$tag\_$tagext\_ch$chan\_" .
-		"$tile_grid_cols_this\_$tile_grid_rows_this.img";
-	    my $t_option;
-	    my $f_option;
-	    if ($chan_conversions[$i] eq "raw") {
-		$t_option = "-t u2";
-		$f_option = "-f 65535";
-	    } else {
-		$t_option = "-t f4";
-		$f_option = "-f 65535.0";
-	    }
-	    my $fill = $chan_fills[$i];
-	    my $F_option = "-F $fill";
-	    my $C_option = "-C $tile_col_offset";
-	    my $R_option = "-R $tile_row_offset";
-	    do_or_die("fornav 1 -v $t_option $f_option $m_option $F_option " .
-		      "-d $weight_distance_max $C_option $R_option " .
-		      "$swath_cols $swath_scans $swath_rows_per_scan " .
-		      "$cols_file $rows_file $chan_file " .
-		      "$tile_grid_cols_this $tile_grid_rows_this $grid_file");
 	    if (!$keep &&
 		$tile_col == $tile_cols - 1 &&
 		$tile_row == $tile_rows - 1) {
 		do_or_die("rm -f $chan_file");
 	    }
 	}
-	
+
 	for ($i = 0; $i < $ancil_count; $i++) {
 	    my $ancil_file = $ancil_files[$i];
-	    if (!$ancil_deletes[$i]) {
+	    if (!$ancil_deletes[$i] &&
+		(!$grid_file || -e $grid_file)) {
 		my $ancil = $ancils[$i];
 		my $tagext = substr($ancil_conversions[$i], 0, 3);
 		my $m_option;
@@ -997,7 +1003,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		    $tagext .= "m";
 		}
 		$tagext .= $tile_ext;
-		my $grid_file =
+		$grid_file =
 		    "$tag\_$tagext\_$ancil\_" .
 		    "$tile_grid_cols_this\_$tile_grid_rows_this.img";
 		my $data_type = $ancil_data_types[$i];
