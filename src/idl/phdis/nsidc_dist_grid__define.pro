@@ -10,6 +10,9 @@
 ; Initialization.
 ;
 ; $Log: nsidc_dist_grid__define.pro,v $
+; Revision 1.6  2001/03/13 19:17:03  haran
+; got rid of c:\windows\ from name of temporary file.
+;
 ; Revision 1.5  2001/03/13 18:52:59  haran
 ; added log
 ;
@@ -1589,15 +1592,11 @@ PRO NSIDC_DIST_GRID::EVENT, event
       END
 
       'help_use_bttn': BEGIN ; Help (program usage).
-         ri = ROUTINE_INFO('NSIDC_DIST_GRID__DEFINE', /SOURCE)
-         sp = STRPOS(STRUPCASE(ri.path), 'NSIDC_DIST_GRID_DEFINE')
-         help_file = STRMID(ri.path, 0, sp) + 'nsidc_dist_use.txt'
+         help_file = file_which('nsidc_dist_use.txt')
          XDISPLAYFILE, help_file, GROUP=event.top, WIDTH=80, HEIGHT=24
       END
       'help_version_bttn': BEGIN ; Help (software version).
-         ri = ROUTINE_INFO('NSIDC_DIST_GRID__DEFINE', /SOURCE)
-         sp = STRPOS(STRUPCASE(ri.path), 'NSIDC_DIST_GRID_DEFINE')
-         help_file = STRMID(ri.path, 0, sp) + 'nsidc_dist_ver.txt'
+         help_file = file_which('nsidc_dist_ver.txt')
          XDISPLAYFILE, help_file, GROUP=event.top, WIDTH=80, HEIGHT=24
       END
 
