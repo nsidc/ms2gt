@@ -47,7 +47,10 @@ PRO MODIS_ICE_READ, FILENAME, BAND, IMAGE, $
 ;    None
 ;
 ; SIDE EFFECTS:
-;    None.
+;    When an entire MOD29 swath scene is dark, then channels 1, 2, and 6 may
+;    not be present in the hdf file. If channel 1, 2, or 6 is requested for
+;    such a file, then channel 5 is read instead to determine the proper
+;    size, and an array filled the fill value of that size is returned.
 ;
 ; RESTRICTIONS:
 ;    Requires IDL 5.0 or higher (square bracket array syntax).
@@ -68,7 +71,7 @@ PRO MODIS_ICE_READ, FILENAME, BAND, IMAGE, $
 ;    Based on modis_level1b_read from 
 ;-
 
-rcs_id = '$Id: modis_ice_read.pro,v 1.1 2001/01/28 22:13:53 haran Exp $'
+rcs_id = '$Id: modis_ice_read.pro,v 1.1 2001/01/29 23:54:27 haran Exp haran $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -110,9 +113,10 @@ varlist = hdf_sd_varlist(sd_id)
 hdf_sd_end, sd_id
 
 ;- Locate image arrays
-index = where(varlist.varnames eq 'Sea Ice by Reflectance', count_ice)
-index = where(varlist.varnames eq 'Sea Ice by Reflectance PixelQA', count_qa)
-if (count_ice ne 1) or (count_qa ne 1) then $
+index = where(varlist.varnames eq 'Ice Surface Temperature', count_temp)
+index = where(varlist.varnames eq 'Ice Surface Temperature PixelQA', count_tqa)
+index = where(varlist.varnames eq 'Sea Ice by IST', count_ice)
+if (count_temp ne 1) or (count_tqa ne 1) or (count_ice ne 1) then $
   message, 'FILENAME is not MODIS Sea Ice HDF => ' + fileinfo.name
 
 ;-------------------------------------------------------------------------------
@@ -142,8 +146,25 @@ endcase
 
 sd_id = hdf_sd_start(fileinfo.name)
 
-;- Read the image array
-hdf_sd_varread, sd_id, sds_name, image
+;- Check to see that the sds exists
+index = where(varlist.varnames eq sds_name, count_exists)
+if count_exists eq 0 then begin
+
+;- If the sds doesn't exist, then use channel 5 as a proxy to get the fill
+;  value and the size, print a message, and set the image to the fill value.
+    sds_name_fake = 'Sea Ice by IST'
+    fill_struct = hdf_sd_attinfo(sd_id, sds_name_fake, '_FillValue')
+    fill = fill_struct.data
+    message, /informational, 'channel ' + string(band, format='(I1)') + $
+      ': ' + sds_name + ' does not exist -- returning fill value: ' + $
+      string(fill, format='(I3)') + ' => ' + filename
+    hdf_sd_varread, sd_id, sds_name_fake, image
+    image[*,*] = byte(fill)
+endif else begin
+
+;- If the sds exists, then read the image array
+    hdf_sd_varread, sd_id, sds_name, image
+endelse
 
 ;- Read latitude and longitude arrays
 if arg_present(latitude) then hdf_sd_varread, sd_id, 'Latitude', latitude
