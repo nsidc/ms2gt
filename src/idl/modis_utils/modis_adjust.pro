@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.15 2002/11/25 18:50:40 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.16 2002/11/26 16:20:28 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -103,18 +103,18 @@
 ;         to be all points x(i) for which abs(y'(i) - y(i)) >= y_tolerance.
 ;         Then a second regression is performed on the remaining x(i) after
 ;         the outliers have been removed to determine the final k and m
-;         values. The default value of y_tolerance is 0.0.
+;         values. The default value of y_tolerance is 0.01.
 ;         NOTE: If y_tolerance is 0.0, then no second linear regression
 ;               is performed.
 ;       slope_delta_max: the outlier detection procedure described for
 ;         y_tolerance is repeated until slope_delta =
 ;         abs(slope - slope_old) / slope_old is less than or equal to
-;         slope_delta_max. The default value of slope_delta_max is 0.001.
+;         slope_delta_max. The default value of slope_delta_max is 0.0001.
 ;         NOTE: If slope_delta_max is 0.0, then no third linear regression
 ;               or higher is performed.
 ;       regression_max: the outlier detection procedure is repeated a maximum
 ;         of regression max total number of regressions.
-;         The default value of regression_max is 10.
+;         The default value of regression_max is 100.
 ;       density_bin_width: the bin width used to create a weight map based on
 ;         the density of the scatterplot. If density_bin_width is 0 (default)
 ;         then all weights are set to 1 for the regressions.
@@ -124,9 +124,9 @@
 ;         within the pass.
 ;         The default value of plot_tag is a null string indicating
 ;         that no plots should be created.
-;       plot_max: maximum values to plot. Default is 0 meaning use the maximum
-;         values in the data. if plot_tag is a null string, then plot_max is
-;         ignored.
+;       plot_max: maximum values to plot. If plot_max is 0, then the maximum
+;         values in the data are used. The default value is 1.5. If
+;         plot_tag is a null string, then plot_max is ignored.
 ;
 ; EXAMPLE:
 ;       modis_adjust, $
@@ -254,37 +254,37 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   if n_elements(reg_col_offset) eq 0 then $
     reg_col_offset = 0
   if n_elements(col_y_tolerance) eq 0 then $
-    col_y_tolerance = 0.0
+    col_y_tolerance = 0.01
   if n_elements(col_slope_delta_max) eq 0 then $
-    col_slope_delta_max = 0.001
+    col_slope_delta_max = 0.0001
   if n_elements(col_regression_max) eq 0 then $
-    col_regression_max = 10
+    col_regression_max = 100
   if n_elements(col_density_bin_width) eq 0 then $
     col_density_bin_width = 0
   if n_elements(col_plot_tag) eq 0 then $
     col_plot_tag = ''
   if n_elements(col_plot_max) eq 0 then $
-    col_plot_max = 0
+    col_plot_max = 1.5
   if n_elements(reg_rows) eq 0 then $
     reg_rows = 0
   if n_elements(row_y_tolerance) eq 0 then $
-    row_y_tolerance = 0.0
+    row_y_tolerance = 0.01
   if n_elements(row_slope_delta_max) eq 0 then $
-    row_slope_delta_max = 0.001
+    row_slope_delta_max = 0.0001
   if n_elements(row_regression_max) eq 0 then $
-    row_regression_max = 10
+    row_regression_max = 100
   if n_elements(row_density_bin_width) eq 0 then $
     row_density_bin_width = 0
   if n_elements(row_plot_tag) eq 0 then $
     row_plot_tag = ''
   if n_elements(row_plot_max) eq 0 then $
-    row_plot_max = 0
+    row_plot_max = 1.5
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
   time_start = systime(/seconds) 
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.15 2002/11/25 18:50:40 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.16 2002/11/26 16:20:28 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
