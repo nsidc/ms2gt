@@ -5,7 +5,7 @@
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *======================================================================*/
 
-static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/make_mask.c,v 1.1 2004/11/24 21:01:29 haran Exp haran $";
+static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/make_mask.c,v 1.2 2004/11/25 00:12:48 haran Exp haran $";
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -17,7 +17,7 @@ static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/m
 #include "matrix.h"
 
 #define USAGE \
-"usage: make_mask [-v] [-b] [-s] [-f] [-F factor] [-i mask_file_in]\n"\
+"usage: make_mask [-v] [-d] [-b] [-s] [-f] [-F factor] [-i mask_file_in]\n"\
 "                 [-m mask_value_in] [-M mask_value_out] [-U unmask_value_out]\n"\
 "          bytes_per_cell cols_in rows_in\n"\
 "          col_start_in row_start_in cols_in_region rows_in_region\n"\
@@ -39,6 +39,7 @@ static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/m
 "            There will be factor * cols_in_region columns and\n"\
 "            factor * rows_in_region rows in the output file.\n"\
 "  option: v - verbose (may be repeated)\n"\
+"          d - delete mask_file_out if it consists entirely of mask_value_out.\n"\
 "          b - byte-swap the input file.\n"\
 "          s - specifies signed input data.\n"\
 "          f - specifies floating-point input data. Requires that\n"\
@@ -98,6 +99,7 @@ int main(int argc, char *argv[])
   char *mask_file_out;
 
   bool verbose, very_verbose, very_very_verbose;
+  bool delete_if_all_masked;
   bool byte_swap_input;
   bool signed_input;
   bool floating_point_input;
@@ -136,11 +138,14 @@ int main(int argc, char *argv[])
   double mask_test;
   byte1 mask;
   int i, j;
+  bool got_unmasked;
+  char command[MAX_STRING];
 
   /*
    *     set defaults
    */
   verbose = very_verbose = very_very_verbose = FALSE;
+  delete_if_all_masked = FALSE;
   byte_swap_input = FALSE;
   signed_input = FALSE;
   floating_point_input = FALSE;
@@ -163,6 +168,9 @@ int main(int argc, char *argv[])
 	if (verbose)
 	  very_verbose = TRUE;
 	verbose = TRUE;
+	break;
+      case 'd':
+	delete_if_all_masked = TRUE;
 	break;
       case 'b':
         byte_swap_input = TRUE;
@@ -254,6 +262,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "  rows_in_region:       %d\n", rows_in_region);
     fprintf(stderr, "  file_in:              %s\n", file_in);
     fprintf(stderr, "  mask_file_out:        %s\n", mask_file_out);
+    fprintf(stderr, "  delete_if_all_masked: %d\n", delete_if_all_masked);
     fprintf(stderr, "  byte_swap_input:      %d\n", byte_swap_input);
     fprintf(stderr, "  signed_input:         %d\n", signed_input);
     fprintf(stderr, "  floating_point_input: %d\n", floating_point_input);
@@ -456,6 +465,7 @@ int main(int argc, char *argv[])
     last_row_in_region = row_start_in + rows_in_region - 1;
     last_col_in_region = col_start_in + cols_in_region - 1;
     last_row_in_output_region = rows_per_mask_buf_out - 1;
+    got_unmasked = FALSE;
 
     /*
      *    for each row in region
@@ -561,6 +571,8 @@ int main(int argc, char *argv[])
 	   */
 	  mask &= *bufp_mask_in++;
 	}
+	if (mask == unmask_value_out)
+	  got_unmasked = TRUE;
 
 	/*
 	 *  store the mask in the output buffer, expanding as needed
@@ -610,6 +622,17 @@ int main(int argc, char *argv[])
     free(buf_mask_in);
   if (buf_mask_out)
     free(buf_mask_out);
+
+  if (delete_if_all_masked && !got_unmasked) {
+
+    /*
+     *  delete the output file since there were no unmasked output values
+     */
+    if (verbose)
+      fprintf(stderr, "make_mask: deleting %s\n", mask_file_out);
+    sprintf(command, "rm -f %s", mask_file_out);
+    system(command);
+  }
 
   if (very_verbose) {
     if (there_were_errors)
