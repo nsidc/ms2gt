@@ -4,7 +4,7 @@
  * 26-Nov-2001 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char lle2cre_c_rcsid[] = "$Header: /usr/people/haran/photoclin/src/lle2cre/lle2cre.c,v 1.2 2001/12/02 21:20:03 haran Exp haran $";
+static const char lle2cre_c_rcsid[] = "$Header: /usr/people/haran/photoclin/src/lle2cre/lle2cre.c,v 1.3 2001/12/02 21:25:42 haran Exp $";
 
 #include <stdio.h>
 #include <math.h>
@@ -78,8 +78,8 @@ main (int argc, char *argv[])
   char line[MAX_STRING];
   int count_input;
   int count_output;
-  float col;
-  float row;
+  double col;
+  double row;
   double elev;
   float lat;
   float lon;
@@ -251,7 +251,7 @@ main (int argc, char *argv[])
        */
       
       if (in_region) {
-	printf("%11.5f %11.5f %11.6lf\n", col, row, elev);
+	printf("%11.5lf %11.5lf %11.6lf\n", col, row, elev);
 	count_output++;
       }
     }
