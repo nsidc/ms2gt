@@ -16,7 +16,7 @@ MS2GT: The MODIS Swath-to-Grid Toolbox</h1></center>
 <a href="#overview">Overview</a></li>
 
 <li>
-&nbsp;<a href="#requirements">Requirements</a></li>
+<a href="#requirements">Requirements</a></li>
 
 <li>
 <a href="#datasets">Supported Data Sets</a></li>
@@ -32,6 +32,17 @@ MS2GT: The MODIS Swath-to-Grid Toolbox</h1></center>
 
 <li>
 <a href="#running">Running the Software</a></li>
+
+<ul>
+<li>
+<a href="#mod02_usage">mod02.pl</a></li>
+
+<li>
+<a href="#mod10_l2_usage">mod10_l2.pl</a></li>
+
+<li>
+<a href="#mod29_usage">mod29.pl</a></li>
+</ul>
 
 <li>
 <a href="tutorials.html">Tutorials</a></li>
@@ -93,11 +104,11 @@ from a single MOD02QKM file takes about three minutes on the above machine.
 
 <td>Long Name</td>
 
-<td>DAAC</td>
+<td>Channel Data</td>
 
-<td>Data</td>
+<td>Ancillary</td>
 
-<td>Geoloc</td>
+<td>Lat-lon</td>
 </tr>
 
 <tr NOSAVE>
@@ -105,9 +116,9 @@ from a single MOD02QKM file takes about three minutes on the above machine.
 
 <td>MODIS/TERRA CALIBRATED RADIANCES 5-MIN L1B SWATH 1KM</td>
 
-<td>GSFC</td>
+<td>1-36 @ 1 km</td>
 
-<td>1 km</td>
+<td>7 @ 5 km</td>
 
 <td>5 km</td>
 </tr>
@@ -117,9 +128,9 @@ from a single MOD02QKM file takes about three minutes on the above machine.
 
 <td>MODIS/TERRA CALIBRATED RADIANCES 5-MIN L1B SWATH 500M</td>
 
-<td>GSFC</td>
+<td>1-7 @ 500 m</td>
 
-<td>500 m</td>
+<td>none</td>
 
 <td>1 km</td>
 </tr>
@@ -129,9 +140,9 @@ from a single MOD02QKM file takes about three minutes on the above machine.
 
 <td>MODIS/TERRA CALIBRATED RADIANCES 5-MIN L1B SWATH 250M</td>
 
-<td>GSFC</td>
+<td>1-2 @ 250 m</td>
 
-<td>250 m</td>
+<td>none</td>
 
 <td>1 km</td>
 </tr>
@@ -141,9 +152,9 @@ from a single MOD02QKM file takes about three minutes on the above machine.
 
 <td>MODIS/TERRA GEOLOCATION FIELDS 5-MIN L1A SWATH 1KM</td>
 
-<td>GSFC</td>
+<td>none</td>
 
-<td>1 km</td>
+<td>8 @ 1 km</td>
 
 <td>1 km</td>
 </tr>
@@ -153,9 +164,9 @@ from a single MOD02QKM file takes about three minutes on the above machine.
 
 <td>MODIS/TERRA SNOW COVER 5-MIN L2 SWATH 500M</td>
 
-<td>NSIDC</td>
+<td>2 @ 500 m</td>
 
-<td>500 m</td>
+<td>none</td>
 
 <td>5 km</td>
 </tr>
@@ -165,9 +176,9 @@ from a single MOD02QKM file takes about three minutes on the above machine.
 
 <td>MOD29 L2 SEA ICE COVER GRANULE</td>
 
-<td>NSIDC</td>
+<td>6 @ 1 km</td>
 
-<td>1 km</td>
+<td>none</td>
 
 <td>5 km</td>
 </tr>
@@ -212,9 +223,253 @@ Try typing in the following three commands to get the syntax of each of
 the three perl scripts:
 <p><tt>mod02.pl</tt>
 <br><tt>mod10_l2.pl</tt>
-<br><tt>mod29.pl</tt><tt></tt>
-<p>
-<hr><font size=-1>Last updated: April 13, 2001 by</font>
+<br><tt>mod29.pl</tt>
+<p>You will see the following text displayed which describes the syntax
+of each perl script:
+<h3>
+<a NAME="mod02_usage"></a><tt>mod02.pl</tt></h3>
+<tt>USAGE: mod02.pl dirinout tag listfile gpdfile chanfile</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[ancilfile [latlon_src [ancil_src [keep [rind]]]]]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; defaults:&nbsp;&nbsp; none&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+0&nbsp;&nbsp;&nbsp;&nbsp; 50</tt><tt></tt>
+<p><tt>&nbsp; dirinout: directory containing the input and output files.</tt>
+<br><tt>&nbsp; tag: string used as a prefix to output files.</tt>
+<br><tt>&nbsp; listfile: text file containing a list of MOD02 or MOD03
+files to be gridded.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; All files in listfile
+must be of the same type (MOD02 or MOD03) and</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the same resolution.</tt>
+<br><tt>&nbsp; gpdfile: .gpd file that defines desired output grid.</tt>
+<br><tt>&nbsp; chanfile: text file containing a list of channels to be
+gridded, one line</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; per channel. If chanfile
+is "none" then no channel data will be</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gridded and ancilfile
+must not be "none". Each line in chanfile</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; should have the following
+format:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; chan conversion
+weight_type fill</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+where</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+chan - specifies a channel number (1-36).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+conversion is a string that specifies the type of conversion</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+that should be performed on the channel. The string must be</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+one of the following:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+raw - raw HDF values (16-bit unsigned integers) (default).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+corrected - corrected counts (floating-point).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+radiance - Watts per square meter per steradian per micron</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(floating-point).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+reflectance - (channels 1-19 and 26) reflectance without</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+solar zenith angle correction (floating-point).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+temperature - (channels 20-25 and 27-36) brightness</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+temperatue in Kelvins (floating-point).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+weight_type - is a string that specifies the type of weighting</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+that should be perfomed on the channel. The string must be one</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+of the following:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+avg - use weighted averaging (default).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+max - use maximum weighting.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+fill - specifies the output fill value. Default is 0.</tt>
+<br><tt>&nbsp; NOTE: if first file in listfile is MOD03, then chanfile
+must be "none",</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; and both latlon_src
+and ancil_src are forced to 3.</tt>
+<br><tt>&nbsp; ancilfile: text file containing a list of ancillary parameters
+to be gridded,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; one line per parameter.
+The default is "none" indicating that no</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ancillary parameters
+should be gridded. Each line in ancilfile should</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; have the following format:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; param conversion
+weight_type fill</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+where</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+param is a string that specifies an ancillary parameter to be</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+gridded, and must be one of the following 4 character strings:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+hght - Height</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+seze - SensorZenith</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+seaz - SensorAzimuth</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+rang - Range</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+soze - SolarZenith</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+soaz - SolarAzimuth</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+lmsk - Land/SeaMask (available in MOD03 only)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+gflg - gflags</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+conversion is a string that specifies the type of conversion</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+that should be performed on the channel. The string must be</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+one of the following:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+raw - raw HDF values (16-bit signed integers except that</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Range is 16-bit unsigned integer and Land/SeaMask and</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+gflags are unsigned bytes) (default).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+scaled - raw values multiplied by a parameter-specific</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+scale factor (floating-point). Note that scaling factor</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+for Height, Land/SeaMask, and gflags is 1.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+weight_type - is a string that specifies the type of weighting</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+that should be perfomed on the channel. The string must be one</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+of the following:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+avg - use weighted averaging (default for all except</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Land/SeaMask and gflags).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+max - use maximum weighting (default for Land/SeaMask and</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+gflags).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+fill - specifies the output fill value. Default is 0.</tt>
+<br><tt>&nbsp; latlon_src: 1: use 5km latlon from MOD021KM hdf file (default).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3: use 1km latlon from MOD03 hdf file.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+H: use 1km latlon from MOD02HKM hdf file.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Q: use 1km latlon from MOD02QKM hdf file.</tt>
+<br><tt>&nbsp; NOTE: if latlon_src is set to 3, then ancil_src is forced
+to 3.</tt>
+<br><tt>&nbsp; ancil_src: 1: use 5km ancillary data from MOD021KM hdf file
+(default).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3: use 1km ancillary data from MOD03 hdf file.</tt>
+<br><tt>&nbsp; NOTE: if ancil_src is set to 3, then latlon_src is forced
+to 3.</tt>
+<br><tt>&nbsp; keep: 0: delete intermediate chan, lat, lon, col, and row
+files (default).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1: do not delete intermediate
+chan, lat, lon, col, and row files.</tt>
+<br><tt>&nbsp; rind: number of pixels to add around intermediate grid to
+eliminate</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; holes in final grid.
+Default is 50.</tt>
+<h3>
+<a NAME="mod10_l2_usage"></a><tt>mod10_l2.pl</tt></h3>
+<tt>USAGE: mod10_l2.pl dirinout tag listfile gpdfile</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[chanlist [latlonlistfile [keep [rind]]]]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; defaults:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; none&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+0&nbsp;&nbsp;&nbsp;&nbsp; 50</tt><tt></tt>
+<p><tt>&nbsp; dirinout: directory containing the input and output files.</tt>
+<br><tt>&nbsp; tag: string used as a prefix to output files.</tt>
+<br><tt>&nbsp; listfile: text file containing a list of MOD10_L2 files
+to be gridded.</tt>
+<br><tt>&nbsp; gpdfile: .gpd file that defines desired output grid.</tt>
+<br><tt>&nbsp; chanlist: string specifying channel numbers to be gridded.
+The default</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+is 1, i.e. grid channel 1 only. The channel numbers are:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1: Snow Cover - 8-bit unsigned</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2: Snow Cover PixelQA - 8-bit unsigned</tt>
+<br><tt>&nbsp; latlonlistfile: text file containing a list of MOD02 or
+MOD03 files whose</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+latitude and longitude data should be used in place of the</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+latlon data in the corresponding MOD10_L2 file in listfile.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+The default is "none" indicating that the latlon data in</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+each MOD10_L2 file should be used without substitution.</tt>
+<br><tt>&nbsp; keep: 0: delete intermediate chan, lat, lon, col, and row
+files (default).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1: do not delete intermediate
+chan, lat, lon, col, and row files.</tt>
+<br><tt>&nbsp; rind: number of pixels to add around intermediate grid to
+eliminate</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; holes in final grid.
+Default is 50.</tt>
+<h3>
+<a NAME="mod29_usage"></a><tt>mod29.pl</tt></h3>
+<tt>USAGE: mod29.pl dirinout tag listfile gpdfile</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[chanlist [latlonlistfile [keep [rind]]]]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; defaults:&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; none&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+0&nbsp;&nbsp;&nbsp;&nbsp; 50</tt><tt></tt>
+<p><tt>&nbsp; dirinout: directory containing the input and output files.</tt>
+<br><tt>&nbsp; tag: string used as a prefix to output files.</tt>
+<br><tt>&nbsp; listfile: text file containing a list of MOD29 files to
+be gridded.</tt>
+<br><tt>&nbsp; gpdfile: .gpd file that defines desired output grid.</tt>
+<br><tt>&nbsp; chanlist: string specifying channel numbers to be gridded.
+The default</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+is 1, i.e. grid channel 1 only. The channel numbers are:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1: Sea Ice by Reflectance - 8-bit unsigned</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2: Sea Ice by Reflectance PixelQA - 8-bit unsigned</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3: Ice Surface Temperature - 16-bit unsigned (Kelvin * 100)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+4: Ice Surface Temperature PixelQA - 8-bit unsigned</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5: Sea Ice by IST - 8-bit unsigned</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+6: Combined Sea Ice - 8-bit unsigned</tt>
+<br><tt>&nbsp; latlonlistfile: text file containing a list of MOD02 or
+MOD03 files whose</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+latitude and longitude data should be used in place of the latlon</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+data in the corresponding MOD29 file in listfile. The default is</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+"none" indicating that the latlon data in each MOD29 file</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+should be used without substitution.</tt>
+<br><tt>&nbsp; keep: 0: delete intermediate chan, lat, lon, col, and row
+files (default).</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1: do not delete intermediate
+chan, lat, lon, col, and row files.</tt>
+<br><tt>&nbsp; rind: number of pixels to add around intermediate grid to
+eliminate</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; holes in final grid.
+Default is 50.</tt>
+<br>
+<hr><font size=-1>Last updated: April 16, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>
