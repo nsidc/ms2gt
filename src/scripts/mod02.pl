@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.43 2004/10/31 22:21:40 haran Exp haran $
+# $Id: mod02.pl,v 1.44 2004/11/01 00:35:00 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -877,11 +877,13 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 	if ($tile_col == $tile_cols - 1) {
 	    $tile_grid_cols_this = $grid_cols - $tile_col_offset;
 	}
+	my $tile_num = $tile_row * $tile_cols + $tile_col;
 	my $tile_ext = "";
 	if ($tile_cols > 1 && $tile_rows > 1) {
-	    $tile_ext = sprintf("_%01d%01d", $tile_col, $tile_row);
+	    $tile_ext = sprintf("_%02d", $tile_num);
 	    if ($tile_overlap > 0) {
-		$tile_ext .= sprintf("x%02d", $tile_overlap);
+		$tile_ext .= sprintf("_%05d_%05d",
+				     $tile_col_offset, $tile_row_offset);
 	    }
 	}
 	my $grid_file = "";
