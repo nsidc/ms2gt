@@ -1,9 +1,9 @@
-# $Id: mod02_usage.pl,v 1.6 2001/04/26 20:38:21 haran Exp $
+# $Id: mod29_usage.pl,v 1.1 2001/05/14 14:42:16 haran Exp haran $
 
 #========================================================================
-# mod02_usage.pl - defines mod02.pl usage message
+# mod29_usage.pl - defines mod29.pl usage message
 #
-# 25-Oct-2000 T. Haran tharan@colorado.edu 303-492-1847
+# 14-May-2001 T. Haran tharan@colorado.edu 303-492-1847
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
 
