@@ -4,7 +4,7 @@
  * 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char ll2cr_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.8 2001/03/06 21:59:49 haran Exp haran $";
+static const char ll2cr_c_rcsid[] = "$Header: /export/data/ms2gth/src/ll2cr/ll2cr.c,v 1.9 2001/03/06 23:12:03 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -15,7 +15,7 @@ static const char ll2cr_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr
 #include "grids.h"
 
 #define USAGE \
-"usage: ll2cr [-v] [-f] [-r rind]\n"\
+"usage: ll2cr [-v] [-f] [-r rind] [-F fill_in fill_out]\n"\
 "             colsin scansin rowsperscan latfile lonfile gpdfile tag\n"\
 "\n"\
 " input : colsin  - number of columns in each input file\n"\
@@ -45,6 +45,8 @@ static const char ll2cr_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr
 "             for the purposes of determining scansout and scanfirst.\n"\
 "             The default value of rind is 0. Note that if -f is specified,\n"\
 "             then the -r option is ignored and rind is set to 0.\n"\
+"         F fill_in fill_out - specifies the input and output fill values,\n"\
+"             respectively. The default values are -999.0 and -1e30.\n"\
 "\n"
 
 static void DisplayUsage(void)
@@ -71,6 +73,8 @@ main (int argc, char *argv[])
   bool verbose;
   bool force;
   int  rind;
+  float fill_in;
+  float fill_out;
 
   char colfile[FILENAME_MAX];
   char rowfile[FILENAME_MAX];
@@ -86,6 +90,8 @@ main (int argc, char *argv[])
   float *lonp;
   float *rowp;
   float *colp;
+  float lat;
+  float lon;
   int bytes_per_row;
   int bytes_per_scan;
   int scansout;
@@ -106,6 +112,8 @@ main (int argc, char *argv[])
   verbose = FALSE;
   force = FALSE;
   rind = 0;
+  fill_in = -999.0;
+  fill_out = -1e30;
 
 /* 
  *	get command line options
@@ -125,6 +133,18 @@ main (int argc, char *argv[])
 	  DisplayInvalidParameter("rind");
 	if (sscanf(*argv, "%d", &rind) != 1)
 	  DisplayInvalidParameter("rind");
+	break;
+      case 'F':
+	++argv; --argc;
+	if (argc <= 0)
+	  DisplayInvalidParameter("fill_in");
+	if (sscanf(*argv, "%f", &fill_in) != 1)
+	  DisplayInvalidParameter("fill_in");
+	++argv; --argc;
+	if (argc <= 0)
+	  DisplayInvalidParameter("fill_out");
+	if (sscanf(*argv, "%f", &fill_out) != 1)
+	  DisplayInvalidParameter("fill_out");
 	break;
       default:
 	fprintf(stderr,"invalid option %c\n", *option);
@@ -154,6 +174,8 @@ main (int argc, char *argv[])
     fprintf(stderr, "ll2cr:\n");
     fprintf(stderr, "  force         = %d\n", force);
     fprintf(stderr, "  rind          = %d\n", rind);
+    fprintf(stderr, "  fill_in       = %f\n", fill_in);
+    fprintf(stderr, "  fill_out      = %f\n", fill_out);
     fprintf(stderr, "  colsin        = %d\n", colsin);
     fprintf(stderr, "  scansin       = %d\n", scansin);
     fprintf(stderr, "  rowsperscan   = %d\n", rowsperscan);
@@ -289,13 +311,20 @@ main (int argc, char *argv[])
 	/*
 	 *  convert latitude-longitude pair to column-row pair
 	 */
-	forward_grid(grid_def, *latp++, *lonp++, colp, rowp);
-	if (!force &&
-	    *colp >= col_min && *colp <= col_max &&
-	    *rowp >= row_min && *rowp <= row_max) {
-	  if (scanfirst < 0)
-	    scanfirst = scan;
-	  scanlast = scan;
+	lat = *latp++;
+	lon = *lonp++;
+	if (lat == fill_in || lon == fill_in) {
+	  *colp = fill_out;
+	  *rowp = fill_out;
+	} else {
+	  forward_grid(grid_def, lat, lon, colp, rowp);
+	  if (!force &&
+	      *colp >= col_min && *colp <= col_max &&
+	      *rowp >= row_min && *rowp <= row_max) {
+	    if (scanfirst < 0)
+	      scanfirst = scan;
+	    scanlast = scan;
+	  }
 	}
       }
     }
