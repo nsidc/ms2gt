@@ -5,7 +5,7 @@
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *======================================================================*/
 
-static const char apply_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/apply_mask.c,v 1.3 2004/11/25 03:58:17 haran Exp $";
+static const char apply_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/apply_mask.c,v 1.1 2004/11/25 22:58:40 haran Exp haran $";
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -16,7 +16,7 @@ static const char apply_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/
 #include "define.h"
 
 #define USAGE \
-"usage: apply_mask [-v] [-d] [-b] [-B] [-s] [-f] mask_file_in\n"\
+"usage: apply_mask [-v] [-d] [-b] [-B] [-s] [-f]\n"\
 "                  [-m mask_value_in] [-M mask_value_out]\n"\
 "          bytes_per_cell cols_in rows_in\n"\
 "          col_start_in row_start_in cols_in_region rows_in_region\n"\
