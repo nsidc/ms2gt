@@ -4,7 +4,7 @@
 ;*
 ;* 7-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.3 2002/05/14 22:58:32 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.4 2004/10/23 17:41:40 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -103,7 +103,7 @@ PRO modis_ancillary_read, filename, ancillary, image, mirror=mirror, $
                           conversion=conversion, area=area, $
                           latitude=latitude, longitude=longitude
 
-rcs_id = '$Id: modis_ancillary_read.pro,v 1.3 2002/05/14 22:58:32 haran Exp haran $'
+rcs_id = '$Id: modis_ancillary_read.pro,v 1.4 2004/10/23 17:41:40 haran Exp haran $'
 
 ;-----------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -181,6 +181,7 @@ endcase
 ;- Check ancillary name
 case filetype of
     'MOD021KM' : begin
+        lines_per_scan = 10
         if (ancillary ne 'none') and $
           (ancillary ne 'hght') and $
           (ancillary ne 'seze') and $
@@ -195,6 +196,7 @@ case filetype of
           mirror = 2
     end
     'MOD02HKM' : begin
+        lines_per_scan = 20
         if (ancillary ne 'none') then $
           message, 'ancillary value ' + ancillary + $
                    ' is not supported for this MODIS type => ' + filetype
@@ -202,6 +204,7 @@ case filetype of
           mirror = 2
     end
     'MOD02QKM' : begin
+        lines_per_scan = 40
         if (ancillary ne 'none') then $
           message, 'ancillary value ' + ancillary + $
                    ' is not supported for this MODIS type => ' + filetype
@@ -209,6 +212,7 @@ case filetype of
           mirror = 2
     end
     'MOD03' : begin
+        lines_per_scan = 10
         if (ancillary ne 'none') and $
           (ancillary ne 'hght') and $
           (ancillary ne 'seze') and $
@@ -247,27 +251,10 @@ if (ancillary ne 'none') then begin
         'gflg' : sds_name = 'gflags'
     endcase
 
-  ;- Get information about the image array
-    varinfo = hdf_sd_varinfo(sd_id, sds_name)
-    if (varinfo.name eq '') then $
-      message, 'Image array was not found: ' + sds_name
-    npixels_across = varinfo.dims[0]
-    npixels_along  = varinfo.dims[1]
-
-  ;- Set start and count values
-    start = [0L, 0L]
-    count = [npixels_across, npixels_along]
-
-  ;- Use AREA keyword if it was supplied
-    if (n_elements(area) eq 4) then begin
-        start[0] = (long(area[0]) > 0L) < (npixels_across - 1L)
-        start[1] = (long(area[1]) > 0L) < (npixels_along  - 1L)
-        count[0] = (long(area[2]) > 1L) < (npixels_across - start[0])
-        count[1] = (long(area[3]) > 1L) < (npixels_along  - start[1])
-    endif
-
-;- Read ancillary data
-    hdf_sd_varread, sd_id, sds_name, image, start=start, count=count 
+  ;- Get valid scans for the ancillary data
+    band_index = -1
+    image = extract_valid_scans(sd_id, sds_name, lines_per_scan, band_index, $
+                                area=area)
 
     if conversion eq 'scaled' then begin
 
@@ -302,8 +289,10 @@ if (ancillary ne 'none') then begin
 endif
 
 ;- Read latitude and longitude arrays
-if arg_present(latitude) then hdf_sd_varread, sd_id, 'Latitude', latitude
-if arg_present(longitude) then hdf_sd_varread, sd_id, 'Longitude', longitude
+if arg_present(latitude) then $
+      latitude = extract_valid_scans(sd_id, 'Latitude', 10, -1, area=area)
+if arg_present(longitude) then $
+      longitude = extract_valid_scans(sd_id, 'Longitude', 10, -1, area=area)
 
 ;-----------------------------------------------------------------------------
 ;- PROCESS MIRROR SIDE DATA
@@ -312,25 +301,9 @@ if arg_present(longitude) then hdf_sd_varread, sd_id, 'Longitude', longitude
 if arg_present(mirror) then begin
 
     if mirror eq -1 then begin
-      ;- Get information about the mirror side array
-        mirror_sds_name = 'Mirror side'
-        varinfo = hdf_sd_varinfo(sd_id, mirror_sds_name)
-        if (varinfo.name eq '') then $
-          message, 'Image array was not found: ' + mirror_sds_name
-        nscans  = varinfo.dims[0]
-
-      ;- Set start and count values
-        start = [0L]
-        count = [nscans]
-        
-      ;- Use AREA keyword if it was supplied
-        if (n_elements(area) eq 4) then begin
-            start[0] = ((long(area[1]) > 0L) / 10) < (nscans  - 1L)
-            count[0] = ((long(area[3]) > 1L) / 10) < (nscans  - start[0])
-        endif
 
       ;- Read mirror-side data
-        hdf_sd_varread, sd_id, mirror_sds_name, mirror, start=start, count=count 
+        mirror = extract_valid_scans(sd_id, 'Mirror_side', 10, -1, area=area)
     endif
 endif
 
