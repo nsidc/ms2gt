@@ -4,7 +4,7 @@
 # 27-Dec-2000 T.Haran 303-492-1847  tharan@kryos.colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /usr/people/haran/photoclin/src/rect2normal/Makefile,v 1.2 1999/07/28 17:47:35 haran Exp $
+RCSID = $Header: /export/data/modis/src/fornav/Makefile,v 1.1 2000/12/28 23:31:29 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -31,13 +31,18 @@ TAR = tar
 COMPRESS = gzip
 
 #
+#	archive file name
+#
+TARFILE = fornav.tar
+
+#
 #	debug or optimization settings
 #
 #	on least significant byte first machines (Intel, Vax)
 #	add -DLSB1ST option to enable byteswapping of cdb files
 #
-#CONFIG_CFLAGS = -O
-CONFIG_CFLAGS = -DDEBUG -g
+CONFIG_CFLAGS = -O
+#CONFIG_CFLAGS = -DDEBUG -g
 
 #
 #	system libraries
@@ -51,10 +56,28 @@ SYSLIBS = -lm
 CFLAGS = -I$(INCDIR) $(CONFIG_CFLAGS)
 LIBS = -L$(LIBDIR) -lmodels $(SYSLIBS)
 
+SRCS = fornav.c
+OBJS = fornav.o
+HDRS = 
+
 all : fornav
 
 fornav: fornav.o
 	$(CC) $(CFLAGS) -o $(BINDIR)/fornav fornav.o $(LIBS)
+
+clean:
+	- $(RM) $(OBJS) fornav
+
+tar:
+	- $(CO) Makefile $(SRCS) $(HDRS)
+	$(TAR) cvf $(TARFILE) Makefile $(SRCS) $(HDRS)
+	$(RM) $(TARFILE).gz
+	$(COMPRESS) $(TARFILE)
+
+depend:
+	- $(CO) $(SRCS) $(HDRS)
+	$(MAKEDEPEND) -I$(INCDIR) \
+		-- $(CFLAGS) -- $(SRCS)
 
 .SUFFIXES : .c,v .h,v
 
