@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.4 2001/01/03 22:03:55 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.5 2001/01/03 22:40:51 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -104,6 +104,8 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/for
 #define TYPE_SINT4  5
 #define TYPE_FLOAT  6
 
+#define EPSILON (1e-8)
+
 typedef struct {
   char  *name;
   char  *file;
@@ -124,8 +126,8 @@ typedef struct {
   float b;
   float c;
   float f;
-  float delu;
-  float delv;
+  float u_del;
+  float v_del;
 } ewa_parameters;
 
 typedef struct {
@@ -254,9 +256,9 @@ static void ReadImage(image *ip)
   }
 }
 
-static void InitializeWeight(ewa_weight *ewaw, int weight_count,
-			     float weight_min, float weight_distance_max,
-			     float weight_sum_min)
+static void InitializeWeight(int weight_count, float weight_min,
+			     float weight_distance_max, float weight_sum_min,
+			     ewa_weight *ewaw)
 {
   float  *wptr;
   int    i;
@@ -308,6 +310,70 @@ static void DeInitializeWeight(ewa_weight *ewaw)
     fprintf(stderr, "DeInitializing weight structure");
   if (ewaw->wtab)
     free(ewaw->wtab);
+}
+
+static void ComputeEwaParameters(image *iu, image *iv, ewa_weight *ewaw,
+				 ewa_parameters *ewap)
+{
+  int rowsm1;
+  int col;
+  float *u_first;
+  float *u_last;
+  float *v_first;
+  float *v_last;
+  ewa_parameters *this_ewap;
+  float ux;
+  float uy;
+  float vx;
+  float vy;
+  float f_scale;
+  float qmax;
+  float a;
+  float b;
+  float c;
+  float d;
+
+  if (very_verbose)
+    fprintf(stderr, "Computing ewa parameters\n");
+  rowsm1 = iu->rows - 1;
+  qmax = ewaw->qmax;
+  for (col = 0,
+	 u_first = (float *)(iu->buf[0]),
+	 u_last  = (float *)(iu->buf[rowsm1]),
+	 v_first = (float *)(iv->buf[0]),
+	 v_last  = (float *)(iv->buf[rowsm1]),
+	 this_ewap = ewap;
+       col < iu->cols;
+       col++, this_ewap++) {
+    ux = *u_last++ - *u_first++;
+    vx = *v_last++ - *v_first++;
+    uy = ux / rowsm1;
+    vy = vx / rowsm1;
+
+    /*
+     *  scale a, b, c, and f equally so that f = qmax
+     */
+    f_scale = ux * vy - uy * vx;
+    f_scale *= f_scale;
+    f_scale = (f_scale > EPSILON) ? qmax / f_scale : 1.0;
+    a = (vx * vx + vy * vy) * f_scale;
+    b = -2.0 * (ux * vx + uy * vy) * f_scale;
+    c = (ux * ux + uy * uy) * f_scale;
+    d = 4.0 * a * c - b * b;
+    d = (d > EPSILON) ? 4.0 * qmax / d : 1.0;
+    this_ewap->a = a;
+    this_ewap->b = b;
+    this_ewap->c = c;
+    this_ewap->f = qmax;
+    this_ewap->u_del = sqrt(c * d);
+    this_ewap->v_del = sqrt(a * d);
+    if (very_verbose &&
+	(col == 0 || col == iu->cols / 2 || col == iu->cols - 1)) {
+      fprintf(stderr, "a: %f  b: %f  c: %f\n", a, b, c);
+      fprintf(stderr, "u_del: %f  v_del: %f\n",
+	      this_ewap->u_del, this_ewap->v_del);
+    }
+  }
 }
 
 main (int argc, char *argv[])
@@ -625,8 +691,8 @@ main (int argc, char *argv[])
   /*
    *  Initialize the ewa weight structure
    */
-  InitializeWeight(&ewaw, weight_count, weight_min, weight_distance_max,
-		   weight_sum_min);
+  InitializeWeight(weight_count, weight_min, weight_distance_max,
+		   weight_sum_min, &ewaw);
 
   /*
    *  Process each scan
@@ -643,6 +709,11 @@ main (int argc, char *argv[])
     ReadImage(swath_row_image);
     for (i = 0; i < chan_count; i++)
       ReadImage(&swath_chan_image[i]);
+
+    /*
+     *  Compute ewa parameters for this scan
+     */
+    ComputeEwaParameters(swath_col_image, swath_row_image, &ewaw, ewap); 
 
   } /* for (scan = swath_scan_first; scan <= swath_scan_last; scan++) */
 
