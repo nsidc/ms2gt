@@ -3,7 +3,7 @@
 ;*
 ;* 20-Nov-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_regress.pro,v 1.3 2002/11/24 23:02:36 haran haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_regress.pro,v 1.4 2002/11/25 20:20:37 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -19,6 +19,7 @@
 ;
 ; CALLING SEQUENCE:
 ;       MODIS_REGESS, x, y, slope, intercept
+;               [, skip_first_regression=skip_first_regression]
 ;               [, y_tolerance=y_tolerance]
 ;               [, slope_delta_max=slope_delta_max]
 ;               [, regression_max=regression_max]
@@ -36,8 +37,13 @@
 ;       slope: the slope computed from the regression.
 ;       intercept: the intercept computed from the regression.
 ;       Thus the best fit line is y = slope * x + intercept.
+;       NOTE: If skip_first_regression is set, then slope and intercept
+;             also serve as inputs.
 ;
 ; KEYWORDS:
+;       skip_first_regression: If set then the first regression is skipped
+;         and the slope and intercept provided are used to detect outliers
+;         on the second linear regression.
 ;       y_tolerance: the value to use after the first linear regression
 ;         has been performed to find "outliers" that will be eliminated
 ;         from the second linear regression. That is, after k and m have
@@ -87,6 +93,7 @@
 ;-
 
 Pro modis_regress, x, y, slope, intercept, $
+                  skip_first_regression=skip_first_regression, $
                   y_tolerance=y_tolerance, $
                   slope_delta_max=slope_delta_max, $
                   regression_max=regression_max, $
@@ -101,6 +108,7 @@ Pro modis_regress, x, y, slope, intercept, $
 
   usage = lf + 'usage: modis_adjust, ' + lf + $
                 'x, y, slope, intercept' + lf + $
+                '[, skip_first_regression=skip_first_regression' + lf + $
                 '[, y_tolerance=y_tolerance] ' + lf + $
                 '[, slope_delta_max=slope_delta_max] ' + lf + $
                 '[, regression_max=regression_max] ' + lf + $
@@ -112,6 +120,8 @@ Pro modis_regress, x, y, slope, intercept, $
   if n_params() ne 4 then $
     message, usage
 
+  if n_elements(skip_first_regression) eq 0 then $
+    skip_first_regression = 0
   if n_elements(y_tolerance) eq 0 then $
     y_tolerance = 0.0
   if n_elements(slope_delta_max) eq 0 then $
@@ -129,20 +139,25 @@ Pro modis_regress, x, y, slope, intercept, $
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
-  print, 'modis_regress: $Header: /hosts/icemaker/temp/tharan/inst/modis_regress.pro,v 1.3 2002/11/24 23:02:36 haran Exp haran $'
+  print, 'modis_regress: $Header: /hosts/icemaker/temp/tharan/inst/modis_regress.pro,v 1.4 2002/11/25 20:20:37 haran Exp haran $'
   help, x
   help, y
-  print, '  y_tolerance:      ', y_tolerance
-  print, '  slope_delta_max:  ', slope_delta_max
-  print, '  regression_max:   ', regression_max
-  print, '  density_bin_width:', density_bin_width
-  print, '  plot_tag:         ', plot_tag
-  print, '  plot_max:         ', plot_max
+  if skip_first_regression then begin
+      print, '  slope:                 ', slope[0]
+      print, '  intercept:             ', intercept
+  endif
+  print, '  skip_first_regression: ', skip_first_regression
+  print, '  y_tolerance:           ', y_tolerance
+  print, '  slope_delta_max:       ', slope_delta_max
+  print, '  regression_max:        ', regression_max
+  print, '  density_bin_width:     ', density_bin_width
+  print, '  plot_tag:              ', plot_tag
+  print, '  plot_max:              ', plot_max
   size_plot_titles = size(plot_titles)
   if size_plot_titles[0] eq 1 then begin
       if size_plot_titles[1] eq 2 then begin
-          print, '  plot_titles[0]:   ', plot_titles[0]
-          print, '  plot_titles[1]:   ', plot_titles[1]
+          print, '  plot_titles[0]:        ', plot_titles[0]
+          print, '  plot_titles[1]:        ', plot_titles[1]
       endif
   endif
 
@@ -166,8 +181,10 @@ Pro modis_regress, x, y, slope, intercept, $
 
   ;  intialize outputs and status
 
-  slope = 1.0
-  intercept = 0.0
+  if not skip_first_regression then begin
+      slope = 1.0
+      intercept = 0.0
+  endif
   status = 0L
 
   ;  if using weights, then compute y density parameters
@@ -195,16 +212,24 @@ Pro modis_regress, x, y, slope, intercept, $
         weight[i] = epsilon
       i = 0
       weight = 1.0 / temporary(weight)
-      slope = regress(x, y, const=intercept, status=status, $
-                      measure_errors=weight)
-  endif else begin
-      slope = regress(x, y, const=intercept, status=status)
-  endelse
+  endif
+
   regression_count = 1
+  if not skip_first_regression then begin
+      if density_bin_width gt 0 then begin
+          slope = regress(x, y, const=intercept, status=status, $
+                          measure_errors=weight)
+      endif else begin
+          slope = regress(x, y, const=intercept, status=status)
+      endelse
+  endif
+
   if (status eq 0) and (y_tolerance gt 0) then $
     final = '' $
   else $
     final = ' final'
+  if skip_first_regression then $
+    final = ' input'
   annot = string('  tag: ', plot_tag, $
                  '  iteration: ', regression_count, $
                  '  status: ', status, $
