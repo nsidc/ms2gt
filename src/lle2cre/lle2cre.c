@@ -4,7 +4,7 @@
  * 26-Nov-2001 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char lle2cre_c_rcsid[] = "$Header: /usr/people/haran/photoclin/src/lle2cre/lle2cre.c,v 1.1 2001/11/26 18:25:27 haran Exp haran $";
+static const char lle2cre_c_rcsid[] = "$Header: /usr/people/haran/photoclin/src/lle2cre/lle2cre.c,v 1.2 2001/12/02 21:20:03 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -278,4 +278,5 @@ main (int argc, char *argv[])
     fprintf(stderr, "  %d lines input\n", count_input);
     fprintf(stderr, "  %d lines output\n", count_output);
   }
+  exit(EXIT_SUCCESS);
 }
