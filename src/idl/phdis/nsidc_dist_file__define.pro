@@ -5,6 +5,9 @@
 ; Boulder, Colorado
 ;
 ; File object definition.
+;
+; $Log$
+;
 
 ; Initialization.
 ;
@@ -39,8 +42,8 @@ FUNCTION NSIDC_DIST_FILE::INIT, main_obj, hdf_file
       RETURN, 0
    ENDIF
 
-   grid_names = STRTRIM(STR_SEP(grid_names, ','), 2)
-   swath_names = STRTRIM(STR_SEP(swath_names, ','), 2)
+   grid_names = STR_SEP(grid_names, ',')
+   swath_names = STR_SEP(swath_names, ',')
 
    ; Add a new sub-base to the main object's file holding base.
 
@@ -64,7 +67,7 @@ FUNCTION NSIDC_DIST_FILE::INIT, main_obj, hdf_file
       center_lat = projparam[5] / 1.0D6
       status = EOS_GD_ORIGININFO(grid_id, origincode) ; Origin info.
       n_fields = EOS_GD_INQFIELDS(grid_id, field_names, frank, fnumbertype) ; Field info.
-      field_names = STRTRIM(STR_SEP(field_names,','), 2)
+      field_names = STR_SEP(field_names,',')
       ul_ll = up_left
       lr_ll = low_right
       status_ul = NSIDC_DIST_GET_LATLON(ul_ll, projcode, projparam)
@@ -159,9 +162,9 @@ FUNCTION NSIDC_DIST_FILE::INIT, main_obj, hdf_file
       swath_id = EOS_SW_ATTACH(self.fid, swath_name)
 
       n_fields = EOS_SW_INQDATAFIELDS(swath_id, field_names, rank, numbertype) ; Field info.
-      field_names = STRTRIM(STR_SEP(field_names,','), 2)
+      field_names = STR_SEP(field_names,',')
       status = EOS_SW_INQGEOFIELDS(swath_id, geo_field_names, geo_rank, geo_numbertype)
-      geo_field_names = STRTRIM(STR_SEP(geo_field_names,','), 2)
+      geo_field_names = STR_SEP(geo_field_names,',')
       status = EOS_SW_READFIELD(swath_id, geo_field_names[0], lat)
       status = EOS_SW_READFIELD(swath_id, geo_field_names[1], lon)
 
