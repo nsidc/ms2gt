@@ -3,7 +3,7 @@
 ;*
 ;* 8-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/interp_swath.pro,v 1.1 2001/02/10 00:14:20 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/interp_swath.pro,v 1.2 2001/02/19 16:07:24 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -24,6 +24,7 @@
 ;               [, col_offset=col_offset]
 ;               [, row_offset=row_offset]
 ;               [, /nearest_neighbor]
+;               [, mirror_side=mirror_side]
 ;
 ; ARGUMENTS:
 ;    Inputs:
@@ -37,8 +38,9 @@
 ;       colsout: number of columns in each output file. Must be less than
 ;         or equal to colsin * interp_factor.
 ;       tag: string used to construct output filenames:
-;         fileout = tag_colsout_scans_scanfirst_rowsperscanout.img
+;         fileout = tag_mirror_colsout_scans_scanfirst_rowsperscanout.img
 ;             where
+;               mirror - mirror side of first scan in each output file.
 ;               scansout - number of scans written to each output file.
 ;               rowsperscanout = interp_factor * rowsperscanin.
 ;           Each output file contains colsout * scans * rowsperscanout values.
@@ -57,19 +59,20 @@
 ;       col_offset: the column number in the output grid to which the
 ;         first column in the input grid is to be mapped. The default is 0.
 ;       row_offset: the row number in the output grid to which the
-;         first column in the input grid is to be mapped. The default is
-;         0.
+;         first row in the input grid is to be mapped. The default is 0.
 ;       nearest_neighbor: if set, then nearest neighbor sampling is used.
 ;         Otherwise, bilinear interpolation (if rowsperscanin is less than
 ;         4) or cubic convolution (if rowsperscanin is greater than or equal
 ;         to 4) is used.
+;       mirror_side: if 0 or 1, then indicates the mirror side of scan 0
+;         in filein. If 2, then mirror side is undefined. The default is 2.
 ;
 ; EXAMPLE:
 ;         interp_swath, 5, 271, 330, 5, $
 ;                       'gl1_2000153_1445_raw_soze_00271_00812.img', $
 ;                        1354, 'gl1_2000153_1445_soze_raw', $
 ;                        data_type='u2', scanfirst=17, $
-;                        col_offset=2, row_offset=2
+;                        col_offset=2, row_offset=2, mirror_side=1
 ;
 ; ALGORITHM:
 ;
@@ -83,7 +86,8 @@ Pro interp_swath, interp_factor, colsin, scans, rowsperscanin, $
                   data_type=data_type, $
                   scanfirst=scanfirst, $
                   col_offset=col_offset, row_offset=row_offset, $
-                  nearest_neighbor=nearest_neighbor
+                  nearest_neighbor=nearest_neighbor, $
+                  mirror_side=mirror_side
 
   usage = 'usage: interp_swath, ' + $
                   'interp_factor, colsin, scans, rowsperscanin, ' + $
@@ -92,7 +96,8 @@ Pro interp_swath, interp_factor, colsin, scans, rowsperscanin, $
                   '[, scanfirst=scanfirst]' + $
                   '[, col_offset=col_offset]' + $
                   '[, row_offset=row_offset]' + $
-                  '[, nearest_neighbor=nearest_neighbor]'
+                  '[, nearest_neighbor=nearest_neighbor]' + $
+                  '[, mirror_side=mirror_side]'
 
   if n_params() ne 7 then $
     message, usage
@@ -107,6 +112,8 @@ Pro interp_swath, interp_factor, colsin, scans, rowsperscanin, $
     row_offset = 0
   if n_elements(nearest_neighbor) eq 0 then $
     nearest_neighbor = 0
+  if n_elements(mirror_side) eq 0 then $
+    mirror_side = 2
 
   print, 'interp_swath:'
   print, '  interp_factor:    ', interp_factor
@@ -121,6 +128,7 @@ Pro interp_swath, interp_factor, colsin, scans, rowsperscanin, $
   print, '  col_offset:       ', col_offset
   print, '  row_offset:       ', row_offset
   print, '  nearest_neighbor: ', nearest_neighbor
+  print, '  mirror_side:      ', mirror_side
 
   if colsout gt colsin * interp_factor then $
     message, 'colsout must be less than or equal to colsin * interp_factor'
@@ -178,8 +186,12 @@ Pro interp_swath, interp_factor, colsin, scans, rowsperscanin, $
   ;  Create output file name.
 
   rowsperscanout = rowsperscanin * interp_factor
+  mirror = mirror_side
+  if mirror lt 2 then $
+    mirror = (mirror + scanfirst) mod 2
 
-  suffix = string(colsout, format='(I5.5)') + '_' + $
+  suffix = string(mirror, format='(I1.1)') + '_' + $
+           string(colsout, format='(I5.5)') + '_' + $
            string(scans, format='(I5.5)') + '_' + $
            string(scanfirst, format='(I5.5)') + '_' + $
            string(rowsperscanout, format='(I2.2)') + '.img'
