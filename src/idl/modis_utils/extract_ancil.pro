@@ -3,7 +3,7 @@
 ;*
 ;* 8-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_ancil.pro,v 1.1 2001/02/10 00:22:30 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/modis_utils/extract_ancil.pro,v 1.2 2001/02/19 01:03:14 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -65,10 +65,16 @@ PRO extract_ancil, hdf_file, tag, ancillary, $
 
   area = [0L, swath_row_first, 999999L, swath_rows]
   if get_latlon ne 0 then begin
-      modis_ancillary_read, hdf_file, ancillary, image, $
-                            conversion=conversion, area=area, $
-                            latitude=lat, longitude=lon, $
-      lat_dimen = size(lat, /dimensions)
+      if swath_rows gt 0 then $
+          modis_ancillary_read, hdf_file, ancillary, image, $
+                                conversion=conversion, area=area, $
+                               latitude=lat, longitude=lon, $
+                               lat_dimen = size(lat, /dimensions) $
+      else $
+          modis_ancillary_read, hdf_file, ancillary, image, $
+                                conversion=conversion, $
+                               latitude=lat, longitude=lon, $
+                               lat_dimen = size(lat, /dimensions)
       cols = lat_dimen[0]
       rows = lat_dimen[1]
       cols_string = string(cols, format='(I5.5)')
@@ -84,8 +90,12 @@ PRO extract_ancil, hdf_file, tag, ancillary, $
       free_lun, lat_lun
       free_lun, lon_lun
   endif else begin
-      modis_ancillary_read, hdf_file, ancillary, image, $
-                            conversion=conversion, area=area
+      if swath_rows gt 0 then $
+          modis_ancillary_read, hdf_file, ancillary, image, $
+                                conversion=conversion, area=area $
+      else $
+          modis_ancillary_read, hdf_file, ancillary, image, $
+                                conversion=conversion
   endelse
   image_dimen = size(image, /dimensions)
   conv_string = strmid(conversion, 0, 3)
