@@ -1,4 +1,4 @@
-# $Id: mod29_usage.pl,v 1.1 2001/05/14 14:42:16 haran Exp haran $
+# $Id: mod29_usage.pl,v 1.2 2001/05/14 14:43:04 haran Exp haran $
 
 #========================================================================
 # mod29_usage.pl - defines mod29.pl usage message
@@ -22,7 +22,7 @@ USAGE: mod29.pl dirinout tag listfile gpdfile
             is 1, i.e. grid channel 1 only. The channel numbers are:
               1: icer Sea Ice by Reflectance - 8-bit unsigned
               2: irqa Sea Ice by Reflectance PixelQA - 8-bit unsigned
-              3: temp Ice Surface Temperature - 16-bit unsigned (Kelvin * 100)
+              3: temp Ice Surface Temperature - 16-bit unsigned (kelvin * 100)
               4: itqa Ice Surface Temperature PixelQA - 8-bit unsigned
               5: icet Sea Ice by IST - 8-bit unsigned
               6: icrt Combined Sea Ice - 8-bit unsigned
