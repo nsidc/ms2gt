@@ -1,9 +1,9 @@
 ;*========================================================================
-;* interp_colrow.pro - forward navigate a swath image to a projected image
+;* interp_colrow.pro - interpolate column and row files
 ;*
 ;* 10-Jan-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/interp_colrow/interp_colrow.pro,v 1.4 2000/12/09 22:32:44 haran Exp $
+;$Header: /export/data/modis/src/idl/fornav/interp_colrow.pro,v 1.1 2001/01/11 15:34:55 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -11,7 +11,7 @@
 ;	interp_colrow
 ;
 ; PURPOSE:
-;       Expand a grid of column and row numbers.
+;       Expand a grid of column and row numbers using interpolation.
 ;
 ; CATEGORY:
 ;	Modis.
@@ -100,9 +100,10 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
 
   if n_params() ne 7 then $
     message, usage
-  if n_elements(grid_check) ne 4 then $
-    check_grid = 0 $
-  else begin
+  if n_elements(grid_check) ne 4 then begin
+      grid_check = 0
+      check_grid = 0
+  endif else begin
       check_grid = 1
       col_min = grid_check[0]
       col_max = grid_check[1]
@@ -144,11 +145,10 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
 
   scansout = scansin
   scanfirst = 0
-  rowsperscanout = rowsperscanin * interp_factor
   colsout = colsin * interp_factor
-  rowsout = rowsin * interp_factor
+  rowsperscanout = rowsperscanin * interp_factor
 
-  suffix = string(colsin, format='(I5.5)') + '_' + $
+  suffix = string(colsout, format='(I5.5)') + '_' + $
            string(scansout, format='(I5.5)') + '_' + $
            string(scanfirst, format='(I5.5)') + '_' + $
            string(rowsperscanout, format='(I2.2)') + '.img'
@@ -165,29 +165,32 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
 
   if check_grid eq 1 then begin
       scanfirst = -1
-      scanlast  = -1
+      scanlast  = -2
   endif
   for scan = 0, scansin - 1 do begin
 
+      if (scan mod 10) eq 0 then $
+        print, 'scan:', scan
       ;  read in a scan's worth of data
 
       readu, col_lun_in, scan_of_cols_in
       readu, row_lun_in, scan_of_rows_in
 
-      scan_of_cols_out = $
-        congridx(scan_of_cols, cols_out, rows_out, $
-                 col_offset=col_offset, row_offset=row_offset, $
-                 cubic=0.5)
-      scan_of_rows_out = $
-        congridx(scan_of_rows, cols_out, rows_out, $
-                 col_offset=col_offset, row_offset=row_offset, $
-                 cubic=0.5)
+      scan_of_cols_out = congridx(scan_of_cols_in, colsout, rowsperscanout, $
+                                  col_offset=col_offset, $
+                                  row_offset=row_offset, $
+                                  cubic=-0.5)
+      scan_of_rows_out = congridx(scan_of_rows_in, colsout, rowsperscanout, $
+                                  col_offset=col_offset, $
+                                  row_offset=row_offset, $
+                                  cubic=-0.5)
 
       if check_grid eq 1 then begin
-          this_col_min = min(scan_of_cols_out, max=this_col_max)
-          this_row_min = min(scan_of_rows_out, max=this_row_max)
-          if (this_col_min ge col_min) and (this_col_max le col_max) and $
-             (this_row_min ge row_min) and (this_row_max le row_max) then begin
+          i = where((scan_of_cols_out ge col_min) and $
+                    (scan_of_cols_out le col_max) and $
+                    (scan_of_rows_out ge row_min) and $
+                    (scan_of_rows_out le row_max), count)
+          if count gt 0 then begin
               scanlast = scan
               if scanfirst lt 0 then $
                 scanfirst = scan
@@ -221,7 +224,7 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
 
   if check_grid eq 1 then begin
       scansout = scanlast - scanfirst + 1
-      suffix = string(colsin, format='(I5.5)') + '_' + $
+      suffix = string(colsout, format='(I5.5)') + '_' + $
                string(scansout, format='(I5.5)') + '_' + $
                string(scanfirst, format='(I5.5)') + '_' + $
                string(rowsperscanout, format='(I2.2)') + '.img'
