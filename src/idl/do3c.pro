@@ -105,9 +105,9 @@ endif else begin
           img_in = hist_equal(img_in, min=min, max=max) $
         else $
           img_in = bytscl(img_in, min=min, max=max)
-        img_out[i, *, *] = reverse(img_in, 2)
+        img_out[i, *, *] = img_in
     endfor
-    write_jpeg, file_out, img_out, quality=100, true=1 
+    write_tiff, file_out, img_out
 endelse
 
 end
