@@ -6,6 +6,7 @@ pro print_grid_class_object_instance, og, passthru=passthru
     print, 'gpd_filename: ',      og->get_gpd_filename()
     print, 'grid_coordinates: '
     help, /struct,                og->get_grid_coordinates()
+    print, 'grid_rotation: ',     og->get_grid_rotation()
     print, 'grid_bounds: '
     help, /struct,                og->get_grid_bounds()
     print, 'grid_center: '
