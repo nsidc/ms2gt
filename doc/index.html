@@ -212,13 +212,16 @@ the first line accordingly. If your .cshrc or your .login includes lines
 such as:
 <p><tt>setenv IDL_DIR /usr/local/rsi/idl</tt>
 <br><tt>source $IDL_DIR/bin/idl_setup</tt>
-<br><tt>setenv IDL_PATH ...</tt>
-<p>then the two MS2GT lines above should be placed after these IDL lines
-in the appropriate file. Once your .cshrc or your .login file has been
-editted, then logout and login again, or else type the following two lines:
+<br><tt>setenv IDL_PATH ...</tt><tt></tt>
+<p><tt>or a line such as</tt><tt></tt>
+<p><tt>setenv PATHMPP ...</tt>
+<p>then the two MS2GT lines above should be placed after these IDL and
+PATHMPP lines in the appropriate file. Once your .cshrc or your .login
+file has been editted, then logout and login again, or else type the following
+two lines:
 <p><b><tt>source ~/.cshrc </tt></b>or
 <br><b><tt>source ~/.login</tt></b>
-<br><b><tt>rehash</tt></b><b><tt></tt></b>
+<br><b><tt>rehash</tt></b>
 <p>Finally, create a writeable directory in your home directory called
 tmp that will be used by a perl script called idl_sh.pl. This directory
 will be used for holding temporary shell scripts for running IDL programs:
