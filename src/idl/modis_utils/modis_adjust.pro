@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.23 2002/12/01 18:52:09 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.24 2002/12/01 19:28:34 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -46,6 +46,7 @@
 ;               [, /reg_rows]
 ;               [, file_reg_rows_in=file_reg_rows_in]
 ;               [, file_reg_rows_out=file_reg_rows_out]
+;               [, reg_row_mirror_side=reg_row_mirror_side]
 ;               [, row_y_tolerance=row_y_tolerance]
 ;               [, row_slope_delta_max=row_slope_delta_max]
 ;               [, row_regression_max=row_regression_max]
@@ -122,7 +123,10 @@
 ;           79            0.00000000E+00    1.00000000E+00
 ;       file_reg_row_out: Specifies the name of an output text file
 ;         containing the final set of intercepts and slopes for row
-;         regressions. The file has the same format as for file_reg_row_out.
+;         regressions. The file has the same format as for
+;         file_reg_row_out.
+;       reg_row_mirror_side: Specifies the mirror side for the first
+;         scan in file_in. Valid values are 0 (the default) or 1.
 ;       NOTE: The keywords below are preceded by either col_ or row_
 ;         indicating to which set of regressions they refer.
 ;       y_tolerance: the value to use after the first linear regression
@@ -136,6 +140,9 @@
 ;         values. The default value of y_tolerance is 0.01.
 ;         NOTE: If y_tolerance is 0.0, then no second linear regression
 ;               is performed.
+;         NOTE: If row_y_tolerance is a vector, then each element of
+;               row_y_tolerance specifies the value to use for the
+;               corresponding pass.
 ;       slope_delta_max: the outlier detection procedure described for
 ;         y_tolerance is repeated until slope_delta =
 ;         abs(slope - slope_old) / slope_old is less than or equal to
@@ -230,6 +237,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                   reg_rows=reg_rows, $
                   file_reg_rows_in=file_reg_rows_in, $
                   file_reg_rows_out=file_reg_rows_out, $
+                  reg_row_mirror_side=reg_row_mirror_side, $
                   row_y_tolerance=row_y_tolerance, $
                   row_slope_delta_max=row_slope_delta_max, $
                   row_regression_max=row_regression_max, $
@@ -263,6 +271,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                 '[, /reg_rows] ' + lf + $
                 '[, file_reg_rows_in=file_reg_rows_in] ' + lf + $
                 '[, file_reg_rows_out=file_reg_rows_out] ' + lf + $
+                '[, reg_row_mirror_side=reg_row_mirror_side]' + lf + $
                 '[, row_y_tolerance=row_y_tolerance] ' + lf + $
                 '[, row_slope_delta_max=row_slope_delta_max] ' + lf + $
                 '[, row_regression_max=row_regression_max] ' + lf + $
@@ -313,6 +322,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     file_reg_rows_in = ''
   if n_elements(file_reg_rows_out) eq 0 then $
     file_reg_rows_out = ''
+  if n_elements(reg_row_mirror_side) eq 0 then $
+    reg_row_mirror_side = 0
   if n_elements(row_y_tolerance) eq 0 then $
     row_y_tolerance = 0.01
   if n_elements(row_slope_delta_max) eq 0 then $
@@ -332,10 +343,11 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     row_plot_tag = ''
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
+  row_y_tolerance_count   = n_elements(row_y_tolerance)
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.23 2002/12/01 18:52:09 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.24 2002/12/01 19:28:34 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -364,7 +376,11 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   print, '  reg_rows:             ', reg_rows
   print, '  file_reg_rows_in:     ', file_reg_rows_in
   print, '  file_reg_rows_out:    ', file_reg_rows_out
-  print, '  row_y_tolerance:      ', row_y_tolerance
+  print, '  reg_row_mirror_side:  ', reg_row_mirror_side
+  for i = 0, row_y_tolerance_count - 1 do begin
+      s = string(i, format='(i1)')
+      print, '  row_y_tolerance[' + s + ']:   ', row_y_tolerance[i]
+  endfor
   print, '  row_slope_delta_max:  ', row_slope_delta_max
   print, '  row_regression_max:   ', row_regression_max
   print, '  row_density_bin_width:', row_density_bin_width
@@ -395,6 +411,9 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   if reg_col_offset gt reg_col_stride then $
     message, 'reg_col_offset must be less than reg_col_stride'
+
+  if (reg_row_mirror_side ne 0) and (reg_row_mirror_side ne 1) then $
+    message, 'reg_row_mirror_side must be 0 or 1'
 
   rows = scans * rows_per_scan
   cells_per_scan = long(cols) * rows_per_scan
@@ -625,6 +644,19 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
           ipen = 0
       endif
 
+      ;  swap scans as needed to make the first scan be mirror side 0
+
+      if reg_row_mirror_side eq 1 then begin
+          scans_tmp = ds_scans * 2
+          swath = reform(swath, cols, rows_per_scan, scans_tmp, /overwrite)
+          for scan_ctr = 0, scans_tmp - 2, 2 do begin
+              scan = swath[*, *, scan_ctr]
+              swath[*, *, scan_ctr] = swath[*, *, scan_ctr + 1]
+              swath[*, *, scan_ctr + 1] = scan
+          endfor
+          scan = 0
+      endif
+
       ;  calculate the number of cells for a double-sided detector
 
       cells_per_ds_det = long(cols) * ds_scans
@@ -649,6 +681,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
           pass_count = 1
       endelse
       mean_count = rows_per_ds_scan
+      y_tol_ctr = 0
       for pass_ctr = 0, pass_count - 1 do begin
           mean_count = mean_count / 2
           if mean_count eq 5 then $
@@ -698,7 +731,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                                     format='(a, i2.2)')
                       modis_regress, mean, vector, $
                                      slope, intcp, $
-                                     y_tolerance=row_y_tolerance, $
+                                     y_tolerance=row_y_tolerance[y_tol_ctr], $
                                      slope_delta_max=row_slope_delta_max, $
                                      regression_max=row_regression_max, $
                                      density_bin_width=row_density_bin_width, $
@@ -726,11 +759,25 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
           endif
           if (file_reg_rows_in ne '') and (pass_ctr eq 0) then $
             free_lun, lun
+          if y_tol_ctr lt row_y_tolerance_count - 1 then $
+            y_tol_ctr = y_tol_ctr + 1
       endfor ; pass_ctr
 
       ; reform the swath array back into its original structure
 
       swath = reform(swath, cols, rows_per_scan, ds_scans * 2, /overwrite)
+
+      ;  re-swap scans as needed to make the first scan be mirror side 1
+
+      if reg_row_mirror_side eq 1 then begin
+          scans_tmp = ds_scans * 2
+          for scan_ctr = 0, scans_tmp - 2, 2 do begin
+              scan = swath[*, *, scan_ctr]
+              swath[*, *, scan_ctr] = swath[*, *, scan_ctr + 1]
+              swath[*, *, scan_ctr + 1] = scan
+          endfor
+          scan = 0
+      endif
 
       ; remove bogus scan at end if necessary
 
