@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod35_l2.pl,v 1.1 2002/05/15 22:50:49 haran Exp haran $
+# $Id: mod35_l2.pl,v 1.2 2003/08/01 22:00:55 haran Exp haran $
 
 #========================================================================
 # mod35_l2.pl - grids MOD35_L2 data
@@ -236,10 +236,16 @@ my $latlon_rows = 0;
 my $swath_rows_per_scan = 10;
 my $this_swath_cols;
 my $this_swath_rows;
+my $ancil_mirror = 2;
+my $this_ancil_cols;
+my $this_ancil_rows = 0;
+my $this_ancil_mirror = 2;
+my $ancil_mirror_expected = 2;
 my $interp_factor;
 my $offset = 0;
 my $extra_latlon_col = 0;
 my $latlon_rows_per_scan = 2;
+my $ancil_rows_per_scan = $latlon_rows_per_scan;
 my $list_index = 0;
 my $lat_cat = "cat ";
 my $lon_cat = "cat ";
@@ -268,6 +274,7 @@ foreach $hdf (@list) {
 	$extra_latlon_col = 1;
     } else {
 	$latlon_rows_per_scan = 10;
+	$ancil_rows_per_scan = $latlon_rows_per_scan;
 	$interp_factor = 1;
 	$hdf_latlon   = $latlonlist[$list_index++];
 	chomp $hdf_latlon;
@@ -361,11 +368,28 @@ foreach $hdf (@list) {
 	    diemail("$script: FATAL: $filestem_ancil_conv* not found");
 	}
 	my $ancil_file = $ancil_glob[0];
-	($this_ancil_cols, $this_ancil_rows) =
-	    ($ancil_file =~ /$filestem_ancil_conv(.....)_(.....)/);
-	print "$ancil_file contains $this_ancil_cols cols and " .
-	    "$this_ancil_rows rows\n";
+	($this_ancil_mirror, $this_ancil_cols, $this_ancil_rows) =
+	    ($ancil_file =~ /$filestem_ancil_conv(.)_(.....)_(.....)/);
+	print "$ancil_file starts on mirror side $this_ancil_mirror and\n" .
+	    "   contains $this_ancil_cols cols and $this_ancil_rows rows\n";
+	if ($ancil_mirror_expected == 2) {
+	    $ancil_mirror_expected = $this_ancil_mirror;
+	}
+	if ($this_ancil_mirror != $ancil_mirror_expected) {
+	    diemail("$script: FATAL: expected $ancil_file to start on" .
+		    "mirror side $ancil_mirror_expected");
+	}
+	if ($i < $ancil_count - 1) {
+	    $ancil_mirror_expected = $this_ancil_mirror;
+	} else {
+	    $ancil_mirror_expected = ($this_ancil_mirror < 2) ?
+		($this_ancil_mirror + 
+		 $this_ancil_rows / $ancil_rows_per_scan) % 2 : 2;
+	}
 	$ancil_cat[$i] .= "$ancil_file ";
+    }
+    if ($line == 0) {
+	$ancil_mirror = $this_ancil_mirror;
     }
 }
 $swath_rows = sprintf("%05d", $swath_rows);
@@ -386,14 +410,14 @@ for ($i = 0; $i < $chan_count; $i++) {
 my $ancil_interp_factor = $interp_factor;
 my $ancil_rows = $latlon_rows;
 my $ancil_cols = $latlon_cols;
-my $ancil_rows_per_scan = $latlon_rows_per_scan;
 my @ancil_files;
 for ($i = 0; $i < $ancil_count; $i++) {
     my $ancil = $ancils[$i];
     my $ancil_rm = $ancil_cat[$i];
     my $tagext = substr($ancil_conversions[$i], 0, 3);
     $ancil_rm =~ s/cat/rm -f/;
-    $ancil_files[$i] = "$tag\_$tagext\_$ancil\_$ancil_cols\_$ancil_rows.img";
+    $ancil_files[$i] =
+	"$tag\_$tagext\_$ancil\_$ancil_mirror\_$ancil_cols\_$ancil_rows.img";
     do_or_die("$ancil_cat[$i] >$ancil_files[$i]");
     do_or_die("$ancil_rm");
 }
@@ -418,7 +442,7 @@ if ($ancil_interp_factor > 1) {
 		  "$swath_cols \"'$filestem_ancil_conv'\" " .
 		  "data_type=\"'$data_type'\" " .
 		  "col_offset=$ancil_offset row_offset=$ancil_offset " .
-		  "$nearest_neighbor");
+		  "$nearest_neighbor mirror_side=$ancil_mirror");
 
 	my @ancil_glob = glob("$filestem_ancil_conv*");
 	if (@ancil_glob == 0) {
@@ -427,14 +451,16 @@ if ($ancil_interp_factor > 1) {
 	do_or_die("rm -f $ancil_file");
 	$ancil_file = $ancil_glob[0];
 	$ancil_files[$i] = $ancil_file;
-	($this_ancil_cols, $this_ancil_scans,
+	($this_ancil_mirror, $this_ancil_cols, $this_ancil_scans,
 	 $this_ancil_scan_first, $this_ancil_rows_per_scan) =
-	 ($ancil_file =~ /$filestem_ancil_conv\_(.....)_(.....)_(.....)_(..)/);
-	print "$ancil_file contains $this_ancil_cols cols,\n" .
+	 ($ancil_file =~
+	  /$filestem_ancil_conv\_(.)_(.....)_(.....)_(.....)_(..)/);
+	print "$ancil_file starts on mirror side $this_ancil_mirror and\n" .
+	  "  contains $this_ancil_cols cols,\n" .
 	  "   $this_ancil_scans scans, $this_ancil_scan_first scan_first,\n" .
 	  "   and $this_ancil_rows_per_scan rows_per_scan\n";
 
-	if ($this_ancil_cols != $swath_cols ||
+	if ($this_ancil_mirror != $ancil_mirror ||
 	    $this_ancil_scans != $swath_scans ||
 	    $this_ancil_scan_first != 0 ||
 	    $this_ancil_rows_per_scan != $swath_rows_per_scan) {
