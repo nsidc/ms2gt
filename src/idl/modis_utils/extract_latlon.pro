@@ -4,7 +4,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_latlon.pro,v 1.1 2000/10/25 22:25:39 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/extract_latlon.pro,v 1.2 2000/10/26 00:29:51 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -85,10 +85,10 @@ PRO extract_latlon, hdf_file, interp_factor, channel=channel
           first_row_in = scan * rows_per_scan_in
           last_row_in  = first_row_in + rows_per_scan_in - 1
           image = congrid(lat[*,first_row_in:last_row_in], $
-                          cols, rows_per_scan_out, cubic=0.5)
+                          cols, rows_per_scan_out, cubic=0.5, /minus_one)
           writeu, lat_lun, image
           image = congrid(lon[*,first_row_in:last_row_in], $
-                          cols, rows_per_scan_out, cubic=0.5)
+                          cols, rows_per_scan_out, cubic=0.5, /minus_one)
           writeu, lon_lun, image
       endfor
   endif else begin
