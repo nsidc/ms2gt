@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.1 2002/04/16 00:20:56 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.2 2002/04/16 20:45:21 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -326,7 +326,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                              '  status: ', status, $
                              '  intercept: ', intercept, $
                              '  slope: ', slope[0], $
-                             format='(a,i2,a,i3,a,i2,2(a,f9.5))')
+                             format='(a,i2,a,i3,a,i2,a,e12.5,a,f8.5)')
               print, annot
               if (status eq 0) and (y_tolerance gt 0) then begin
 
@@ -339,7 +339,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
                   repeat begin
                       slope_old = slope[0]
-                      i = where(abs(y - slope[0] * x + intercept) lt $
+                      i = where(abs(y - (slope[0] * x + intercept)) lt $
                                 y_tolerance, n2)
                       if n2 eq 0 then begin
                           slope = 0.0
@@ -376,7 +376,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                                      '  intercept: ', intercept, $
                                      '  slope: ', slope[0], $
                                      '  slope_delta: ', slope_delta, $
-                                     format='(a,i2,a,i3,a,i2,3(a,f9.5))')
+                                     format='(a,i2,a,i3,a,i2,a,e12.5,2(a,f8.5))')
                       print, annot
                   endrep until ((slope_delta_max eq 0) or $
                                 (slope_delta le slope_delta_max) or $
