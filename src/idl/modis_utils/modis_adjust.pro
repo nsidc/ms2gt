@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.16 2002/11/26 16:20:28 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.17 2002/11/26 16:29:41 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -32,6 +32,8 @@
 ;               [, file_soze=file_soze]
 ;               [, /undo_soze]
 ;               [, /reg_cols]
+;               [, file_reg_cols_in=file_reg_cols_in]
+;               [, file_reg_cols_out=file_reg_cols_out]
 ;               [, reg_col_detectors=reg_col_detectors]
 ;               [, reg_col_stride=reg_col_stride]
 ;               [, reg_col_offset=reg_col_offset]
@@ -42,6 +44,8 @@
 ;               [, col_plot_tag=col_plot_tag]
 ;               [, col_plot_max=col_plot_max]
 ;               [, /reg_rows]
+;               [, file_reg_rows_in=file_reg_rows_in]
+;               [, file_reg_rows_out=file_reg_rows_out]
 ;               [, row_y_tolerance=row_y_tolerance]
 ;               [, row_slope_delta_max=row_slope_delta_max]
 ;               [, row_regression_max=row_regression_max]
@@ -83,6 +87,19 @@
 ;         performed. If file_soze is a null string, then undo_soze is
 ;         ignored.
 ;       reg_cols: If set then column regressions are computed.
+;       file_reg_col_in: Specifies the name of an input text file
+;         containing an initial set of slopes and intercepts that are
+;         applied to the data before any column regressions (if any) are
+;         computed. The file must have rows_per_scan + 1 lines.
+;         The file has the following format:
+;           SS_Detector  Col_Slope         Col_Intercept
+;               00        1.00000000E+00    0.00000000E+00
+;               01        1.00000000E+00    0.00000000E+00
+;               .               .                 .
+;               39        1.00000000E+00    0.00000000E+00
+;       file_reg_col_out: Specifies the name of an output text file
+;         containing the final set of slopes and intercepts for column
+;         regressions. The file has the same format as for file_reg_col_out.
 ;       reg_col_detectors: Array of zero-based detector numbers to use for
 ;         column regressions. The default value of reg_col_detectors
 ;         is [28,29].
@@ -93,6 +110,19 @@
 ;         regressions. The default value of reg_col_offset is 0.
 ;         NOTE: reg_col_offset must be less than reg_col_stride.
 ;       reg_rows: If set then row regressions are computed.
+;       file_reg_row_in: Specifies the name of an input text file
+;         containing an initial set of slopes and intercepts that are
+;         applied to the data before any row regressions (if any) are
+;         computed. The file must have 2 * rows_per_scan + 1 lines.
+;         The file has the following format:
+;           DS_Detector  Row_Slope         Row_Intercept
+;               00        1.00000000E+00    0.00000000E+00
+;               01        1.00000000E+00    0.00000000E+00
+;               .               .                 .
+;               79        1.00000000E+00    0.00000000E+00
+;       file_reg_row_out: Specifies the name of an output text file
+;         containing the final set of slopes and intercepts for row
+;         regressions. The file has the same format as for file_reg_row_out.
 ;       NOTE: The keywords below are preceded by either col_ or row_
 ;         indicating to which set of regressions they refer.
 ;       y_tolerance: the value to use after the first linear regression
@@ -186,6 +216,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                   file_soze=file_soze, $
                   undo_soze=undo_soze, $
                   reg_cols=reg_cols, $
+                  file_reg_cols_in=file_reg_cols_in, $
+                  file_reg_cols_out=file_reg_cols_out, $
                   reg_col_detectors=reg_col_detectors, $
                   reg_col_stride=reg_col_stride, $
                   reg_col_offset=reg_col_offset, $
@@ -196,6 +228,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                   col_plot_tag=col_plot_tag, $
                   col_plot_max=col_plot_max, $
                   reg_rows=reg_rows, $
+                  file_reg_rows_in=file_reg_rows_in, $
+                  file_reg_rows_out=file_reg_rows_out, $
                   row_y_tolerance=row_y_tolerance, $
                   row_slope_delta_max=row_slope_delta_max, $
                   row_regression_max=row_regression_max, $
@@ -215,6 +249,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                 '[, file_soze=file_soze] ' + lf + $
                 '[, /undo_soze] ' + lf + $
                 '[, /reg_cols] ' + lf + $
+                '[, file_reg_cols_in=file_reg_cols_in] ' + lf + $
+                '[, file_reg_cols_out=file_reg_cols_out] ' + lf + $
                 '[, reg_col_detectors=reg_col_detectors] ' + lf + $
                 '[, reg_col_stride=reg_col_stride] ' + lf + $
                 '[, reg_col_offset=reg_col_offset] ' + lf + $
@@ -225,6 +261,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                 '[, col_plot_tag=col_plot_tag] ' + lf + $
                 '[, col_plot_max=col_plot_max] ' + lf + $
                 '[, /reg_rows] ' + lf + $
+                '[, file_reg_rows_in=file_reg_rows_in] ' + lf + $
+                '[, file_reg_rows_out=file_reg_rows_out] ' + lf + $
                 '[, row_y_tolerance=row_y_tolerance] ' + lf + $
                 '[, row_slope_delta_max=row_slope_delta_max] ' + lf + $
                 '[, row_regression_max=row_regression_max] ' + lf + $
@@ -247,6 +285,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     undo_soze = 0
   if n_elements(reg_cols) eq 0 then $
     reg_cols = 0
+  if n_elements(file_reg_cols_in) eq 0 then $
+    file_reg_cols_in = ''
+  if n_elements(file_reg_cols_out) eq 0 then $
+    file_reg_cols_out = ''
   if n_elements(reg_col_detectors) eq 0 then $
     reg_col_detectors = [28,29]
   if n_elements(reg_col_stride) eq 0 then $
@@ -267,6 +309,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     col_plot_max = 1.5
   if n_elements(reg_rows) eq 0 then $
     reg_rows = 0
+  if n_elements(file_reg_rows_in) eq 0 then $
+    file_reg_rows_in = ''
+  if n_elements(file_reg_rows_out) eq 0 then $
+    file_reg_rows_out = ''
   if n_elements(row_y_tolerance) eq 0 then $
     row_y_tolerance = 0.01
   if n_elements(row_slope_delta_max) eq 0 then $
@@ -284,7 +330,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds) 
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.16 2002/11/26 16:20:28 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.17 2002/11/26 16:29:41 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -296,6 +342,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   print, '  file_soze:            ', file_soze
   print, '  undo_soze:            ', undo_soze
   print, '  reg_cols:             ', reg_cols
+  print, '  file_reg_cols_in:     ', file_reg_cols_in
+  print, '  file_reg_cols_out:    ', file_reg_cols_out
   for i = 0, reg_col_detectors_count - 1 do begin
       s = string(i, format='(i1)')
       print, '  reg_col_detectors[' + s + ']: ', reg_col_detectors[i]
@@ -309,6 +357,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   print, '  col_plot_tag:         ', col_plot_tag
   print, '  col_plot_max:         ', col_plot_max
   print, '  reg_rows:             ', reg_rows
+  print, '  file_reg_rows_in:     ', file_reg_rows_in
+  print, '  file_reg_rows_out:    ', file_reg_rows_out
   print, '  row_y_tolerance:      ', row_y_tolerance
   print, '  row_slope_delta_max:  ', row_slope_delta_max
   print, '  row_regression_max:   ', row_regression_max
@@ -429,9 +479,21 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       swath = temporary(swath) * soze
   endif
 
-  if reg_cols ne 0 then begin
+  reg_cols_slope = make_array(rows_per_scan, /float, value=1.0)
+  reg_cols_intcp = make_array(rows_per_scan, /float, value=0.0)
+
+  if (file_reg_cols_in ne '') or (reg_cols ne 0) then begin
 
   ; perform column regressions
+
+      if file_reg_cols_in ne '' then begin
+          skip_first_regression = 1
+          line = ''
+          openr, lun, file_reg_cols_in, /get_lun
+          readf, lun, line
+      endif else begin
+          skip_first_regression = 0
+      endelse
 
       swath = reform(swath, cols, rows_per_scan, scans, /overwrite)
 
@@ -443,50 +505,93 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       if cols_per_target eq 0 then $
         message, 'No cells targeted for column regressions'
 
-      cols_before = cols_target - 1
-      if cols_before[0] lt 0 then $
-        cols_before[0] = i[1]
+      if reg_cols ne 0 then begin
+          cols_before = cols_target - 1
+          if cols_before[0] lt 0 then $
+            cols_before[0] = i[1]
 
-      cols_after = cols_target + 1
-      if cols_after[cols_per_target - 1] ge cols then $
-        cols_after[cols_per_target - 1] = cols - 2
+          cols_after = cols_target + 1
+          if cols_after[cols_per_target - 1] ge cols then $
+            cols_after[cols_per_target - 1] = cols - 2
+      endif
 
       det_count = n_elements(reg_col_detectors)
-      for det_ctr = 0, det_count - 1 do begin
-          det = reg_col_detectors[det_ctr]
+      det_ctr = 0
+      for det = 0, rows_per_scan - 1 do begin
+          slope = reg_cols_slope[det]
+          intcp = reg_cols_intcp[det]
           target = reform(swath[[cols_target], det, *], $
                           cells_per_det_target)
-          before = reform(swath[[cols_before], det, *], $
-                          1, cells_per_det_target)
-          after =  reform(swath[[cols_after],  det, *], $
-                          1, cells_per_det_target)
-          mean = (temporary(before) + temporary(after)) / 2
-          plot_tag = col_plot_tag
-          if plot_tag ne '' then $
-            plot_tag = string(plot_tag + '_', det, $
-                              format='(a, i2.2)')
-          xtitle=string('mean before and after' + $
-                        '  stride: ', reg_col_stride, $
-                        '  offset: ', reg_col_offset, $
-                        format='(a, i2, a, i2)')
-          ytitle=string('det: ', det, $
-                        format='(a, i2.2)')
-          modis_regress, mean, target, $
-                         slope, intcp, $
-                         y_tolerance=col_y_tolerance, $
-                         slope_delta_max=col_slope_delta_max, $
-                         regression_max=col_regression_max, $
-                         density_bin_width=col_density_bin_width, $
-                         plot_tag=plot_tag, $
-                         plot_max=col_plot_max, $
-                         plot_titles=[xtitle,ytitle]
-          if abs(slope) ge epsilon then $
-            swath[[cols_target], det, *] = (target - intcp) / slope
-      endfor                    ; det_ctr
+          if file_reg_cols_in ne '' then begin
+              det_test = 0L
+              slope = 1.0
+              intcp = 0.0
+              readf, lun, det_test, slope, intcp
+              if det_test eq det then begin
+                  if abs(slope) ge epsilon then $
+                    target = (target - intcp) / slope
+              endif else begin
+                  message, 'Entry for detector ' + string(det, format='(i2)') + $
+                           ' missing from ' + file_reg_cols_in
+              endelse
+          endif
+          det_target = reg_col_detectors[det_ctr]
+          if (reg_cols ne 0) and (det_target eq det) then begin
+              before = reform(swath[[cols_before], det, *], $
+                              1, cells_per_det_target)
+              after =  reform(swath[[cols_after],  det, *], $
+                              1, cells_per_det_target)
+              mean = (temporary(before) + temporary(after)) / 2
+              plot_tag = col_plot_tag
+              if plot_tag ne '' then $
+                plot_tag = string(plot_tag + '_', det, $
+                                  format='(a, i2.2)')
+              xtitle=string('mean before and after' + $
+                            '  stride: ', reg_col_stride, $
+                            '  offset: ', reg_col_offset, $
+                            format='(a, i2, a, i2)')
+              ytitle=string('det: ', det, $
+                            format='(a, i2.2)')
+              modis_regress, mean, target, $
+                             slope, intcp, $
+                             skip_first_regression=skip_first_regression, $
+                             y_tolerance=col_y_tolerance, $
+                             slope_delta_max=col_slope_delta_max, $
+                             regression_max=col_regression_max, $
+                             density_bin_width=col_density_bin_width, $
+                             plot_tag=plot_tag, $
+                             plot_max=col_plot_max, $
+                            plot_titles=[xtitle,ytitle]
+              if abs(slope) ge epsilon then $
+                swath[[cols_target], det, *] = (target - intcp) / slope
+              if det_ctr lt det_count - 1 then $
+                det_ctr = det_ctr + 1
+          endif else begin      ; if (reg_cols ne 0) and (det_target eq det)
+              swath[[cols_target], det, *] = target
+          endelse
+          reg_cols_slope[det] = slope * reg_cols_slope[det]
+          reg_cols_intcp[det] = slope * reg_cols_intcp[det] + intcp
+      endfor                    ; det
+      if file_reg_cols_in ne '' then $
+        free_lun, lun
 
       swath = reform(swath, cells_per_swath, /overwrite)
 
   endif ; if reg_cols ne 0
+
+  if file_reg_cols_out ne '' then begin
+     openw, lun, file_reg_cols_out, /get_lun
+     printf, lun, 'Detector  Col_Slope        Col_Intercept'
+     for det = 0, rows_per_scan - 1 do $
+       printf, lun, det, reg_cols_slope[det], reg_cols_intcp[det], $
+                    format='(i2.2, 8X, E15.8, 2x, E15.8)'
+     free_lun, lun
+  endif
+
+  print, 'Detector  Col_Slope        Col_Intercept'
+  for det = 0, rows_per_scan - 1 do $
+    print, det, reg_cols_slope[det], reg_cols_intcp[det], $
+           format='(i2.2, 8X, E15.8, 2x, E15.8)'
 
   if reg_rows ne 0 then begin
 
