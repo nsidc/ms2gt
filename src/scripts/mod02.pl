@@ -10,7 +10,7 @@ require("$source_navdir/date.pl");
 my $Usage = "\n
 USAGE: mod02.pl dirinout tag listfile gpdfile
                 [chanlist [keep [old_fornav]]]
-       defaults:    1        0       1
+       defaults:    1        0       0
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
