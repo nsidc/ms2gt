@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.32 2004/10/30 21:13:48 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.33 2004/10/30 22:43:27 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -141,7 +141,7 @@
 ;         been determined from the first linear regression, the values
 ;         y'(i) = k + m * x(i) are calculated. Then outliers are defined
 ;         to be all points x(i) for which
-;         abs((y'(i) - y(i)) / y(i)) >= y_tolerance.
+;         abs((y'(i) - y(i)) / (ymax - ymin)) >= y_tolerance.
 ;         Then a second regression is performed on the remaining x(i) after
 ;         the outliers have been removed to determine the final k and m
 ;         values. The default value of y_tolerance is 0.01.
@@ -366,7 +366,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.32 2004/10/30 21:13:48 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.33 2004/10/30 22:43:27 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
