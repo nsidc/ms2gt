@@ -68,10 +68,10 @@ PRO MODIS_ICE_READ, FILENAME, BAND, IMAGE, $
 ; EXAMPLES:
 ;
 ; REFERENCE:
-;    Based on modis_level1b_read from 
+;    Based on modis_level1b_read from Liam Gumley.
 ;-
 
-rcs_id = '$Id: modis_ice_read.pro,v 1.1 2001/01/29 23:54:27 haran Exp haran $'
+rcs_id = '$Id: modis_ice_read.pro,v 1.2 2001/05/03 15:57:49 haran Exp haran $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -125,6 +125,7 @@ if (count_temp ne 1) or (count_tqa ne 1) or (count_ice ne 1) then $
 
 ;- Check band number
 
+filetype = 'MOD29'
 if (band lt 1) or (band gt 6) then $
     message, 'BAND range is 1-6 for this MODIS type => ' + filetype
 
