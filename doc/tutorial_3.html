@@ -57,7 +57,7 @@ work with only the MOD10_L2 granules (i.e. by setting latlonlistfile to
 "none"); however we decide to order the corresponding MOD03 granules as
 well in order to minimize interpolation error.
 <p>NOTE: To run this example, you'll need a machine with at least 100 MB
-of memory and at least 300 GB of free disk space.
+of memory and at least 300 MB of free disk space.
 <h2>
 <a NAME="search"></a>Searching for the Data</h2>
 Let's assume that we happen to know that the afternoon of September 25,
@@ -153,7 +153,7 @@ formats used by the mapx library in defining a grid and its associated
 map projection. In the previous two tutorials, we modified existing *.gpd
 files and used an existing *.mpp file (namely <a href="http://nsidc.org/NASA/GUIDE/EASE/N200correct.mpp">N200correct.mpp</a>)
 that specified EASE-Grid projections. Here we are going to create *.gpd
-and *.mpp files from scratch. We'll start with creating the *.mpp file
+and *.mpp files from scratch. We'll start with creating the *.mpp file,
 which we'll call Colorado.mpp, in the ms2gt/grids directory (or, if you
 don't want to type it in, copy Colorado.mpp from the ms2gt/tutorial_3 directory
 to the ms2gt/grids directory):
@@ -292,7 +292,7 @@ corner values of 35.909435 -100.283951 are close to our target values of
 of 40 N 105 W.
 <h2>
 <a NAME="latlonlistfile"></a>Creating the latlonlistfile</h2>
-Create a text file in the tutorial_1 directory called latlonlist.txt containing
+Create a text file in the tutorial_3 directory called latlonlist.txt containing
 the following two lines:
 <p><tt>MOD03.A2000269.1745.002.2000282120258.hdf</tt>
 <br><tt>MOD03.A2000269.1750.002.2000282120547.hdf</tt>
@@ -355,8 +355,9 @@ two concatenated channel files. On each call, the column and row files
 are read as well. An elliptical weighted maximum algorithm is applied during
 forward navigation to minimize holes and aliasing in the gridded data.
 One binary byte file is created per call containing the gridded data. The
-<a href="index.html#mod10_l2_usage">mod10_l2.pl</a> script then deletes
-the concatenated channel files as well as the column and row files.</li>
+<a href="index.html#mod10_l2_usage">mod10_l2.pl</a>
+script then deletes the concatenated channel files as well as the column
+and row files.</li>
 </ol>
 The final message should contain the string:
 <p><tt>MOD10_L2: MESSAGE: done</tt>
@@ -399,22 +400,21 @@ m - maximum</li>
 
 <ul>
 <li>
-snow - channel 1 - Snow Cover</li>
+snow - channel 1 - Snow Cover - 8-bit unsigned</li>
 
 <ul>
 <li>
 See <a href="http://nsidc.org/NASA/GUIDE/docs/dataset_documents/modis_terra_l2_l3_daily_and_8day_500m_snow_cover_products_dataset_document.gd.html#integer_key">MODIS/Terra
-Snow Cover L2 and L3 Daily and 8-Day 500 m</a> for a table of Snow Cover
-values.</li>
+Snow Cover L2 and L3 Daily and 8-Day 500 m</a> for a table of coded values.</li>
 </ul>
 
 <li>
-snqa - channel 2 - Snow Cover PixelQA</li>
+snqa - channel 2 - Snow Cover PixelQA - 8-bit unsigned</li>
 
 <ul>
 <li>
 See <a href="http://nsidc.org/NASA/GUIDE/MODIS/SNOW/snowcover_QA.html">MODIS
-Snow Cover Bit Processing</a> for a description of Snow Cover PixelQA values.</li>
+Snow Cover Bit Processing</a> for a description of coded values.</li>
 </ul>
 </ul>
 
@@ -425,7 +425,7 @@ Snow Cover Bit Processing</a> for a description of Snow Cover PixelQA values.</l
 &lt;rows> is the number of rows in the grid</li>
 </ul>
 
-<hr><font size=-1>Last updated: April 27, 2001 by</font>
+<hr><font size=-1>Last updated: May 1, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>

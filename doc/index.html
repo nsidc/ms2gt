@@ -59,7 +59,29 @@ MS2GT: The MODIS Swath-to-Grid Toolbox</h1></center>
 
 <ul>
 <li>
-The current version of MS2GT is 0.2 released April 27, 2001:</li>
+The current version of MS2GT is 0.3 released May 1, 2001.</li>
+
+<ul>
+<li>
+Fixed bug in <a href="#mod29_usage">mod29.pl</a> related to checking for
+a temperature channel.</li>
+
+<li>
+Changed <a href="#mod29_usage">mod29.pl</a> mnemonics for better consistency.</li>
+
+<li>
+Added -F option to ll2cr to allow specification of input and output fill
+values.</li>
+
+<li>
+Added -r option to fornav to allow specification of a column-row fill value.</li>
+
+<li>
+Added <a href="tutorial_4.html">Tutorial 4</a>.</li>
+</ul>
+
+<li>
+Version MS2GT 0.2 released April 27, 2001:</li>
 
 <ul>
 <li>
@@ -262,30 +284,30 @@ directory and its subdirectories.
 <a NAME="perl"></a>Verifying your Perl Installation</h2>
 Type the command:
 <p><b><tt>perl -v</tt></b>
-<p>If you see something like:<tt></tt>
-<p><tt>This is perl, version 5.004_04 built for irix-n32</tt><tt></tt>
-<p><tt>Copyright 1987-1997, Larry Wall</tt><tt></tt>
+<p>If you see something like:
+<p><tt>This is perl, version 5.004_04 built for irix-n32</tt>
+<p><tt>Copyright 1987-1997, Larry Wall</tt>
 <p><tt>Perl may be copied only under the terms of either the Artistic License
 or the</tt>
 <br><tt>GNU General Public License, which may be found in the Perl 5.0
-source kit.</tt><tt></tt>
+source kit.</tt>
 <p>then you know perl has been installed ok. Just make sure you have at
 least perl version 5 installed. However, if you see something like:
-<p><tt>perl: Command not found</tt><tt></tt>
+<p><tt>perl: Command not found</tt>
 <p>then you need to contact your system administrator to get perl installed.
 <p>Assuming you have perl installed, then type:
 <p><b><tt>/usr/bin/perl -v</tt></b>
 <p>If you see the same message as before, then you have a proper link to
 your installed version of perl. However, if you see something like:
-<p><tt>/usr/bin/perl: Command not found</tt><tt></tt>
+<p><tt>/usr/bin/perl: Command not found</tt>
 <p>or you see mention of a lower version of perl, then you need to contact
 your system administrator and have a link called /usr/bin/perl created
 that points to your installed version of perl. For example, if you type:
-<p><b><tt>which perl</tt></b><b><tt></tt></b>
+<p><b><tt>which perl</tt></b>
 <p>and you see:
 <p><tt>/usr/sbin/perl</tt>
 <p>then the command to create the link would be:
-<p><b><tt>ln -s /usr/sbin/perl /usr/bin/perl</tt></b><b><tt></tt></b>
+<p><b><tt>ln -s /usr/sbin/perl /usr/bin/perl</tt></b>
 <p>but you'll probably need to be logged in as root to be able to execute
 this command successfully.
 <h2>
@@ -328,7 +350,7 @@ of each perl script:
 [ancilfile [latlon_src [ancil_src [keep [rind]]]]]</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; defaults:&nbsp;&nbsp; none&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp; 50</tt>
+0&nbsp;&nbsp;&nbsp;&nbsp; 50</tt><tt></tt>
 <p><tt>&nbsp; dirinout: directory containing the input and output files.</tt>
 <br><tt>&nbsp; tag: string used as a prefix to output files.</tt>
 <br><tt>&nbsp; listfile: text file containing a list of MOD02 or MOD03
@@ -478,7 +500,7 @@ eliminate</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; holes in final grid.
 Default is 50.</tt>
 <h3>
-<a NAME="mod10_l2_usage"></a><tt>mod10_l2.pl</tt></h3>
+<a NAME="mod10_l2_usage"></a><tt>mod10_l2.pl</tt></h3>
 <tt>USAGE: mod10_l2.pl dirinout tag listfile gpdfile</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 [chanlist [latlonlistfile [keep [rind]]]]</tt>
@@ -521,9 +543,10 @@ Default is 50.</tt>
 <tt>USAGE: mod29.pl dirinout tag listfile gpdfile</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 [chanlist [latlonlistfile [keep [rind]]]]</tt>
-<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; defaults:&nbsp;&nbsp;&nbsp;
-1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; none&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp; 50</tt><tt></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; defaults:&nbsp;&nbsp; 
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+none&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;
+50</tt>
 <p><tt>&nbsp; dirinout: directory containing the input and output files.</tt>
 <br><tt>&nbsp; tag: string used as a prefix to output files.</tt>
 <br><tt>&nbsp; listfile: text file containing a list of MOD29 files to
@@ -534,15 +557,15 @@ The default</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 is 1, i.e. grid channel 1 only. The channel numbers are:</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-1: icrf Sea Ice by Reflectance - 8-bit unsigned</tt>
+1: icer Sea Ice by Reflectance - 8-bit unsigned</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 2: irqa Sea Ice by Reflectance PixelQA - 8-bit unsigned</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 3: temp Ice Surface Temperature - 16-bit unsigned (Kelvin * 100)</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-4: tmqa Ice Surface Temperature PixelQA - 8-bit unsigned</tt>
+4: itqa Ice Surface Temperature PixelQA - 8-bit unsigned</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-5: ictm Sea Ice by IST - 8-bit unsigned</tt>
+5: icet Sea Ice by IST - 8-bit unsigned</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 6: icrt Combined Sea Ice - 8-bit unsigned</tt>
 <br><tt>&nbsp; latlonlistfile: text file containing a list of MOD02 or
@@ -562,9 +585,9 @@ chan, lat, lon, col, and row files.</tt>
 <br><tt>&nbsp; rind: number of pixels to add around intermediate grid to
 eliminate</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; holes in final grid.
-Default is 50.</tt><tt></tt>
-<p>
-<hr><font size=-1>Last updated: April 27, 2001 by</font>
+Default is 50.</tt>
+<br>
+<hr><font size=-1>Last updated: May 1, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>
