@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.36 2003/07/31 21:54:24 haran Exp haran $
+# $Id: mod02.pl,v 1.37 2004/04/05 23:42:34 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -83,7 +83,7 @@ if (@ARGV <= 11) {
 			    if (@ARGV >= 11) {
 				$fix250 = $ARGV[10];
 				if ($fix250 ne "0" && $fix250 ne "1" &&
-				    $fix250 ne "2") {
+				    $fix250 ne "2" && $fix250 ne "3") {
 				    print "invalid fix250\n$mod02_usage";
 				    exit 1;
 				}
@@ -792,13 +792,31 @@ for ($i = 0; $i < $chan_count; $i++) {
     if ($fix250) {
 	my $chan_file_unfixed = $chan_file . ".unfixed";
 	do_or_die("mv $chan_file $chan_file_unfixed");
-	my $reg_col_offset = ($chan == 0) ? 3 : 0;
-	my $undo_soze = ($fix250 eq "2") ? "/undo_soze" : "";
-	do_or_die("idl_sh.pl modis_adjust $swath_cols $swath_scans " .
-		  "\"'$chan_file_unfixed'\" \"'$chan_file'\" " .
-		  "file_soze=\"'$soze_file'\" " .
-		  "/reg_cols reg_col_offset=$reg_col_offset " .
-		  "/nor_rows /reg_rows $undo_soze");
+	my $reg_col_offset = "";
+	my $reg_cols = "";
+	my $nor_rows = "";
+	my $reg_rows = "";
+	my $undo_soze = "";
+	if ($fix250 == 1 || $fix250 == 2) {
+	    $reg_col_offset = "reg_col_offset=" . (($chan == 0) ? "3" : "0");
+	    $reg_cols = "/reg_cols";
+	    $nor_rows = "/nor_rows";
+	    $reg_rows = "/reg_rows";
+	    if ($fix250 == 2) {
+		$undo_soze = "/undo_soze";
+	    }
+	}
+	my $data_type = $chan_conversions[$i] eq "raw" ? "u2" : "f4";
+	my $data_type_in = "data_type_in=\"'$data_type'\"";
+	my $data_type_out = "data_type_out=\"'$data_type'\"";
+	my $command = "idl_sh.pl modis_adjust $swath_cols $swath_scans " .
+	              "\"'$chan_file_unfixed'\" \"'$chan_file'\" " .
+		      "file_soze=\"'$soze_file'\" " .
+		      "$reg_cols $reg_col_offset " .
+		      "$nor_rows $reg_rows $undo_soze " .
+		      "$data_type_in $data_type_out";
+	print_stderr("$command\n");
+	do_or_die($command);
 	if (!$keep) {
 	    system("rm -f $chan_file_unfixed");
 	}
