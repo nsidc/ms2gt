@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.31 2004/10/29 21:51:55 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.32 2004/10/30 21:13:48 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -366,7 +366,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.31 2004/10/29 21:51:55 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.32 2004/10/30 21:13:48 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -444,12 +444,36 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   ; allocate arrays
 
   case data_type_in of
-      'u1': swath = bytarr(cells_per_swath)
-      'u2': swath = uintarr(cells_per_swath)
-      's2': swath = intarr(cells_per_swath)
-      'u4': swath = ulonarr(cells_per_swath)
-      's4': swath = lonarr(cells_per_swath)
-      'f4': swath = fltarr(cells_per_swath)
+      'u1': begin
+          swath = bytarr(cells_per_swath)
+          min_in = 0.0
+          max_in = 255.0
+      end
+      'u2': begin
+          swath = uintarr(cells_per_swath)
+          min_in = 0.0
+          max_in = 65535.0
+      end
+      's2': begin
+          swath = intarr(cells_per_swath)
+          min_in = -32768.0
+          max_in = 32767.0
+      end
+      'u4': begin
+          swath = ulonarr(cells_per_swath)
+          min_in = 0.0
+          max_in = 4294967295.0
+      end
+      's4': begin
+          swath = lonarr(cells_per_swath)
+          min_in = -2147483648.0
+          max_in = 2147483647.0
+      end
+      'f4': begin
+          swath = fltarr(cells_per_swath)
+          min_in = -32768.0
+          max_in = 32767.0
+      end
       else: message, 'invalid data_type_in' + usage
   end
 
@@ -524,6 +548,15 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       ;  multiply swath data by 1/cos(soze)
 
       swath = temporary(swath) * soze
+
+      ;  make sure that values stay within valid range
+
+      i = where(swath lt min_in, n2)
+      if n2 gt 0 then $
+        swath[i] = min_in
+      i = where(swath gt max_in, n2)
+      if n2 gt 0 then $
+        swath[i] = max_in
   endif
 
   reg_slope = make_array(rows_per_scan, /float, value=1.0)
