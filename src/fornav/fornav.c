@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.22 2001/05/24 23:26:13 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.23 2001/10/23 23:50:43 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -29,7 +29,7 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fo
 "              [-F grid_fill_1 ... grid_fill_chan_count]\n"\
 "       defaults:  swath_fill_1    swath_fill_chan_count\n"\
 "              [-r col_row_fill]\n"\
-"       defaults:     -1e30\n"\
+"       defaults:       0\n"\
 "              [-c weight_count] [-w weight_min] [-d weight_distance_max]\n"\
 "       defaults:     10000             .01               1.0\n"\
 "              [-D weight_delta_max] [-W weight_sum_min]\n"\
@@ -92,7 +92,8 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fo
 "             corresponding swath fill value.\n"\
 "         r col_row_fill: specifies fill value to use for detecting any\n"\
 "             missing cells in each column and row file. Missing swath cells\n"\
-"             are ignored. The default value is -1e30.\n"\
+"             have column and row values less than this fill value and are\n"\
+"             ignored. The default value is 0.\n"\
 "         c weight_count: number of elements to create in the gaussian weight\n"\
 "             table. Default is 10000. Must be at least 2.\n"\
 "         w weight_min: the minimum value to store in the last position of the\n"\
@@ -577,7 +578,7 @@ bool ComputeEwa(image *uimg, image *vimg,
 	 col++, this_ewap++) {
       u0 = *u0p++;
       v0 = *v0p++;
-      if (u0 != col_row_fill && v0 != col_row_fill) {
+      if (u0 >= col_row_fill && v0 >= col_row_fill) {
 	u0 -= grid_col_start;
 	v0 -= grid_row_start;
 	iu1 = (int)(u0 - this_ewap->u_del);
@@ -678,7 +679,7 @@ bool ComputeEwa(image *uimg, image *vimg,
 	    } /* for (iu = iu1; iu <= iu2; iu++) */
 	  } /* for (iv = iv1; iv <= iv2; iv++) */
 	} /* if (iu1 < grid_cols && iu2 >= 0 && */
-      } /* if (u0 != col_row_fill && v0 != col_row_fill) */
+      } /* if (u0 >= col_row_fill && v0 >= col_row_fill) */
     } /* for (col = 0, this_ewap = ewap; */
   } /* for (row = 0; row < rows; row++) */
   return(got_point);
@@ -870,7 +871,7 @@ main (int argc, char *argv[])
   weight_distance_max    = 1.0;
   weight_delta_max       = 10.0;
   got_weight_sum_min     = FALSE;
-  col_row_fill           = -1e30;
+  col_row_fill           = 0.0;
 
   /*
    *  Get channel count and use it to allocate images and set default values
