@@ -4,7 +4,7 @@
  * 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.4 2001/01/11 15:30:31 haran Exp haran $";
+static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.5 2001/01/12 16:08:21 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -14,8 +14,8 @@ static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr
 #include "mapx.h"
 #include "grids.h"
 
-#define usage \
-"usage: ll2cr [-v] [-f]\n"\
+#define USAGE \
+"usage: ll2cr [-v] [-f] [-r rind]\n"\
 "             colsin scansin rowsperscan latfile lonfile gpdfile tag\n"\
 "\n"\
 " input : colsin  - number of columns in each input file\n"\
@@ -40,7 +40,23 @@ static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr
 "             least one point which is contained within the grid, and\n"\
 "             scanfirst is set to the number of the first scan containing\n"\
 "             such a point.\n"\
+"         r rind - specifies the number of pixels by which the grid is to\n"\
+"             be expanded in detecting whether points fall within the grid\n"\
+"             for the purposes of determining scansout and scanfirst.\n"\
+"             The default value of rind is 0. Note that if -f is specified,\n"\
+"             then the -r option is ignored and rind is set to 0.\n"\
 "\n"
+
+static void DisplayUsage(void)
+{
+  error_exit(USAGE);
+}
+
+static void DisplayInvalidParameter(char *param)
+{
+  fprintf(stderr, "ll2cr: Parameter %s is invalid.\n", param);
+  DisplayUsage();
+}
 
 main (int argc, char *argv[])
 {
@@ -54,6 +70,7 @@ main (int argc, char *argv[])
   char *option;
   bool verbose;
   bool force;
+  int  rind;
 
   char colfile[FILENAME_MAX];
   char rowfile[FILENAME_MAX];
@@ -77,7 +94,10 @@ main (int argc, char *argv[])
   int scan;
   int row;
   int col;
-  int status;
+  int col_min;
+  int col_max;
+  int row_min;
+  int row_max;
   grid_class *grid_def;
 
 /*
@@ -85,22 +105,30 @@ main (int argc, char *argv[])
  */
   verbose = FALSE;
   force = FALSE;
+  rind = 0;
 
 /* 
  *	get command line options
  */
-  while (--argc > 0 && (*++argv)[0] == '-')
-  { for (option = argv[0]+1; *option != '\0'; option++)
-    { switch (*option)
-      { case 'v':
-	  verbose = TRUE;
-	  break;
-        case 'f':
-	  force = TRUE;
-	  break;
-	default:
-	  fprintf(stderr,"invalid option %c\n", *option);
-	  error_exit(usage);
+  while (--argc > 0 && (*++argv)[0] == '-') {
+    for (option = argv[0]+1; *option != '\0'; option++) {
+      switch (*option) {
+      case 'v':
+	verbose = TRUE;
+	break;
+      case 'f':
+	force = TRUE;
+	break;
+      case 'r':
+	++argv; --argc;
+	if (argc <= 0)
+	  DisplayInvalidParameter("rind");
+	if (sscanf(*argv, "%d", &rind) != 1)
+	  DisplayInvalidParameter("rind");
+	break;
+      default:
+	fprintf(stderr,"invalid option %c\n", *option);
+	DisplayUsage();
       }
     }
   }
@@ -109,7 +137,7 @@ main (int argc, char *argv[])
  *	get command line arguments
  */
   if (argc != 7)
-    error_exit(usage);
+    DisplayUsage();
 
   colsin = atoi(*argv++);
   scansin = atoi(*argv++);
@@ -119,9 +147,13 @@ main (int argc, char *argv[])
   gpdfile = *argv++;
   tag     = *argv++;
 
+  if (force)
+    rind = 0;
+
   if (verbose) {
     fprintf(stderr, "ll2cr:\n");
     fprintf(stderr, "  force         = %d\n", force);
+    fprintf(stderr, "  rind          = %d\n", rind);
     fprintf(stderr, "  colsin        = %d\n", colsin);
     fprintf(stderr, "  scansin       = %d\n", scansin);
     fprintf(stderr, "  rowsperscan   = %d\n", rowsperscan);
@@ -154,6 +186,10 @@ main (int argc, char *argv[])
   grid_def = init_grid(gpdfile);
   if (NULL == grid_def)
     exit(ABORT);
+  col_min = -rind;
+  col_max = grid_def->cols + rind - 1;
+  row_min = -rind;
+  row_max = grid_def->rows + rind - 1;
 
   /*
    *  Create preliminary names of output files as if force is TRUE.
@@ -248,14 +284,15 @@ main (int argc, char *argv[])
       /*
        *  for each column of latitude-longitude pair
        */
-      for (col = 0; col < colsin; col++) {
+      for (col = 0; col < colsin; col++, colp++, rowp++) {
       
 	/*
 	 *  convert latitude-longitude pair to column-row pair
 	 */
-	status = forward_grid(grid_def, *latp++, *lonp++,
-			      colp++, rowp++);
-	if (status) {
+	forward_grid(grid_def, *latp++, *lonp++, colp, rowp);
+	if (!force &&
+	    *colp >= col_min && *colp <= col_max &&
+	    *rowp >= row_min && *rowp <= row_max) {
 	  if (scanfirst < 0)
 	    scanfirst = scan;
 	  scanlast = scan;
