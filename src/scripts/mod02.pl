@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.64 2005/01/21 17:02:46 haran Exp haran $
+# $Id: mod02.pl,v 1.65 2005/03/14 16:38:21 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -816,7 +816,7 @@ my @chan_files;
 my $got_not_1_or_2 = 0;
 for ($i = 0; $i < $chan_count; $i++) {
     my $chan = $chans[$i];
-    if ($chan != 1 || $chan != 2) {
+    if ($chan != 1 && $chan != 2) {
 	$got_not_1_or_2 = 1;
     }
     my $chan_rm = $chan_cat[$i];
