@@ -9,8 +9,8 @@ require("$source_navdir/date.pl");
 
 my $Usage = "\n
 USAGE: mod02.pl dirinout tag listfile gpdfile
-                [chanlist [swath_scan_first [swath_scans]]]
-       defaults:    1            0               0
+                [chanlist [swath_scan_first [swath_scans [keep]]]]
+       defaults:    1            0               0          0
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
@@ -26,7 +26,9 @@ USAGE: mod02.pl dirinout tag listfile gpdfile
                  250m (MOD02QKM) files contain 40 rows per scan.
                A typical 5 minute MOD02 granule contains 203 scans.
                The default is 0, i.e. process all scans in the swath
-               following swath_scan_first.\n\n";
+               following swath_scan_first.
+  keep: 0: delete intermediate chan, col, and row files (default).
+        1: do not delete intermediate chan, col, and row files.\n\n";
 
 #The following symbols are defined in pfsetup.pl and were used only once in
 #this module. They appear here to suppress warning messages.
@@ -46,12 +48,13 @@ my $gpdfile;
 my $chanlist = "1";
 my $swath_scan_first = 0;
 my $swath_scans = 0;
+my $keep = 0;
 
 if (@ARGV < 4) {
     print $Usage;
     exit;
 }
-if (@ARGV <= 7) {
+if (@ARGV <= 8) {
     $dirinout = $ARGV[0];
     $tag = $ARGV[1];
     $listfile = $ARGV[2];
@@ -62,6 +65,9 @@ if (@ARGV <= 7) {
 	    $swath_scan_first = $ARGV[5];
 	    if (@ARGV >= 7) {
 		$swath_scans = $ARGV[6];
+		if (@ARGV <= 8) {
+		    $keep = $ARGV[7];
+		}
 	    }
 	}
     }
@@ -78,7 +84,8 @@ print_stderr("\n".
 	     "> gpdfile          = $gpdfile\n".
 	     "> chanlist         = $chanlist\n".
 	     "> swath_scan_first = $swath_scan_first\n".
-	     "> swath_scans      = $swath_scans\n\n");
+	     "> swath_scans      = $swath_scans\n".
+	     "> keep             = $keep\n\n");
 
 chdir_or_die($dirinout);
 
@@ -236,8 +243,10 @@ do_or_die("idl_sh.pl fornav " .
 	  "$grid_cols $grid_rows $grid_file_param " .
 	  "weight_sum_min=0.001 " .
 	  "swath_scan_first=$swath_scan_first");
-for ($i = 0; $i < $chan_count; $i++) {
-    do_or_die("rm -f $chan_files[$i]");
+if (!$keep) {
+    for ($i = 0; $i < $chan_count; $i++) {
+	do_or_die("rm -f $chan_files[$i]");
+    }
+    do_or_die("rm -f $col_file");
+    do_or_die("rm -f $row_file");
 }
-do_or_die("rm -f $col_file");
-do_or_die("rm -f $row_file");
