@@ -1,4 +1,4 @@
-# $Id: mod02_case.pl,v 1.4 2001/04/26 20:40:16 haran Exp haran $
+# $Id: mod02_case.pl,v 1.5 2003/03/18 16:57:37 haran Exp haran $
 
 #========================================================================
 # mod02_case.pl - determines case for mod02.pl
@@ -10,8 +10,17 @@
 sub mod02_case {
     my ($ancil_src, $latlon_src, $filestem) = @_;
     my $case;
+    my $platform;
 
     my $prefix = substr($filestem, 0, 5);
+    my $p = substr($prefix, 1, 1);
+    if ($p eq "O") {
+	$platform = "terra";
+    } elsif ($p eq "Y") {
+	$platform = "aqua";
+    } else {
+	diemail("$script: FATAL: Second character of $filestem is not O or Y");
+    }
     if ($prefix eq "MOD03" || $prefix eq "MYD03") {
 	$filestem = substr($filestem, 0, 19);
 	$case = 9;
@@ -58,13 +67,15 @@ sub mod02_case {
 		} elsif ($prefix eq "MOD02HKM" || $prefix eq "MYD02HKM") {
 		    $case = 3;
 		    $latlon_src = "H";
-		} else {
+		} elsif ($prefix eq "MOD02QKM" || $prefix eq "MYD02QKM") {
 		    $case = 5;
+		} else {
+		    diemail("$script: FATAL: Unrecognized prefix in $filestem");
 		}
 	    }
 	}
     }
-    return($ancil_src, $latlon_src, $filestem, $prefix, $case);
+    return($ancil_src, $latlon_src, $filestem, $prefix, $case, $platform);
 }
 
 # this makes the routine work properly using require in other programs
