@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.23 2001/10/23 23:50:43 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.24 2001/10/24 15:21:40 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -28,7 +28,7 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fo
 "       defaults:       0                      0\n"\
 "              [-F grid_fill_1 ... grid_fill_chan_count]\n"\
 "       defaults:  swath_fill_1    swath_fill_chan_count\n"\
-"              [-r col_row_fill]\n"\
+"              [-r col_row_min]\n"\
 "       defaults:       0\n"\
 "              [-c weight_count] [-w weight_min] [-d weight_distance_max]\n"\
 "       defaults:     10000             .01               1.0\n"\
@@ -90,9 +90,9 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fo
 "         F grid_fill_1 ... grid_fill_chan_count: specifies fill value to use\n"\
 "             for any unmapped cells in each grid file. The default value is the\n"\
 "             corresponding swath fill value.\n"\
-"         r col_row_fill: specifies fill value to use for detecting any\n"\
+"         r col_row_min: specifies minimum value to use for detecting any\n"\
 "             missing cells in each column and row file. Missing swath cells\n"\
-"             have column and row values less than this fill value and are\n"\
+"             have column and row values less than this value and are\n"\
 "             ignored. The default value is 0.\n"\
 "         c weight_count: number of elements to create in the gaussian weight\n"\
 "             table. Default is 10000. Must be at least 2.\n"\
@@ -158,7 +158,7 @@ typedef struct {
   float *swath_fill_buf;
   float **grid_chan_buf;
   float *grid_fill_buf;
-  float col_row_fill;
+  float col_row_min;
 } ewa_weight;
 
 static int verbose;
@@ -281,7 +281,7 @@ static void InitializeWeight(int chan_count,
 			     int weight_count, float weight_min,
 			     float weight_distance_max,
 			     float weight_delta_max, float weight_sum_min,
-			     float col_row_fill,
+			     float col_row_min,
 			     ewa_weight *ewaw)
 {
   float  *wptr;
@@ -294,7 +294,7 @@ static void InitializeWeight(int chan_count,
   ewaw->distance_max = weight_distance_max;
   ewaw->delta_max    = weight_delta_max;
   ewaw->sum_min      = weight_sum_min;
-  ewaw->col_row_fill = col_row_fill;
+  ewaw->col_row_min = col_row_min;
 
   ewaw->wtab         = (float *)calloc(weight_count, sizeof(float));
   if (ewaw->wtab == NULL)
@@ -510,7 +510,7 @@ bool ComputeEwa(image *uimg, image *vimg,
   void  *this_buf;
   bool  got_fill;
   bool  got_point;
-  double col_row_fill;
+  double col_row_min;
   double u0;
   double v0;
   double u;
@@ -546,7 +546,7 @@ bool ComputeEwa(image *uimg, image *vimg,
 
   if (very_verbose)
     fprintf(stderr, "Computing ewa\n");
-  col_row_fill = ewaw->col_row_fill;
+  col_row_min = ewaw->col_row_min;
   rows = uimg->rows;
   cols = uimg->cols;
   grid_cols = grid_chan_image[0].cols;
@@ -578,7 +578,7 @@ bool ComputeEwa(image *uimg, image *vimg,
 	 col++, this_ewap++) {
       u0 = *u0p++;
       v0 = *v0p++;
-      if (u0 >= col_row_fill && v0 >= col_row_fill) {
+      if (u0 >= col_row_min && v0 >= col_row_min) {
 	u0 -= grid_col_start;
 	v0 -= grid_row_start;
 	iu1 = (int)(u0 - this_ewap->u_del);
@@ -679,7 +679,7 @@ bool ComputeEwa(image *uimg, image *vimg,
 	    } /* for (iu = iu1; iu <= iu2; iu++) */
 	  } /* for (iv = iv1; iv <= iv2; iv++) */
 	} /* if (iu1 < grid_cols && iu2 >= 0 && */
-      } /* if (u0 >= col_row_fill && v0 >= col_row_fill) */
+      } /* if (u0 >= col_row_min && v0 >= col_row_min) */
     } /* for (col = 0, this_ewap = ewap; */
   } /* for (row = 0; row < rows; row++) */
   return(got_point);
@@ -833,7 +833,7 @@ main (int argc, char *argv[])
   int   grid_cols;
   int   grid_rows;
   int   fill_count;
-  float col_row_fill;
+  float col_row_min;
 
   image  *swath_col_image;
   image  *swath_row_image;
@@ -871,7 +871,7 @@ main (int argc, char *argv[])
   weight_distance_max    = 1.0;
   weight_delta_max       = 10.0;
   got_weight_sum_min     = FALSE;
-  col_row_fill           = 0.0;
+  col_row_min           = 0.0;
 
   /*
    *  Get channel count and use it to allocate images and set default values
@@ -997,9 +997,9 @@ main (int argc, char *argv[])
       case 'r':
 	++argv; --argc;
 	if (argc <= 0)	  
-	  DisplayInvalidParameter("col_row_fill");
-	if (sscanf(*argv, "%f", &col_row_fill) != 1)
-	  DisplayInvalidParameter("col_row_fill");
+	  DisplayInvalidParameter("col_row_min");
+	if (sscanf(*argv, "%f", &col_row_min) != 1)
+	  DisplayInvalidParameter("col_row_min");
 	break;
       case 'c':
 	++argv; --argc;
@@ -1113,7 +1113,7 @@ main (int argc, char *argv[])
       fprintf(stderr, "  grid_fill[%d]        = %f\n", i,
 	      grid_chan_io_image[i].fill);
     fprintf(stderr, "\n");
-    fprintf(stderr, "  col_row_fill        = %e\n", col_row_fill);
+    fprintf(stderr, "  col_row_min        = %e\n", col_row_min);
     fprintf(stderr, "  weight_count        = %d\n", weight_count);
     fprintf(stderr, "  weight_min          = %f\n", weight_min);
     fprintf(stderr, "  weight_distance_max = %f\n", weight_distance_max);
@@ -1166,7 +1166,7 @@ main (int argc, char *argv[])
    *  Initialize the ewa weight structure
    */
   InitializeWeight(chan_count, weight_count, weight_min, weight_distance_max,
-		   weight_delta_max, weight_sum_min, col_row_fill, &ewaw);
+		   weight_delta_max, weight_sum_min, col_row_min, &ewaw);
 
   /*
    *  Process each scan
