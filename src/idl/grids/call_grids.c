@@ -8,7 +8,7 @@
  * 14-Mar-2001 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char call_grids_c_rcsid[] = "$Header: /export/data/modis/src/idl/grids/call_grids.c,v 1.1 2001/03/19 15:27:41 haran Exp haran $";
+static const char call_grids_c_rcsid[] = "$Header: /export/data/modis/src/idl/grids/call_grids.c,v 1.2 2001/03/20 21:55:23 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -25,7 +25,7 @@ static const char call_grids_c_rcsid[] = "$Header: /export/data/modis/src/idl/gr
  *
  * This function is called from an IDL program with the following statement:
  * 
- * ERROR = call_external(lib_name('call_grids'), 'call_init_grid', $
+ * ERROR = call_external('call_grids.so', 'call_init_grid', $
  *                       gpd_filename, gcs)
  *
  *      input : gpd_filename - string containing the name of gpd filename
@@ -47,7 +47,6 @@ long call_init_grid(short argc, void *argv[])
 
   IDL_STRING *gpd_filename;
   grid_class_struct *gcs;
-  IDL_STRING *projection_name;
   
   /*
    * local parameters
@@ -60,7 +59,7 @@ long call_init_grid(short argc, void *argv[])
    * Check that correct number of parameters was passed
    */
   
-  if (argc != 3)
+  if (argc != 2)
     return 0;
 
   /*
@@ -69,7 +68,6 @@ long call_init_grid(short argc, void *argv[])
   
   gpd_filename = (IDL_STRING *)argv[0];
   gcs = (grid_class_struct *)argv[1];
-  projection_name = (IDL_STRING *)argv[2];
   
   /*
    * Call the function
@@ -95,6 +93,10 @@ long call_init_grid(short argc, void *argv[])
   gcs->rows_per_map_unit = grid->rows_per_map_unit;
   gcs->cols = grid->cols;
   gcs->rows = grid->rows;
+
+  gcs->gpd_filename.s = grid->gpd_filename;
+  gcs->gpd_filename.slen = strlen(grid->gpd_filename);
+
   mapx = grid->mapx;
   gcs->lat0 = mapx->lat0;
   gcs->lon0 = mapx->lon0;
@@ -118,9 +120,8 @@ long call_init_grid(short argc, void *argv[])
   gcs->equatorial_radius = mapx->equatorial_radius;
   gcs->eccentricity = mapx->eccentricity;
 
-  projection_name->s = mapx->projection_name;
-  projection_name->slen = strlen(mapx->projection_name);
+  gcs->projection_name.s = mapx->projection_name;
+  gcs->projection_name.slen = strlen(mapx->projection_name);
   
   return 1;
 }
-

@@ -3,7 +3,7 @@
 ;*
 ;* 28-Feb-2001  Terry Haran  tharan@kryos.colorado.edu  303-492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /usr/people/haran/navdir/src/fixts/fixts.pro,v 1.12 1999/10/27 17:47:14 haran Exp $
+;$Header: /export/data/modis/src/idl/grids/grid_class__define.pro,v 1.1 2001/03/20 21:54:41 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -43,17 +43,13 @@
 function grid_class::init, gpd_filename, help=help
     if n_elements(help) eq 0 then $
       help = 0
-    self.gpd_filename = gpd_filename
     gcs = self.gcs
-    projection_name = self.projection_name
     init_grid_ok = call_external('call_grids.so', 'call_init_grid', $
-                                 self.gpd_filename, gcs, projection_name)
+                                 gpd_filename, gcs)
     self.gcs = gcs
-    self.projection_name = projection_name
     if help ne 0 then begin
       help, self, /object, /full
       help, self.gcs, /struct
-      help, self.projection_name
   endif
     if not init_grid_ok then begin
         message, 'call_init_grid failed', /informational
@@ -68,7 +64,7 @@ end
 ; grid_class::get_gpd_filename
 ;
 function grid_class::get_gpd_filename
-    return, self.gpd_filename
+    return, self.gcs.gpd_filename
 end
 
 
@@ -108,7 +104,7 @@ end
 ; grid_class::get_projection_name
 ;
 function grid_class::get_projection_name
-    return, self.projection_name
+    return, self.gcs.projection_name
 end
 
 
@@ -137,6 +133,7 @@ pro grid_class_struct__define
                map_origin_col: 0.0, map_origin_row: 0.0, $
                cols_per_map_unit: 0.0, rows_per_map_unit: 0.0, $
                cols: 0L, rows: 0L, $
+               gpd_filename: '', $
 ;
 ;  public members of mapx_class instance initialized by grid_init
 ;
@@ -147,7 +144,8 @@ pro grid_class_struct__define
                label_lat: 0.0, label_lon: 0.0, $
                lat_interval: 0.0, lon_interval: 0.0, $
                cil_detail: 0L, bdy_detail: 0L, riv_detail: 0L, $
-               equatorial_radius: 0.0D, eccentricity: 0.0D $
+               equatorial_radius: 0.0D, eccentricity: 0.0D, $
+               projection_name: '' $
              }
 end
 
@@ -158,8 +156,6 @@ end
 pro grid_class__define
 
     struct = { grid_class, $
-               gpd_filename: '', $
-               gcs: {grid_class_struct}, $
-               projection_name: '' $
+               gcs: {grid_class_struct} $
              }
 end
