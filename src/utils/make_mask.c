@@ -5,7 +5,7 @@
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *======================================================================*/
 
-static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/make_mask.c,v 1.2 2004/11/25 00:12:48 haran Exp haran $";
+static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/make_mask.c,v 1.3 2004/11/25 03:58:17 haran Exp haran $";
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -268,7 +268,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "  floating_point_input: %d\n", floating_point_input);
     fprintf(stderr, "  factor:               %d\n", factor);
     fprintf(stderr, "  mask_file_in:         %s\n", mask_file_in);
-    fprintf(stderr, "  mask_value_in:        %d\n", mask_value_in);
+    fprintf(stderr, "  mask_value_in:        %lf\n", mask_value_in);
     fprintf(stderr, "  mask_value_out:       %d\n", mask_value_out);
     fprintf(stderr, "  unmask_value_out:     %d\n", unmask_value_out);
   }
