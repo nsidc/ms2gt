@@ -39,7 +39,10 @@ Tutorial 1: Gridding MODIS 1 km Level 1b Data over Greenland Using mod02.pl</h1>
 <a href="#running">Running the mod02.pl Command File</a></li>
 
 <li>
-<a href="#results">Examining the Results</a></li>
+<a href="#examining">Examining the Results</a></li>
+
+<li>
+<a href="#geolocating">Geolocating the Results</a></li>
 </ul>
 
 <h2>
@@ -358,7 +361,7 @@ as the column and row files.</li>
 The final message should contain the string:
 <p><tt>MOD02: MESSAGE: done</tt>
 <h2>
-<a NAME="results"></a>Examining the Results</h2>
+<a NAME="examining"></a>Examining the Results</h2>
 Enter the command:
 <p><b><tt>ls -l *.img</tt></b>
 <p>You should see something like this:
@@ -489,7 +492,43 @@ gflg - gflags</li>
 &lt;rows> is the number of rows in the grid</li>
 </ul>
 
-<hr><font size=-1>Last updated: April 19, 2001 by</font>
+<h2>
+<a NAME="geolocating"></a>Geolocating the Results</h2>
+Suppose you would like to know the latitude and longitude of each cell
+in the grid defined by Gl1250.gpd. For individual cells in the grid, you
+can use gtest as described in <a href="#gpdfile">Creating the *.gpd and
+*.mpp files</a> above. If you want to know the latitude and longitude of
+every cell in the grid, you can use a C program called gridloc that was
+<a href="index.html#building">built</a> during the MS2GT installation.
+This program can create binary floating-point arrays of latitude and longitude
+values. You can view the usage of gridloc by typing it without any arguments:
+<p><b><tt>gridloc</tt></b>
+<br><tt>usage: gridloc [-pmq -o output_name] file.gpd</tt><tt></tt>
+<p><tt>&nbsp;input : file.gpd&nbsp; - grid parameters definition file</tt><tt></tt>
+<p><tt>&nbsp;output: grid of signed decimal latitudes and/or longitudes</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 byte floats
+by row</tt><tt></tt>
+<p><tt>&nbsp;option: o - write data to file output_name.WIDTHxHEIGHTxNBANDS.float</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+otherwise output goes to stdout</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; p - do latitudes
+only</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; m - do longitudes
+only</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pm - do latitudes
+followed by longitudes</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mp - do longitudes
+followed by latitudes (default)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; q - quiet</tt><tt></tt>
+<p>So to create latitude and longitude files for the Gl1250.gpd grid, type
+the following two commands:
+<p><b><tt>gridloc -p Gl1250.gpd >gl1_lat_01860_01740.img</tt></b>
+<br><b><tt>gridloc -m Gl1250.gpd >gl1_lon_01860_01740.img</tt></b>
+<p>Each of these commands creates a&nbsp; gridded array containing 1860
+columns and 1740 rows of binary floating-point values. The latitude values
+are stored in gl1_lat_01860_01740.img and the longitude values in gl1_lon_01860_01740.img.
+<br>
+<hr><font size=-1>Last updated: April 20, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>
