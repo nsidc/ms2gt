@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod02.pl,v 1.24 2001/03/05 19:21:37 haran Exp haran $
+# $Id: mod02.pl,v 1.25 2001/03/06 14:59:44 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -231,6 +231,19 @@ if ($ancilfile ne "none") {
 }
 my $ancil_count = scalar(@ancils);
 
+my @gridsize = `gridsize $gpdfile`;
+my ($grid_cols) = ($gridsize[0] =~ /cols:\s*(\d+)/);
+my ($grid_rows) = ($gridsize[1] =~ /rows:\s*(\d+)/);
+if (!defined($grid_cols) || $grid_cols == 0 ||
+    !defined($grid_rows) || $grid_rows == 0) {
+    diemail("$script: FATAL: " .
+	    "error opening gpdfile: $gpdfile\n");
+}
+$grid_cols = sprintf("%05d", $grid_cols);
+$grid_rows = sprintf("%05d", $grid_rows);
+print_stderr("$script: MESSAGE:\n" .
+	     "grid will contain $grid_cols cols and $grid_rows rows\n");
+exit;
 my $swath_cols = 0;
 my $swath_rows = 0;
 my $ancil_cols = 0;
@@ -497,14 +510,6 @@ my $cr_cols = $this_cols_cols;
 my $cr_scans = $this_cols_scans;
 my $cr_scan_first = $this_cols_scan_first;
 my $cr_rows_per_scan = $this_cols_rows_per_scan;
-
-open_or_die("GPDFILE", "$ENV{PATHMPP}/$gpdfile");
-$line = <GPDFILE>;
-$line = <GPDFILE>;
-close(GPDFILE);
-my ($grid_cols, $grid_rows) = ($line =~ /(\S+)\s+(\S+)/);
-$grid_cols = sprintf("%05d", $grid_cols);
-$grid_rows = sprintf("%05d", $grid_rows);
 
 $swath_cols = $cr_cols * $latlon_interp_factor - $latlon_col_extra;
 if ($latlon_interp_factor > 1) {
