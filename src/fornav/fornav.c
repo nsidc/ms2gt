@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.25 2001/10/24 15:23:51 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.26 2001/10/24 15:47:51 haran Exp $";
 
 #include <stdio.h>
 #include <math.h>
@@ -109,6 +109,14 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fo
 "             are less than weight_sum_min are set to the grid fill value.\n"\
 "             Default is weight_sum_min.\n"\
 "\n"
+
+/*
+ * Elliptical weighted averaging is described in Ned Greene and Paul S. Heckbert,
+ * "Creating Raster Omnimax Images from Multiple Perspective Views Using the
+ * Elliptical Weighted Average Filter," IEEE Computer Graphics and Applications
+ * (CG&A), Vol. 6, No. 6, June 1986, pp.21-27. See also Paul S. Heckbert,
+ *"Survey of Texture Mapping," IEEE CG&A, Vol. 6, No. 11, Nov. 1986, pp.56-67.
+ */
 
 #define TYPE_UNDEF  0
 #define TYPE_BYTE   1
