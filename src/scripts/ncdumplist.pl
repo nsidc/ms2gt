@@ -14,18 +14,36 @@ $junk = $script;
 $junk = $junk;
 
 $Usage = "\n
-USAGE: ncdumplist.pl listfile\n";
+USAGE: ncdumplist.pl listfile [lines_to_skip]
+         default:                    0\n\n";
 
-if (@ARGV != 1) {
+my $listfile;
+my $lines_to_skip = 0;
+
+if (@ARGV < 1 || @ARGV > 2) {
     print $Usage;
     exit 1;
 }
 
-my $listfile = $ARGV[0];
+if (@ARGV <= 2) {
+    $listfile = $ARGV[0];
+    if (@ARGV >= 2) {
+	$lines_to_skip = $ARGV[1];
+    }
+} else {
+    print $Usage;
+    exit 1;
+}
 open_or_die("LISTFILE", "$listfile");
+my $lines_read = 0;
 while (<LISTFILE>) {
-    my ($file) = /\s*(\S+)/;
-    if (defined($file)) {
+    if ($lines_read++ < $lines_to_skip) {
+	next;
+    }
+    chomp;
+    my @files = split;
+    my $file;
+    foreach $file (@files) {
 	do_or_die("ncdump.pl $file");
     }
 }
