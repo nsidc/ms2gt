@@ -4,7 +4,7 @@
 # 12-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/haran/ms2gth/Makefile,v 1.24 2004/11/30 08:31:18 haran Exp haran $
+RCSID = $Header: /data/haran/ms2gth/Makefile,v 1.25 2005/01/08 00:05:02 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -13,7 +13,7 @@ RCSID = $Header: /data/haran/ms2gth/Makefile,v 1.24 2004/11/30 08:31:18 haran Ex
 #       define current version and release
 #
 VERSION = 0
-RELEASE = 11
+RELEASE = 12
 
 #
 #	installation directories
