@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.3 2001/01/03 00:30:21 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.4 2001/01/03 22:03:55 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -133,6 +133,7 @@ typedef struct {
   float min;
   float distance_max;
   float sum_min;
+  float alpha;
   float qmax;
   float qfactor;
   float *wtab;
@@ -257,14 +258,11 @@ static void InitializeWeight(ewa_weight *ewaw, int weight_count,
 			     float weight_min, float weight_distance_max,
 			     float weight_sum_min)
 {
-  double alpha_qmax;
-  double t;
-  double tinc;
   float  *wptr;
   int    i;
 
   if (very_verbose)
-    fprintf(stderr, "Initializing weight structure");
+    fprintf(stderr, "Initializing weight structure\n");
   ewaw->count        = weight_count;
   ewaw->min          = weight_min;
   ewaw->distance_max = weight_distance_max;
@@ -279,30 +277,37 @@ static void InitializeWeight(ewa_weight *ewaw, int weight_count,
   if (weight_distance_max <= 0.0)
     error_exit("fornav: InitializeWeight: weight_distance_max must be greater than 0");
   ewaw->qmax = ewaw->distance_max * ewaw->distance_max;
-  alpha_qmax = -log(ewaw->min);
+  ewaw->alpha = -log(ewaw->min) / ewaw->qmax;
   wptr = ewaw->wtab;
-  t = 0.0;
-  tinc = 1.0 / weight_count;
-  for (i = 0, t = 0.0; i < weight_count; i++, t += tinc)
-    *wptr++ = exp(-alpha_qmax * t);
+  for (i = 0; i < weight_count; i++)
+    *wptr++ = exp(-ewaw->alpha * ewaw->qmax * (float)i / (ewaw->count - 1));
 
   /*
    *  Use i = (int)(q * ewaw->qfactor) to get element number i of wtab
    *  corresponding to q.
    *  Then for 0 < q < ewaw->qmax
    *    we have:
-   *      0   < i              <  ewaw->count
+   *      0   < i              <= ewaw->count - 1
    *      1.0 > ewaw->wtab[i]  >= ewaw->min
    */
 
   ewaw->qfactor = ewaw->count / ewaw->qmax;
+  if (very_verbose) {
+    fprintf(stderr, "alpha = %f  qmax = %f\n",
+	    ewaw->alpha, ewaw->qmax);
+    fprintf(stderr, "wtab[%d] = %f\n",
+	    0, ewaw->wtab[0]);
+    fprintf(stderr, "wtab[%d] = %f\n",
+	    ewaw->count - 1, ewaw->wtab[ewaw->count - 1]);
+  }
 }
 
 static void DeInitializeWeight(ewa_weight *ewaw)
 {
   if (very_verbose)
     fprintf(stderr, "DeInitializing weight structure");
-  free(ewaw->wtab);
+  if (ewaw->wtab)
+    free(ewaw->wtab);
 }
 
 main (int argc, char *argv[])
