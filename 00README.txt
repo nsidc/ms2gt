@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.12 --  14 March 2005
+Readme for MODIS Swath-to-Grid Toolbox 0.12 --  18 March 2005
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
