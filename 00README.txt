@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.6 --  11 August 2003
+Readme for MODIS Swath-to-Grid Toolbox 0.7 --  10 September 2003
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -31,3 +31,10 @@ installation and use of MS2GT can be then found in html files in the
 ms2gt/doc subdirectory. Point your browser to ms2gt/doc/index.html. Note
 that the html documentation is for 0.5 and has not yet been updated of
 0.6.
+
+Note also that there is an updated version of ppgc.html, "Points,
+Pixels, Grids, and Cells", which describes the updated gpd
+syntax. Included in the grids directory are some examples of gpd files
+using the new format.
+
+
