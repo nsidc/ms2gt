@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.12 --  12 March 2005
+Readme for MODIS Swath-to-Grid Toolbox 0.12 --  14 March 2005
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -67,4 +67,6 @@ normalization.
 As of 0.12, modifications to extract_valid_scans.pro and
 modis_level1b_read.pro were made such that valid scans are now determined
 exclusively by the latitude array. However, out of range data values are
-still mapped to the fill value for valid scans.
+still mapped to the fill value for valid scans. Added checks to make sure
+that fix250 is specified with correct chanfile and ancilfile
+specifications.
