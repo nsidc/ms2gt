@@ -202,6 +202,8 @@ my $row_file  = "$tag\_rows_$swath_cols\_$swath_rows.img";
 
 do_or_die("ll2cr -v $swath_cols $swath_rows $lat_file $lon_file " .
 	  "$gpdfile $col_file $row_file");
+do_or_die("rm -f $lat_file");
+do_or_die("rm -f $lon_file");
 
 open_or_die("GPDFILE", "$ENV{PATHMPP}/$gpdfile");
 my $line = <GPDFILE>;
@@ -234,3 +236,8 @@ do_or_die("idl_sh.pl fornav " .
 	  "$grid_cols $grid_rows $grid_file_param " .
 	  "weight_sum_min=0.001 " .
 	  "swath_scan_first=$swath_scan_first");
+for ($i = 0; $i < $chan_count; $i++) {
+    do_or_die("rm -f $chan_files[$i]");
+}
+do_or_die("rm -f $col_file");
+do_or_die("rm -f $row_file");
