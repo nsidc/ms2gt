@@ -8,7 +8,10 @@
 
 ; Initialization.
 ;
-; $Log$
+; $Log: nsidc_dist_table__define.pro,v $
+; Revision 1.1  2001/03/13 19:17:53  haran
+; Initial revision
+;
 ;
 FUNCTION NSIDC_DIST_TABLE::INIT, main_obj, file_obj, grid_obj, data, $
    box_pts, grid_name, field_name, img_num
@@ -153,7 +156,7 @@ ON_IOERROR, IO_BAD
          WIDGET_CONTROL, self.table_base, UPDATE=1
       END
       'print_bttn': BEGIN ; Print (this button only active on Windows platforms).
-         temp_file = 'c:\windows\temp\nsidc_dist_temp.txt'
+         temp_file = 'nsidc_dist_temp.txt'
          GET_LUN, lun
          OPENW, lun, temp_file
          FOR i=0, 8 DO BEGIN
