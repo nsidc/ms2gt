@@ -3,7 +3,7 @@
 ;*
 ;* 10-Jan-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/interp_colrow.pro,v 1.2 2001/01/12 17:31:14 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/interp_colrow.pro,v 1.3 2001/01/19 01:15:44 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -243,7 +243,12 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
   ;  rename the output files if check grid is true
 
   if check_grid eq 1 then begin
-      scansout = scanlast - scanfirst + 1
+      if scanfirst lt 0 then begin
+          scansout = 0
+          scanfirst = 0
+      endif else begin
+          scansout = scanlast - scanfirst + 1
+      endelse
       suffix = string(colsout, format='(I5.5)') + '_' + $
                string(scansout, format='(I5.5)') + '_' + $
                string(scanfirst, format='(I5.5)') + '_' + $
