@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.6 2001/01/04 01:05:04 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.7 2001/01/04 18:04:09 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -60,7 +60,7 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/for
 " option: v: verbose (may be repeated).\n"\
 "         s swath_scan_first: the first scan number to process. Default is 0.\n"\
 "         S grid_col_start grid_row_start: starting grid column number and row\n"\
-"             number to write to each output grid file.\n"\
+"             number to write to each output grid file. The defaults are 0.\n"\
 "         m: maximum weight mode. If -m is not present, a weighted average of\n"\
 "             all swath cells that map to a particular grid cell is used.\n"\
 "             If -m is present, the swath cell having the maximum weight of all\n"\
@@ -139,6 +139,9 @@ typedef struct {
   float qmax;
   float qfactor;
   float *wtab;
+  float *swath_chan_buf;
+  float *swath_fill_buf;
+  float **grid_chan_buf;
 } ewa_weight;
 
 static int verbose;
@@ -209,7 +212,7 @@ static void InitializeImage(image *ip, char *name, char *open_type_str,
   ip->cols = cols;
   ip->rows = rows;
   ip->bytes_per_row = ip->bytes_per_cell * cols;
-  ip->buf = matrix(ip->rows, ip->cols, ip->bytes_per_cell, 0);
+  ip->buf = matrix(ip->rows, ip->cols, ip->bytes_per_cell, 1);
   if (ip->buf == NULL) {
     fprintf(stderr, "Error initializing %s\n", name);
     error_exit("fornav: InitializeImage: can't allocate memory for buffer");
@@ -256,7 +259,8 @@ static void ReadImage(image *ip)
   }
 }
 
-static void InitializeWeight(int weight_count, float weight_min,
+static void InitializeWeight(int chan_count,
+			     int weight_count, float weight_min,
 			     float weight_distance_max, float weight_sum_min,
 			     ewa_weight *ewaw)
 {
@@ -269,9 +273,23 @@ static void InitializeWeight(int weight_count, float weight_min,
   ewaw->min          = weight_min;
   ewaw->distance_max = weight_distance_max;
   ewaw->sum_min      = weight_sum_min;
-  ewaw->wtab         = calloc(weight_count, sizeof(float));
+
+  ewaw->wtab         = (float *)calloc(weight_count, sizeof(float));
   if (ewaw->wtab == NULL)
     error_exit("fornav: InitializeWeight: can't allocate memory for wtab");
+
+  ewaw->swath_chan_buf = (float *)calloc(chan_count, sizeof(float));
+  if (ewaw->swath_chan_buf == NULL)
+    error_exit("fornav: InitializeWeight: can't allocate memory for swath_chan_buf");
+
+  ewaw->swath_fill_buf = (float *)calloc(chan_count, sizeof(float));
+  if (ewaw->swath_fill_buf == NULL)
+    error_exit("fornav: InitializeWeight: can't allocate memory for swath_fill_buf");
+
+  ewaw->grid_chan_buf = (float **)calloc(chan_count, sizeof(float *));
+  if (ewaw->grid_chan_buf == NULL)
+    error_exit("fornav: InitializeWeight: can't allocate memory for grid_chan_buf");
+
   if (weight_count < 2)
     error_exit("fornav: InitializeWeight: weight_count must be at least 2");
   if (weight_min <= 0.0)
@@ -307,12 +325,18 @@ static void InitializeWeight(int weight_count, float weight_min,
 static void DeInitializeWeight(ewa_weight *ewaw)
 {
   if (very_verbose)
-    fprintf(stderr, "DeInitializing weight structure");
+    fprintf(stderr, "DeInitializing weight structure\n");
   if (ewaw->wtab)
     free(ewaw->wtab);
+  if (ewaw->swath_chan_buf)
+    free(ewaw->swath_chan_buf);
+  if (ewaw->swath_fill_buf)
+    free(ewaw->swath_fill_buf);
+  if (ewaw->grid_chan_buf)
+    free(ewaw->grid_chan_buf);
 }
 
-static void ComputeEwaParameters(image *iu, image *iv, ewa_weight *ewaw,
+static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
 				 ewa_parameters *ewap)
 {
   int rowsm1;
@@ -344,17 +368,17 @@ static void ComputeEwaParameters(image *iu, image *iv, ewa_weight *ewaw,
     fprintf(stderr,
 	    " col            ux            vx            uy            vy             a             b             c         u_del         v_del\n");
   }
-  rowsm1 = iu->rows - 1;
-  colsm1 = iu->cols - 1;
-  rowsov2 = iu->rows / 2;
+  rowsm1 = uimg->rows - 1;
+  colsm1 = uimg->cols - 1;
+  rowsov2 = uimg->rows / 2;
   qmax = ewaw->qmax;
-  u_frst_row_this_col = (float *)(iu->buf[0]);
-  u_last_row_this_col = (float *)(iu->buf[rowsm1]);
-  v_frst_row_this_col = (float *)(iv->buf[0]);
-  v_last_row_this_col = (float *)(iv->buf[rowsm1]);
-  u_midl_row_this_col = (float *)(iu->buf[rowsov2]);
+  u_frst_row_this_col = (float *)(uimg->buf[0]);
+  u_last_row_this_col = (float *)(uimg->buf[rowsm1]);
+  v_frst_row_this_col = (float *)(vimg->buf[0]);
+  v_last_row_this_col = (float *)(vimg->buf[rowsm1]);
+  u_midl_row_this_col = (float *)(uimg->buf[rowsov2]);
   u_midl_row_next_col = u_midl_row_this_col + 1;
-  v_midl_row_this_col = (float *)(iv->buf[rowsov2]);
+  v_midl_row_this_col = (float *)(vimg->buf[rowsov2]);
   v_midl_row_next_col = v_midl_row_this_col + 1;
   for (col = 0, this_ewap = ewap;
        col < colsm1;
@@ -388,7 +412,7 @@ static void ComputeEwaParameters(image *iu, image *iv, ewa_weight *ewaw,
     this_ewap->u_del = sqrt(c * d);
     this_ewap->v_del = sqrt(a * d);
     if (very_verbose &&
-	(col == 10 || col == iu->cols / 2 || col == iu->cols - 11))
+	(col == 10 || col == uimg->cols / 2 || col == uimg->cols - 11))
       fprintf(stderr,
 	      "%4d %13e %13e %13e %13e %13e %13e %13e %13e %13e\n",
 	      col, ux, vx, uy, vy, a, b, c,
@@ -405,6 +429,186 @@ static void ComputeEwaParameters(image *iu, image *iv, ewa_weight *ewaw,
   this_ewap->u_del = (this_ewap - 1)->u_del;
   this_ewap->v_del = (this_ewap - 1)->v_del;
 }
+
+static void ComputeEwa(image *uimg, image *vimg,
+		       ewa_weight *ewaw, ewa_parameters *ewap,
+		       int chan_count, image *swath_chan_image,
+		       bool maximum_weight_mode,
+		       int grid_col_start, int grid_row_start,
+		       image *grid_chan_image, image *grid_weight_image)
+{
+  int   row;
+  int   rows;
+  int   col;
+  int   cols;
+  float *u0p;
+  float *v0p;
+  float *wtab;
+  float *weightp;
+  float *this_weightp;
+  float *swath_chanp;
+  float *swath_fillp;
+  float **grid_chanpp;
+  float *this_swath_chanp;
+  float *this_swath_fillp;
+  float **this_grid_chanpp;
+  void  *this_buf;
+  bool   got_fill;
+  double u0;
+  double v0;
+  double u;
+  double v;
+  double ddq;
+  double dq;
+  double q;
+  double a;
+  double b;
+  double c;
+  double f;
+  double a2up1;
+  double bu;
+  double au2;
+  double weight;
+  double qfactor;
+  int   iu1;
+  int   iu2;
+  int   iv1;
+  int   iv2;
+  int   iu;
+  int   iv;
+  int   grid_cols;
+  int   grid_rows;
+  int   chan;
+  int   weight_count;
+  int   iw;
+  int   swath_offset;
+  int   grid_offset;
+  image *this_swath;
+  image *this_grid;
+  ewa_parameters *this_ewap;
+
+  if (very_verbose)
+    fprintf(stderr, "Computing ewa\n");
+  rows = uimg->rows;
+  cols = uimg->cols;
+  grid_cols = grid_chan_image[0].cols;
+  grid_rows = grid_chan_image[0].rows;
+  wtab = ewaw->wtab;
+  qfactor = ewaw->qfactor;
+  weight_count = ewaw->count;
+  swath_chanp = ewaw->swath_chan_buf;
+  swath_fillp = ewaw->swath_fill_buf;
+  grid_chanpp = ewaw->grid_chan_buf;
+  weightp = grid_weight_image->buf[0];
+  this_swath = swath_chan_image;
+  this_grid = grid_chan_image;
+  this_swath_fillp = swath_fillp;
+  this_grid_chanpp = grid_chanpp;
+  for (chan = 0; chan < chan_count; chan++) {
+    *swath_fillp++ = (this_swath++)->fill;
+    *this_grid_chanpp++ = (float *)((this_grid++)->buf[0]);
+  }
+  for (row = 0; row < rows; row++) {
+    u0p = (float *)(uimg->buf[row]);
+    v0p = (float *)(vimg->buf[row]);
+    for (col = 0, this_ewap = ewap;
+	 col < cols;
+	 col++, this_ewap++) {
+      u0 = *u0p++ - grid_col_start;
+      v0 = *v0p++ - grid_row_start;
+      iu1 = (int)(u0 - this_ewap->u_del);
+      iu2 = (int)(u0 + this_ewap->u_del);
+      iv1 = (int)(v0 - this_ewap->v_del);
+      iv2 = (int)(v0 + this_ewap->v_del);
+      if (iu1 >= 0 && iu2 < grid_cols &&
+	  iv1 >= 0 && iv2 < grid_rows) {
+	swath_offset = col + row * cols;
+	this_swath = swath_chan_image;
+	this_swath_chanp = swath_chanp;
+	this_swath_fillp = swath_fillp;
+	got_fill = FALSE;
+	for (chan = 0; chan < chan_count; chan++, this_swath++) {
+	  this_buf = this_swath->buf[0];
+	  switch (this_swath->data_type) {
+	  case TYPE_BYTE:
+	    *this_swath_chanp = *((byte1 *)this_buf + swath_offset);
+	    break;
+	  case TYPE_UINT2:
+	    *this_swath_chanp = *((byte2 *)this_buf + swath_offset);
+	    break;
+	  case TYPE_SINT2:
+	    *this_swath_chanp = *((int2 *)this_buf + swath_offset);
+	    break;
+	  case TYPE_UINT4:
+	    *this_swath_chanp = *((byte4 *)this_buf + swath_offset);
+	    break;
+	  case TYPE_SINT4:
+	    *this_swath_chanp = *((int4 *)this_buf + swath_offset);
+	    break;
+	  case TYPE_FLOAT:
+	    *this_swath_chanp = *((float *)this_buf + swath_offset);
+	    break;
+	  }
+	  if (*this_swath_chanp++ == *this_swath_fillp++) {
+	    got_fill = TRUE;
+	    break;
+	  }
+	} /* for (chan = 0; chan < chan_count; chan++, this_swath++) */
+	a = this_ewap->a;
+	b = this_ewap->b;
+	c = this_ewap->c;
+	f = this_ewap->f;
+	ddq = 2.0 * a;
+	u = iu1 - u0;
+	a2up1 = a * (2.0 * u + 1.0);
+	bu = b * u;
+	au2 = a * u * u;
+	for (iv = iv1; iv <= iv2; iv++) {
+	  v = iv - v0;
+	  dq = a2up1 + b * v;
+	  q = (c * v + bu) * v + au2;
+	  for (iu = iu1; iu <= iu2; iu++) {
+	    if (q < f) {
+	      iw = (int)(q * qfactor);
+	      if (iw >= weight_count)
+		iw = weight_count - 1;
+	      weight = wtab[iw];
+	      grid_offset = iu + iv * grid_cols;
+	      this_weightp = weightp + grid_offset;
+	      this_swath_chanp = swath_chanp;
+	      this_swath_fillp = swath_fillp;
+	      this_grid_chanpp = grid_chanpp;
+	      if (maximum_weight_mode) {
+		if (weight > *this_weightp) {
+		  *this_weightp = weight;
+		  if (got_fill) {
+		    for (chan = 0; chan < chan_count; chan++)
+		      *((*this_grid_chanpp++) + grid_offset) =
+			*this_swath_fillp++;
+		  } else {
+		    for (chan = 0; chan < chan_count; chan++) {
+		      *((*this_grid_chanpp++) + grid_offset) =
+			*this_swath_chanp++;
+		    }
+		  }
+		}
+	      } else if (!got_fill) {
+		*this_weightp += weight;
+		for (chan = 0; chan < chan_count; chan++) {
+		  *((*this_grid_chanpp++) + grid_offset) +=
+		    *this_swath_chanp++ * weight;
+		}
+	      }
+	    } /* if (q < f) */
+	    q += dq;
+	    dq += ddq;
+	  } /* for (iu = iu1; iu <= iu2; iu++) */
+	} /* for (iv = iv1; iv <= iv2; iv++) */
+      } /* if (u1 >= grid_col_start && u2 <= grid_col_end && */
+    } /* for (col = 0, this_ewap = ewap; */
+  } /* for (row = 0; row < rows; row++) */
+}
+
 
 main (int argc, char *argv[])
 {
@@ -721,7 +925,7 @@ main (int argc, char *argv[])
   /*
    *  Initialize the ewa weight structure
    */
-  InitializeWeight(weight_count, weight_min, weight_distance_max,
+  InitializeWeight(chan_count, weight_count, weight_min, weight_distance_max,
 		   weight_sum_min, &ewaw);
 
   /*
@@ -733,17 +937,29 @@ main (int argc, char *argv[])
       fprintf(stderr, "Processing scan %d\n", scan);
 
     /*
-     *  Read a scan from each swath file
+     *  Read a scan from each col and row swath file
      */
     ReadImage(swath_col_image);
     ReadImage(swath_row_image);
-    for (i = 0; i < chan_count; i++)
-      ReadImage(&swath_chan_image[i]);
 
     /*
      *  Compute ewa parameters for this scan
      */
-    ComputeEwaParameters(swath_col_image, swath_row_image, &ewaw, ewap); 
+    ComputeEwaParameters(swath_col_image, swath_row_image, &ewaw, ewap);
+
+    /*
+     *  Read a scan from each channel swath file
+     */
+    for (i = 0; i < chan_count; i++)
+      ReadImage(&swath_chan_image[i]);
+
+    /*
+     *  Compute ewa for this scan
+     */
+    ComputeEwa(swath_col_image, swath_row_image, &ewaw, ewap,
+	       chan_count, swath_chan_image, maximum_weight_mode,
+	       grid_col_start, grid_row_start,
+	       grid_chan_image, grid_weight_image);
 
   } /* for (scan = swath_scan_first; scan <= swath_scan_last; scan++) */
 
