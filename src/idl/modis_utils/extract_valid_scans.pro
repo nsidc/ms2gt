@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.7 2004/11/23 03:18:51 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.8 2004/11/23 03:44:53 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -18,8 +18,9 @@
 ;
 ; CALLING SEQUENCE:
 ;       image = extract_valid_scans(sd_id, sds_name, lines_per_scan,
-;                                   band_index, area=area, 
-;                                   invalid_count_max=invalid_count_max)
+;                                   band_index, area=area,
+;                                   invalid_fraction_max=invalid_fraction_max,
+;                                   valid_fill=valid_fill)
 ;
 ; ARGUMENTS:
 ;
@@ -33,13 +34,21 @@
 ;-
 
 FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
-                              area=area
+                              area=area, $
+                              invalid_fraction_max=invalid_fraction_max, $
+                              valid_fill=valid_fill
 
   usage = 'usage: image = extract_valid_scans(sd_id, sds_name, ' + $
-          'lines_per_scan, band_index, [area=area]'
+          'lines_per_scan, band_index, [area=area, ' + $
+          'invalid_fraction_max=invalid_fraction_max, valid_fill=valid_fill]'
 
   if n_params() ne 4 then $
     message, usage
+
+  if n_elements(invalid_fraction_max) eq 0 then $
+    invalid_fraction_max = 0.5
+  if n_elements(valid_fill) eq 0 then $
+    valid_fill = 0
 
   got_mirror = 0
   if sds_name eq 'Mirror side' then begin
@@ -97,8 +106,7 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
     npixels_per_scan = npixels_across * lines_per_scan
     nscans = npixels_along / lines_per_scan
     invalid_count = 0L
-    if n_elements(invalid_count_max) eq 0 then $
-      invalid_count_max = long(0.5 * npixels_per_scan)
+    invalid_count_max = long(invalid_fraction_max * npixels_per_scan)
 
     if invalid_count_max gt 0 then begin
 
@@ -114,16 +122,17 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
             last  = first + npixels_per_scan - 1
 
         ;- count gets number of invalid
-        ;  treat fill values for channel data (i.e. band_index ge 0)
+        ;  treat fill values for channel data (i.e. valid_fill)
         ;  as valid because apparently lat-lon is valid when chan eq fill
             image_scan = image[first:last]
             test_scan0 = ((image_scan lt valid_range[0]) or $
                           (image_scan gt valid_range[1]))
-            if band_index ge 0 then $
-              test_scan1 = image_scan ne fill $
-            else $
-              test_scan1 = test_scan0
-            j = where((test_scan0 and test_scan1) eq 1, count)
+            if valid_fill then begin
+                test_scan1 = image_scan ne fill
+                j = where((test_scan0 and test_scan1) eq 1, count)
+            endif else begin
+                j = where(test_scan0 eq 1, count)
+            endelse
             if count ge invalid_count_max then begin
 
             ;- scan was almost all invalid
@@ -137,7 +146,14 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
                 endif
                 invalid_count = invalid_count + 1
                 npixels_along = npixels_along - lines_per_scan
-            endif
+            endif else begin
+                if count gt 0 then begin
+
+                ;- set invalids to fill
+                    image_scan[j] = fill
+                    image[first:last] = image_scan
+                endif
+            endelse
         endfor
     endif
 
