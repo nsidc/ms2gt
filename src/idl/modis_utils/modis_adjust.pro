@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.2 2002/04/16 20:45:21 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.3 2002/04/17 00:34:20 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -424,9 +424,9 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                   xyouts, .12, .86, annot, charsize=1.0, /normal
               endif
               swath[*, sensor - 1, *] = slope[0] * x + intercept
-          endif
-      endfor
-  endif
+          endif ; if sensor ne regress_sensor
+      endfor ; for sensor = 1, rows_per_scan
+  endif ; if regress_sensor eq 0
 
   ;  undo soze normalization if required
 
