@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.12 2002/11/24 22:56:47 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.13 2002/11/24 23:05:22 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -59,8 +59,12 @@
 ; KEYWORDS:
 ;       rows_per_scan: number of rows in each scan in file_in. Valid
 ;         values are limited to 40 (the default), 20, or 10.
-;       data_type: 2-character string specifying the data type of the data
-;         if file in to be adjusted:
+;       data_type_in: 2-character string specifying the data type of the
+;         input file.
+;       data_type_out: 2-character string specifying the data type of the
+;         output file.
+;       NOTE: the following 2-character codes are used for both
+;         data_type_in and data_type_out:
 ;           u1: unsigned 8-bit integer.
 ;           u2: unsigned 16-bit integer.
 ;           s2: signed 16-bit integer.
@@ -173,7 +177,8 @@
 
 Pro modis_adjust, cols, scans, file_in, file_out, $
                   rows_per_scan=rows_per_scan, $
-                  data_type=data_type, $
+                  data_type_in=data_type_in, $
+                  data_type_out=data_type_out, $
                   file_soze=file_soze, $
                   undo_soze=undo_soze, $
                   reg_col_detectors=reg_col_detectors, $
@@ -200,7 +205,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   usage = lf + 'usage: modis_adjust, ' + lf + $
                 'cols, scans, file_in, file_out, ' + lf + $
                 '[, rows_per_scan=rows_per_scan] ' + lf + $
-                '[, data_type=data_type] ' +   lf + $
+                '[, data_type_in=data_type_in] ' +   lf + $
+                '[, data_type_out=data_type_out] ' +   lf + $
                 '[, file_soze=file_soze] ' + lf + $
                 '[, /undo_soze] ' + lf + $
                 '[, reg_col_detectors=reg_col_detectors] ' + lf + $
@@ -225,8 +231,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   if n_elements(rows_per_scan) eq 0 then $
     rows_per_scan = 40
-  if n_elements(data_type) eq 0 then $
-    data_type = 'f4'
+  if n_elements(data_type_in) eq 0 then $
+    data_type_in = 'f4'
+  if n_elements(data_type_out) eq 0 then $
+    data_type_out = 'f4'
   if n_elements(file_soze) eq 0 then $
     file_soze = ''
   if n_elements(undo_soze) eq 0 then $
@@ -266,13 +274,14 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.12 2002/11/24 22:56:47 haran Exp haran $' 
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.13 2002/11/24 23:05:22 haran Exp haran $' 
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
   print, '  file_in:              ', file_in
   print, '  file_out:             ', file_out
   print, '  rows_per_scan:        ', rows_per_scan
-  print, '  data_type:            ', data_type
+  print, '  data_type_in:         ', data_type_in
+  print, '  data_type_out:        ', data_type_out
   print, '  file_soze:            ', file_soze
   print, '  undo_soze:            ', undo_soze
   for i = 0, reg_col_detectors_count - 1 do begin
@@ -321,47 +330,57 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   ; allocate arrays
 
-  case data_type of
+  case data_type_in of
+      'u1': swath = bytarr(cells_per_swath)
+      'u2': swath = uintarr(cells_per_swath)
+      's2': swath = intarr(cells_per_swath)
+      'u4': swath = ulonarr(cells_per_swath)
+      's4': swath = lonarr(cells_per_swath)
+      'f4': swath = fltarr(cells_per_swath)
+      else: message, 'invalid data_type_in' + usage
+  end
+
+  case data_type_out of
       'u1': begin
-          swath = bytarr(cells_per_swath)
-          bytes_per_element = 1
+          test_out = bytarr(cells_per_swath)
           min_out = 0.0
           max_out = 255.0
       end
       'u2': begin
-          swath = uintarr(cells_per_swath)
-          bytes_per_element = 2
+          test_out = uintarr(cells_per_swath)
           min_out = 0.0
           max_out = 65535.0
       end
       's2': begin
-          swath = intarr(cells_per_swath)
-          bytes_per_element = 2
+          test_out = intarr(cells_per_swath)
           min_out = -32768.0
           max_out = 32767.0
       end
       'u4': begin
-          swath = ulonarr(cells_per_swath)
-          bytes_per_element = 4
+          test_out = ulonarr(cells_per_swath)
           min_out = 0.0
           max_out = 4294967295.0
       end
       's4': begin
-          swath = lonarr(cells_per_swath)
-          bytes_per_element = 4
+          test_out = lonarr(cells_per_swath)
           min_out = -2147483648.0
           max_out = 2147483647.0
       end
       'f4': begin
-          swath = fltarr(cells_per_swath)
-          bytes_per_element = 4
+          test_out = fltarr(cells_per_swath)
       end
-      else: message, 'invalid data_type' + usage
+      else: message, 'invalid data_type_out' + usage
   end
-  type_code = size(swath, /type)
+  type_code_out = size(test_out, /type)
+  test_out = 0
 
   if file_soze ne '' then $
     soze = fltarr(cells_per_swath)
+
+  ; convert swath to floating-point
+
+  if data_type_in ne 'f4' then $
+    swath = float(temporary(swath))
 
   ; open, read, and close input files
 
@@ -493,7 +512,6 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   endif  ; if reg_rows ne 0
 
-
   ;  undo soze normalization if required
 
   if (file_soze ne '') and (undo_soze ne 0) then begin
@@ -503,7 +521,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   ;  put the swath back into original data type
 
-  if data_type ne 'f4' then begin
+  if data_type_out ne 'f4' then begin
       i = where(swath lt min_out, count)
       if count gt 0 then $
         swath[i] = min_out
