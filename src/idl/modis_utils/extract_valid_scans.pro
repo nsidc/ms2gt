@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.2 2004/11/21 02:24:19 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.3 2004/11/21 02:35:18 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -147,7 +147,7 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
                                               (npixels_across - 1L)
             last[1]  = (long(area[3] + start[1] - 1L) > 0L) < $
                                               (npixels_along  - 1L)
-            image = image[start[0]:last[0], last[0]:last[1]]
+            image = image[start[0]:last[0], start[1]:last[1]]
         endif
     endelse
 
