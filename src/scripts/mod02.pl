@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.40 2004/10/23 17:40:48 haran Exp haran $
+# $Id: mod02.pl,v 1.41 2004/10/29 21:49:54 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -46,7 +46,7 @@ my $fixcolfile = "none";
 my $fixrowfile = "none";
 my $tile_cols = 1;
 my $tile_rows = 1;
-my $tile_overlap = 50;
+my $tile_overlap = 60;
 
 if (@ARGV < 4) {
     print $mod02_usage;
@@ -853,133 +853,184 @@ if ($ancil_interp_factor > 1) {
     }
 }
 
-for ($i = 0; $i < $chan_count; $i++) {
-    my $chan_file = $chan_files[$i];
-    my $chan = $chans[$i];
-    if ($fix250) {
-	my $chan_file_unfixed = $chan_file . ".unfixed";
-	do_or_die("mv $chan_file $chan_file_unfixed");
-	my $reg_col_offset = "";
-	my $reg_cols = "";
-	my $nor_rows = "";
-	my $reg_rows = "";
-	my $undo_soze = "";
-	my $file_reg_cols_in = "";
-	my $file_reg_cols_out = "";
-	my $file_reg_rows_in = "";
-	my $file_reg_rows_out = "";
-	my $reg_row_mirror_side = "";
-	if ($fix250 == 1 || $fix250 == 2) {
-	    $reg_col_offset = "reg_col_offset=" . (($chan == 1) ? "3" : "0");
-	    if ($fixcolfile eq "none") {
-		if ($platform eq "terra" && $chan == 2) {
-		    $reg_cols = "/reg_cols";
+my $tile_grid_cols = $grid_cols / $tile_cols;
+my $tile_grid_rows = $grid_rows / $tile_rows;
+my $tile_col;
+my $tile_row;
+for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
+    my $tile_row_offset = $tile_row * $tile_grid_rows;
+    my $tile_grid_rows_this = $tile_grid_rows + $tile_overlap;
+    if ($tile_row > 0) {
+	$tile_row_offset -= $tile_overlap;
+	$tile_grid_rows_this += $tile_overlap;
+    }
+    if ($tile_row == $tile_rows - 1) {
+	$tile_grid_rows_this = $grid_rows - $tile_row_offset;
+    }
+    for ($tile_col = 0; $tile_col < $tile_cols; $tile_col++) {
+	my $tile_col_offset = $tile_col * $tile_grid_cols;
+	my $tile_grid_cols_this = $tile_grid_cols + $tile_overlap;
+	if ($tile_col > 0) {
+	    $tile_col_offset -= $tile_overlap;
+	    $tile_grid_cols_this += $tile_overlap;
+	}
+	if ($tile_col == $tile_cols - 1) {
+	    $tile_grid_cols_this = $grid_cols - $tile_col_offset;
+	}
+	my $tile_ext = "";
+	if ($tile_cols > 1 && $tile_rows > 1) {
+	    $tile_ext = sprintf("_%01d%01d", $tile_col, $tile_row);
+	    if ($tile_overlap > 0) {
+		$tile_ext .= sprintf("x%02d", $tile_overlap);
+	    }
+	}
+	for ($i = 0; $i < $chan_count; $i++) {
+	    my $chan_file = $chan_files[$i];
+	    my $chan = $chans[$i];
+	    if ($fix250 &&
+		$tile_col == 0 &&
+		$tile_row == 0) {
+		my $chan_file_unfixed = $chan_file . ".unfixed";
+		do_or_die("mv $chan_file $chan_file_unfixed");
+		my $reg_col_offset = "";
+		my $reg_cols = "";
+		my $nor_rows = "";
+		my $reg_rows = "";
+		my $undo_soze = "";
+		my $file_reg_cols_in = "";
+		my $file_reg_cols_out = "";
+		my $file_reg_rows_in = "";
+		my $file_reg_rows_out = "";
+		my $reg_row_mirror_side = "";
+		if ($fix250 == 1 || $fix250 == 2) {
+		    $reg_col_offset = "reg_col_offset=" . (($chan == 1) ? "3" : "0");
+		    if ($fixcolfile eq "none") {
+			if ($platform eq "terra" && $chan == 2) {
+			    $reg_cols = "/reg_cols";
+			}
+			$file_reg_cols_out = "file_reg_cols_out=\"'$chan_file" . ".colfix'\"";
+		    } else {
+			$file_reg_cols_in = "file_reg_cols_in=\"'$fixcolfile'\"";
+		    }
+		    if ($fixrowfile eq "none") {
+			$nor_rows = "/nor_rows";
+			$reg_rows = "/reg_rows";
+			$file_reg_rows_out = "file_reg_rows_out=\"'$chan_file" . ".rowfix'\"";
+		    } else {
+			$file_reg_rows_in = "file_reg_rows_in=\"'$fixrowfile'\"";
+		    }
+		    if ($fix250 == 2) {
+			$undo_soze = "/undo_soze";
+		    }
+		    if ($ancil_mirror != 2) {
+			$reg_row_mirror_side = "reg_row_mirror_side=$ancil_mirror";
+		    }
 		}
-		$file_reg_cols_out = "file_reg_cols_out=\"'$chan_file" . ".colfix'\"";
+		my $data_type = $chan_conversions[$i] eq "raw" ? "u2" : "f4";
+		my $data_type_in = "data_type_in=\"'$data_type'\"";
+		my $data_type_out = "data_type_out=\"'$data_type'\"";
+		
+		my $command = "idl_sh.pl modis_adjust $swath_cols $swath_scans " .
+		    "\"'$chan_file_unfixed'\" \"'$chan_file'\" " .
+		    "file_soze=\"'$soze_file'\" " .
+		    "$reg_cols $reg_col_offset " .
+		    "$nor_rows $reg_rows $undo_soze " .
+		    "$data_type_in $data_type_out " .
+		    "$file_reg_cols_in $file_reg_cols_out " .
+		    "$file_reg_rows_in $file_reg_rows_out " .
+		    "$reg_row_mirror_side";
+		print_stderr("$command\n");
+		do_or_die($command);
+		if (!$keep) {
+		    system("rm -f $chan_file_unfixed");
+		}
+	    }
+	    my $tagext = substr($chan_conversions[$i], 0, 3);
+	    my $m_option;
+	    if ($chan_weight_types[$i] eq "avg") {
+		$m_option = "";
+		$tagext .= "a";
 	    } else {
-		$file_reg_cols_in = "file_reg_cols_in=\"'$fixcolfile'\"";
+		$m_option = "-m";
+		$tagext .= "m";
 	    }
-	    if ($fixrowfile eq "none") {
-		$nor_rows = "/nor_rows";
-		$reg_rows = "/reg_rows";
-		$file_reg_rows_out = "file_reg_rows_out=\"'$chan_file" . ".rowfix'\"";
+	    $tagext .= $tile_ext;
+	    my $grid_file =
+		"$tag\_$tagext\_ch$chan\_" .
+		"$tile_grid_cols_this\_$tile_grid_rows_this.img";
+	    my $t_option;
+	    my $f_option;
+	    if ($chan_conversions[$i] eq "raw") {
+		$t_option = "-t u2";
+		$f_option = "-f 65535";
 	    } else {
-		$file_reg_rows_in = "file_reg_rows_in=\"'$fixrowfile'\"";
+		$t_option = "-t f4";
+		$f_option = "-f 65535.0";
 	    }
-	    if ($fix250 == 2) {
-		$undo_soze = "/undo_soze";
+	    my $fill = $chan_fills[$i];
+	    my $F_option = "-F $fill";
+	    my $C_option = "-C $tile_col_offset";
+	    my $R_option = "-R $tile_row_offset";
+	    do_or_die("fornav 1 -v $t_option $f_option $m_option $F_option " .
+		      "-d $weight_distance_max $C_option $R_option " .
+		      "$swath_cols $swath_scans $swath_rows_per_scan " .
+		      "$cols_file $rows_file $chan_file " .
+		      "$tile_grid_cols_this $tile_grid_rows_this $grid_file");
+	    if (!$keep &&
+		$tile_col == $tile_cols - 1 &&
+		$tile_row == $tile_rows - 1) {
+		do_or_die("rm -f $chan_file");
 	    }
-	    if ($ancil_mirror != 2) {
-		$reg_row_mirror_side = "reg_row_mirror_side=$ancil_mirror";
+	}
+	
+	for ($i = 0; $i < $ancil_count; $i++) {
+	    my $ancil_file = $ancil_files[$i];
+	    if (!$ancil_deletes[$i]) {
+		my $ancil = $ancils[$i];
+		my $tagext = substr($ancil_conversions[$i], 0, 3);
+		my $m_option;
+		if ($ancil_weight_types[$i] eq "avg") {
+		    $m_option = "";
+		    $tagext .= "a";
+		} else {
+		    $m_option = "-m";
+		    $tagext .= "m";
+		}
+		$tagext .= $tile_ext;
+		my $grid_file =
+		    "$tag\_$tagext\_$ancil\_" .
+		    "$tile_grid_cols_this\_$tile_grid_rows_this.img";
+		my $data_type = $ancil_data_types[$i];
+		my $t_option = "-t $data_type";
+		my $fill_in;
+		if ($data_type eq "u1") {
+		    $fill_in = 255;
+		} elsif ($data_type eq "u2") {
+		    $fill_in = 0;
+		} elsif ($data_type eq "s2") {
+		    $fill_in = -32767;
+		} else {
+		    $fill_in = -999.0;
+		}
+		my $f_option = "-f $fill_in";
+		my $fill_out = $ancil_fills[$i];
+		my $F_option = "-F $fill_out";
+		my $C_option = "-C $tile_col_offset";
+		my $R_option = "-R $tile_row_offset";
+		do_or_die("fornav 1 -v $t_option $f_option " .
+			  "$m_option $F_option " .
+			  "-d $weight_distance_max $C_option $R_option " .
+			  "$swath_cols $swath_scans $swath_rows_per_scan " .
+			  "$cols_file $rows_file $ancil_file " .
+			  "$tile_grid_cols_this $tile_grid_rows_this " .
+			  "$grid_file");
+	    }
+	    if (($ancil_deletes[$i] || !$keep) &&
+		$tile_col == $tile_cols - 1 &&
+		$tile_row == $tile_rows - 1) {
+		do_or_die("rm -f $ancil_file");
 	    }
 	}
-	my $data_type = $chan_conversions[$i] eq "raw" ? "u2" : "f4";
-	my $data_type_in = "data_type_in=\"'$data_type'\"";
-	my $data_type_out = "data_type_out=\"'$data_type'\"";
-
-	my $command = "idl_sh.pl modis_adjust $swath_cols $swath_scans " .
-	              "\"'$chan_file_unfixed'\" \"'$chan_file'\" " .
-		      "file_soze=\"'$soze_file'\" " .
-		      "$reg_cols $reg_col_offset " .
-		      "$nor_rows $reg_rows $undo_soze " .
-		      "$data_type_in $data_type_out " .
-                      "$file_reg_cols_in $file_reg_cols_out " .
-		      "$file_reg_rows_in $file_reg_rows_out " .
-		      "$reg_row_mirror_side";
-	print_stderr("$command\n");
-	do_or_die($command);
-	if (!$keep) {
-	    system("rm -f $chan_file_unfixed");
-	}
-    }
-    my $tagext = substr($chan_conversions[$i], 0, 3);
-    my $m_option;
-    if ($chan_weight_types[$i] eq "avg") {
-	$m_option = "";
-	$tagext .= "a";
-    } else {
-	$m_option = "-m";
-	$tagext .= "m";
-    }
-    my $grid_file = "$tag\_$tagext\_ch$chan\_$grid_cols\_$grid_rows.img";
-    my $t_option;
-    my $f_option;
-    if ($chan_conversions[$i] eq "raw") {
-	$t_option = "-t u2";
-	$f_option = "-f 65535";
-    } else {
-	$t_option = "-t f4";
-	$f_option = "-f 65535.0";
-    }
-    my $fill = $chan_fills[$i];
-    my $F_option = "-F $fill";
-    do_or_die("fornav 1 -v $t_option $f_option $m_option $F_option " .
-	      "-d $weight_distance_max " .
-	      "$swath_cols $swath_scans $swath_rows_per_scan " .
-	      "$cols_file $rows_file $chan_file " .
-	      "$grid_cols $grid_rows $grid_file");
-    if (!$keep) {
-	do_or_die("rm -f $chan_file");
-    }
-}
-
-for ($i = 0; $i < $ancil_count; $i++) {
-    my $ancil_file = $ancil_files[$i];
-    if (!$ancil_deletes[$i]) {
-	my $ancil = $ancils[$i];
-	my $tagext = substr($ancil_conversions[$i], 0, 3);
-	my $m_option;
-	if ($ancil_weight_types[$i] eq "avg") {
-	    $m_option = "";
-	    $tagext .= "a";
-	} else {
-	    $m_option = "-m";
-	    $tagext .= "m";
-	}
-	my $grid_file = "$tag\_$tagext\_$ancil\_$grid_cols\_$grid_rows.img";
-	my $data_type = $ancil_data_types[$i];
-	my $t_option = "-t $data_type";
-	my $fill_in;
-	if ($data_type eq "u1") {
-	    $fill_in = 255;
-	} elsif ($data_type eq "u2") {
-	    $fill_in = 0;
-	} elsif ($data_type eq "s2") {
-	    $fill_in = -32767;
-	} else {
-	    $fill_in = -999.0;
-	}
-	my $f_option = "-f $fill_in";
-	my $fill_out = $ancil_fills[$i];
-	my $F_option = "-F $fill_out";
-	do_or_die("fornav 1 -v $t_option $f_option $m_option $F_option " .
-		  "-d $weight_distance_max " .
-		  "$swath_cols $swath_scans $swath_rows_per_scan " .
-		  "$cols_file $rows_file $ancil_file " .
-		  "$grid_cols $grid_rows $grid_file");
-    }
-    if ($ancil_deletes[$i] || !$keep) {
-	do_or_die("rm -f $ancil_file");
     }
 }
 
