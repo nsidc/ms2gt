@@ -135,7 +135,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; MODIFICATION HISTORY:
 ; Liam.Gumley@ssec.wisc.edu
 ; http://cimss.ssec.wisc.edu/~gumley
-; $Id: modis_level1b_read.pro,v 1.5 2004/11/21 02:16:10 haran Exp haran $
+; $Id: modis_level1b_read.pro,v 1.6 2004/11/21 02:22:37 haran Exp haran $
 ;
 ; Copyright (C) 1999, 2000 Liam E. Gumley
 ;
@@ -154,7 +154,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ;-
 
-rcs_id = '$Id: modis_level1b_read.pro,v 1.5 2004/11/21 02:16:10 haran Exp haran $'
+rcs_id = '$Id: modis_level1b_read.pro,v 1.6 2004/11/21 02:22:37 haran Exp haran $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -386,8 +386,11 @@ if (att_info.name eq '') then message, 'Attribute not found: ' + valid_name
 valid_range = att_info.data
 
 ;- Read latitude and longitude arrays
-if arg_present(latitude) then hdf_sd_varread, sd_id, 'Latitude', latitude
-if arg_present(longitude) then hdf_sd_varread, sd_id, 'Longitude', longitude
+area10 = (area * 10) / lines_per_scan
+if arg_present(latitude) then $
+      latitude = extract_valid_scans(sd_id, 'Latitude', 10, -1, area=area10)
+if arg_present(longitude) then $
+      latitude = extract_valid_scans(sd_id, 'Longitude', 10, -1, area=area10)
 
 ;-------------------------------------------------------------------------------
 ;- CLOSE THE FILE IN SDS MODE
