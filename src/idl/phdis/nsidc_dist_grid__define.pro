@@ -10,6 +10,10 @@
 ; Initialization.
 ;
 ; $Log: nsidc_dist_grid__define.pro,v $
+; Revision 1.7  2001/03/14 00:05:29  haran
+; replaced use of routine_info with file_which in finding usage and version
+; text files
+;
 ; Revision 1.6  2001/03/13 19:17:03  haran
 ; got rid of c:\windows\ from name of temporary file.
 ;
@@ -82,8 +86,6 @@ FUNCTION NSIDC_DIST_GRID::INIT, main_obj, file_obj, grid_id, grid_name, field_na
 
    ; Figure out the data dimensions and interleaving.
 
-   self.orig_dims_ptr = PTR_NEW(dims)
-
    n_dims = N_ELEMENTS(dims)
    IF (n_dims EQ 2L) THEN BEGIN
       self.dim_x = dims[0]
@@ -93,7 +95,7 @@ FUNCTION NSIDC_DIST_GRID::INIT, main_obj, file_obj, grid_id, grid_name, field_na
    ENDIF
    IF (n_dims EQ 3L) THEN BEGIN
       index = WHERE(dims NE MIN(dims), count)
-      IF (count NE 2L) THEN BEGIN
+      IF (count NE 2L) THEN BEGIN ; Invalid array dimensions.
          PTR_FREE, self.field_names_ptr
          RETURN, 0
       ENDIF
@@ -295,7 +297,32 @@ FUNCTION NSIDC_DIST_GRID::INIT, main_obj, file_obj, grid_id, grid_name, field_na
    self.b = b
    self.max_img = 247
 
-   self -> DRAW, /READ_DATA ; Display image.
+   self -> DRAW, /READ_DATA, STATUS=s_flag ; Display image.
+   IF (s_flag EQ 0) THEN BEGIN ; Error - cleanup.
+      WDELETE, self.grid_pix
+      IF (OBJ_VALID(self.main_container)) THEN self.main_container -> REMOVE, self
+      IF (OBJ_VALID(self.file_container)) THEN self.file_container -> REMOVE, self
+      PTR_FREE, self.field_names_ptr
+      PTR_FREE, self.fill_val_ptr
+      PTR_FREE, self.box_pts_ptr
+      PTR_FREE, self.box_copy_ptr
+      IF NOT(OBJ_VALID(self.parent)) THEN BEGIN
+         IF PTR_VALID(self.data_ptr_ptr) THEN BEGIN
+            data_ptrs = *self.data_ptr_ptr
+            PTR_FREE, data_ptrs
+         ENDIF
+         PTR_FREE, self.data_ptr_ptr
+         PTR_FREE, self.min_dat_ptr
+         PTR_FREE, self.max_dat_ptr
+      ENDIF ELSE BEGIN
+         self.parent -> GET_CONTAINER, grid_container
+         grid_container -> REMOVE, self
+      ENDELSE
+      OBJ_DESTROY, self.container
+      WIDGET_CONTROL, self.grid_base, KILL_NOTIFY=''
+      WIDGET_CONTROL, self.grid_base, /DESTROY
+      RETURN, 0
+   ENDIF
 
    ; Start event processing.
    XMANAGER, 'NSIDC_DIST_GRID', self.grid_base
@@ -306,7 +333,9 @@ END
 
 ; Draw image.
 ;
-PRO NSIDC_DIST_GRID::DRAW, READ_DATA=read_data
+PRO NSIDC_DIST_GRID::DRAW, READ_DATA=read_data, STATUS=s_flag
+
+   s_flag = 1
 
    WSET, self.grid_wind
    read_data = KEYWORD_SET(read_data)
@@ -319,12 +348,13 @@ PRO NSIDC_DIST_GRID::DRAW, READ_DATA=read_data
    IF OBJ_VALID(self.parent) THEN BEGIN
       ; If a parent is available, share data with it.
       self.parent -> GET_PTRS, data_ptr_ptr, min_dat_ptr, max_dat_ptr
-      self.parent -> GET_PROJ, bounds, center
+      self.parent -> GET_PROJ, bounds, center, swath
       self.data_ptr_ptr = data_ptr_ptr
       self.min_dat_ptr = min_dat_ptr
       self.max_dat_ptr = max_dat_ptr
       self.bounds = bounds
       self.center = center
+      self.swath = swath
       read_data = 0B
    ENDIF
 
@@ -400,14 +430,28 @@ PRO NSIDC_DIST_GRID::DRAW, READ_DATA=read_data
 
          IF (self.swath) THEN BEGIN ; Grid the swath data.
             status = EOS_SW_FIELDINFO(self.grid_id, (*(self.field_names_ptr))[i], data_rank, data_dims, data_numbertype, data_dim_names)
-            data_dim_names = STRTRIM(STR_SEP(data_dim_names,','), 2)
+            data_dim_names = STR_SEP(data_dim_names,',')
             status = EOS_SW_INQGEOFIELDS(self.grid_id, geo_field_names, geo_rank, geo_numbertype)
-            geo_field_names = STRTRIM(STR_SEP(geo_field_names,','), 2)
+            geo_field_names = STR_SEP(geo_field_names,',')
             status = EOS_SW_FIELDINFO(self.grid_id, geo_field_names[0], geo_rank0, geo_dims0, geo_numbertype0, geo_dim_names0)
             status = EOS_SW_FIELDINFO(self.grid_id, geo_field_names[1], geo_rank1, geo_dims1, geo_numbertype1, geo_dim_names1)
-            geo_dim_names0 = STRTRIM(STR_SEP(geo_dim_names0,','), 2)
-            stat = EOS_SW_MAPINFO(self.grid_id, geo_dim_names0[0], data_dim_names[0], os_x, inc_x)
-            stat = EOS_SW_MAPINFO(self.grid_id, geo_dim_names0[1], data_dim_names[1], os_y, inc_y)
+            geo_dim_names0 = STR_SEP(geo_dim_names0,',')
+            statx = EOS_SW_MAPINFO(self.grid_id, geo_dim_names0[0], data_dim_names[0], os_x, inc_x)
+            staty = EOS_SW_MAPINFO(self.grid_id, geo_dim_names0[1], data_dim_names[1], os_y, inc_y)
+            IF ((statx LT 0) AND (staty LT 0)) THEN BEGIN
+               ans = DIALOG_MESSAGE('Unable to retrieve map offset and increment.', $
+                        DIALOG_PARENT=self.grid_base, /ERROR)
+               s_flag = 0
+               RETURN
+            ENDIF
+            IF (statx LT 0) THEN BEGIN
+               os_x = os_y
+               inc_x = inc_y
+            ENDIF
+            IF (staty LT 0) THEN BEGIN
+               os_y = os_x
+               inc_y = inc_x
+            ENDIF
 
             ; Figure out an appropritate stride value for the lon-lat location arrays.
             stride = (REPLICATE(MAX(self.stride), 2) / (inc_x > inc_y > 1)) > 1
@@ -737,8 +781,16 @@ PRO NSIDC_DIST_GRID::DRAW, READ_DATA=read_data
    IF (self.show_coast) THEN $ ; Draw coastlines.
       MAP_CONTINENTS, /COASTS, /COUNTRIES, /USA, COLOR=self.coast_color, $
          /HIRES, /T3D
-   IF (self.show_grat) THEN $ ; Draw graticule.
-      MAP_GRID, /LABEL, COLOR=self.grat_color, /T3D
+   IF (self.show_grat) THEN BEGIN ; Draw graticule.
+      box_pts = FLOAT(self.zoom_box)
+      IF (MAX(box_pts) LE 0.0) THEN box_pts = [0.0,0.0,FLOAT(self.dim_x-1),FLOAT(self.dim_y-1)]
+      box_pts = box_pts / FLOAT([self.dim_x,self.dim_y,self.dim_x,self.dim_y]-1)
+      sx = FLOAT(ABS(box_pts[2]-box_pts[0])) / FLOAT(self.dim_x-1)
+      sy = FLOAT(ABS(box_pts[3]-box_pts[1])) / FLOAT(self.dim_y-1)
+      cs = (sx < sy < 1.0)
+      MAP_GRID, /LABEL, COLOR=self.grat_color, /T3D, $
+         CHARSIZE=cs*1000.0
+   ENDIF
 
     ; Copy image from backing-store pixmap to visible draw widget.
     self -> DRAW_UPDATE
@@ -750,6 +802,12 @@ END
 PRO NSIDC_DIST_GRID::DRAW_BOXES
    ; Set window and transformation.
    WSET, self.grid_wind
+
+   IF (self.center[0] LT 0.0) THEN map_ang = 0.0 ELSE map_ang = 0.0
+   IF (self.swath) THEN bounds = self.bounds[0:3] ELSE bounds = self.bounds
+   MAP_SET, self.center[0], self.center[1], map_ang, /LAMBERT, /NOBORDER, $
+            XMARGIN=[0,0], YMARGIN=[0,0], LIMIT=bounds, /NOERASE
+
    !P.T = self.t3d
 
    n_boxes = 0L
@@ -1146,10 +1204,33 @@ PRO NSIDC_DIST_GRID::EVENT, event
          WSET, self.grid_wind
          TVLCT, self.r, self.g, self.b
          self -> DRAW
-         img = TVRD(TRUE=1)
+         img = REFORM(TVRD(TRUE=1))
+         sz_img = SIZE(img)
+         IF (sz_img[0] EQ 2L) THEN BEGIN ; Convert to true-color.
+            r_img = self.r[img]
+            g_img = self.g[img]
+            b_img = self.b[img]
+            true_img = BYTARR(3, sz_img[1], sz_img[2], /NOZERO)
+            true_img[0,0,0] = REFORM(TEMPORARY(r_img), 1, sz_img[1], sz_img[2])
+            true_img[1,0,0] = REFORM(TEMPORARY(g_img), 1, sz_img[1], sz_img[2])
+            true_img[2,0,0] = REFORM(TEMPORARY(b_img), 1, sz_img[1], sz_img[2])
+            img = TEMPORARY(true_img)
+         ENDIF
          IF WIDGET_INFO(self.legend_draw, /VALID_ID) THEN BEGIN ; Include legend.
             self -> DRAW_LEGEND
-            leg_img = TVRD(TRUE=1)
+            leg_img = REFORM(TVRD(TRUE=1))
+
+            sz_img = SIZE(leg_img)
+            IF (sz_img[0] EQ 2L) THEN BEGIN ; Convert to true-color.
+               r_img = self.r[leg_img]
+               g_img = self.g[leg_img]
+               b_img = self.b[leg_img]
+               true_img = BYTARR(3, sz_img[1], sz_img[2], /NOZERO)
+               true_img[0,0,0] = REFORM(TEMPORARY(r_img), 1, sz_img[1], sz_img[2])
+               true_img[1,0,0] = REFORM(TEMPORARY(g_img), 1, sz_img[1], sz_img[2])
+               true_img[2,0,0] = REFORM(TEMPORARY(b_img), 1, sz_img[1], sz_img[2])
+               leg_img = TEMPORARY(true_img)
+            ENDIF
 
             new_img = BYTARR(3, self.win_x, self.win_y+64, /NOZERO)
             new_img[0,0,0] = TEMPORARY(leg_img)
@@ -1323,9 +1404,16 @@ PRO NSIDC_DIST_GRID::EVENT, event
          ; Replicate window (create another identical grid object).
          ; Create new grid object with all the same parameters.
          ; Note the use of the "Parent"keyword.
+         CASE self.interleave OF
+            (-1): dims = [self.dim_x, self.dim_y]
+            ( 0): dims = [self.n_images, self.dim_x, self.dim_y]
+            ( 1): dims = [self.dim_x, self.n_images, self.dim_y]
+            ( 2): dims = [self.dim_x, self.dim_y, self.n_images]
+         ENDCASE
+
          new_grid_obj = OBJ_NEW('NSIDC_DIST_GRID', self.main_obj, self.file_obj, $
             self.grid_id, self.grid_name, *(self.field_names_ptr), $
-            *(self.orig_dims_ptr), SWATH=self.swath, STRIDE=self.stride, PARENT=self, $
+            dims, SWATH=self.swath, STRIDE=1, PARENT=self, $
             WIN_SIZE=[self.win_x,self.win_y], ZOOM_BOX=self.zoom_box, $
             SHOW_GRAT=self.show_grat, SHOW_COAST=self.show_coast, $
             R=self.r, G=self.g, B=self.b)
@@ -1341,6 +1429,7 @@ PRO NSIDC_DIST_GRID::EVENT, event
             ; If any of the above containers are destroyed,
             ; then the new grid object will also be destroyed.
          ENDIF
+
       END
 
       'roi_type_bttn': BEGIN ; Bring up the roi box position dialog.
@@ -1428,11 +1517,12 @@ PRO NSIDC_DIST_GRID::EVENT, event
             ; Note the use of the "Parent" and "Zoom_Box" keywords.
             new_grid_obj = OBJ_NEW('NSIDC_DIST_GRID', self.main_obj, self.file_obj, $
                self.grid_id, self.grid_name, *(self.field_names_ptr), $
-               *(self.orig_dims_ptr), SWATH=self.swath, STRIDE=self.stride, $
+               dims, SWATH=self.swath, STRIDE=1, $
                PARENT=self, WIN_SIZE=[340,340], $
                ZOOM_BOX=(*self.box_pts_ptr)[*,self.curr_box], $
                SHOW_GRAT=self.show_grat, SHOW_COAST=self.show_coast, $
                R=self.r, G=self.g, B=self.b)
+            IF (NOT(OBJ_VALID(new_grid_obj))) THEN RETURN
             ; Put all the current roi boxes on the new grid object.
             new_grid_obj -> SET_BOX_PTS, (*self.box_pts_ptr)[*,self.curr_box], 0
             new_grid_obj -> DRAW_BOXES
@@ -1571,7 +1661,7 @@ PRO NSIDC_DIST_GRID::EVENT, event
                ramp = INDGEN(n_boxes)
                index = WHERE(ramp NE self.curr_box)
                box_pts = REFORM(box_pts[*,index])
-               self -> SET_BOX_PTS, box_pts, (N_ELEMENTS(box_pts) / 4L) - 1L
+               self -> SET_BOX_PTS, box_pts, 0
             ENDELSE
 
             ; Delete any windows associated with this box.
@@ -1587,21 +1677,34 @@ PRO NSIDC_DIST_GRID::EVENT, event
             ENDFOR
 
             self -> DRAW_UPDATE
+            self -> UPDATE_BOX_TEXT ; Update text in roi box position dialog.
+            self -> DELETE_LINKED, delete_pts ; Delete matching boxes in other linked windows.
          ENDIF
-         self -> UPDATE_BOX_TEXT ;Update text in roi box position dialog.
       END
 
       'help_use_bttn': BEGIN ; Help (program usage).
-         help_file = file_which('nsidc_dist_use.txt')
+         IF (STRUPCASE(!Version.OS_Family) EQ 'UNIX') THEN BEGIN
+            help_file = file_which('nsidc_dist_use.txt')
+         ENDIF ELSE BEGIN
+            ri = ROUTINE_INFO('NSIDC_DIST_GRID__DEFINE', /SOURCE)
+            sp = STRPOS(STRUPCASE(ri.path), 'NSIDC_DIST_GRID_DEFINE')
+            help_file = STRMID(ri.path, 0, sp) + 'nsidc_dist_use.txt'
+         ENDELSE
          XDISPLAYFILE, help_file, GROUP=event.top, WIDTH=80, HEIGHT=24
       END
       'help_version_bttn': BEGIN ; Help (software version).
-         help_file = file_which('nsidc_dist_ver.txt')
+         IF (STRUPCASE(!Version.OS_Family) EQ 'UNIX') THEN BEGIN
+            help_file = file_which('nsidc_dist_ver.txt')
+         ENDIF ELSE BEGIN
+            ri = ROUTINE_INFO('NSIDC_DIST_GRID__DEFINE', /SOURCE)
+            sp = STRPOS(STRUPCASE(ri.path), 'NSIDC_DIST_GRID_DEFINE')
+            help_file = STRMID(ri.path, 0, sp) + 'nsidc_dist_ver.txt'
+         ENDELSE
          XDISPLAYFILE, help_file, GROUP=event.top, WIDTH=80, HEIGHT=24
       END
 
       'grid_base': BEGIN ; Resize.
-         WIDGET_CONTROL, self.grid_base, UPDATE=0
+         ;WIDGET_CONTROL, self.grid_base, UPDATE=0
 
          ; Compute new draw widget size(s).
 
@@ -1621,7 +1724,7 @@ PRO NSIDC_DIST_GRID::EVENT, event
                                   XSIZE=self.win_x, YSIZE=64)
          ENDIF
 
-         WIDGET_CONTROL, self.grid_base, UPDATE=1
+         ;WIDGET_CONTROL, self.grid_base, UPDATE=1
          WIDGET_CONTROL, self.grid_draw, GET_VALUE=grid_wind
          self.grid_wind = grid_wind
          IF WIDGET_INFO(self.legend_draw, /VALID_ID) THEN BEGIN ; Redraw legend too.
@@ -1895,8 +1998,10 @@ END
 
 ; Get container.
 ;
-PRO NSIDC_DIST_GRID::GET_CONTAINER, grid_container
+PRO NSIDC_DIST_GRID::GET_CONTAINER, grid_container, file_container, main_container
    grid_container = self.container
+   file_container = self.file_container
+   main_container = self.main_container
 END
 
 
@@ -1948,7 +2053,15 @@ FUNCTION NSIDC_DIST_GRID::GET_BOX_PTS, box_pts, curr_box
    curr_box = self.curr_box
    RETURN, 1
 END
-PRO NSIDC_DIST_GRID::SET_BOX_PTS, box_pts, curr_box
+PRO NSIDC_DIST_GRID::SET_BOX_PTS, box_pts, curr_box, DELETE_ALL=delete_all
+
+   IF KEYWORD_SET(delete_all) THEN BEGIN ; Delete all the boxes.
+      PTR_FREE, self.box_pts_ptr
+      PTR_FREE, self.box_copy_ptr
+      self.curr_box = (-1)
+      RETURN
+   END
+
    box_pts[0] = box_pts[0] > 0
    box_pts[1] = box_pts[1] > 0
    box_pts[2] = box_pts[2] < (self.dim_x - 1)
@@ -1992,6 +2105,96 @@ PRO NSIDC_DIST_GRID::UPDATE_BOX_TEXT ; Update the text in the roi box position d
       WIDGET_CONTROL, box_type_state.lr_lat_text, SET_VALUE=lr_lat
       WIDGET_CONTROL, box_type_state.w_text, SET_VALUE=STRING(w)
       WIDGET_CONTROL, box_type_state.h_text, SET_VALUE=STRING(h)
+   ENDIF
+END
+
+
+; Delete matching boxes from all compatible linked windows.
+;
+PRO NSIDC_DIST_GRID::DELETE_LINKED, delete_pts
+
+   ; Get other grid objects.
+   grid_objects = self.main_container -> GET(/ALL, ISA='NSIDC_DIST_GRID', COUNT=n_windows)
+
+   IF ((self.main_obj -> GET_LINK_FLAG()) AND (n_windows GT 1L)) THEN BEGIN
+      ; Linking is "on", there are other grid objects, and there is an active
+      ; roi box in this object.   So check other grid objets for matching roi boxes.
+      ; If any matching roi boxes are found, delete them.
+
+      ; Convert to lon-lat.
+
+      delete_pts = FLOAT(delete_pts) / FLOAT([self.dim_x,self.dim_y,self.dim_x,self.dim_y]-1)
+      ul = (CONVERT_COORD(delete_pts[0], delete_pts[3], /NORMAL, /TO_DATA))[0:1]
+      lr = (CONVERT_COORD(delete_pts[2], delete_pts[1], /NORMAL, /TO_DATA))[0:1]
+
+      FOR i=0, n_windows-1 DO BEGIN ; Loop through the other grid objects.
+         IF ((OBJ_VALID(grid_objects[i]) AND (grid_objects[i] NE self)) AND $
+              OBJ_VALID(self)) THEN BEGIN
+            ; Valid grid object found, and it is not the same as self.
+
+            ; Check for matching projection in the other grid object.
+            grid_objects[i] -> GET_PROJ, bounds, center, swath
+            IF ((self.center[0] EQ center[0]) AND $
+                (self.center[1] EQ center[1])) THEN BEGIN ; Matching projection center.
+
+               grid_objects[i] -> GET_DIMS, other_dim_x, other_dim_y
+
+               ; Active map projection of the other grid object.
+               IF (center[0] LT 0.0) THEN map_ang = 0.0 ELSE map_ang = 0.0
+               MAP_SET, center[0], center[1], map_ang, /LAMBERT, /NOBORDER, $
+                  XMARGIN=[0,0], YMARGIN=[0,0], LIMIT=bounds, /NOERASE
+
+               ; Convert coordinates.
+
+               del_ul = (CONVERT_COORD(ul[0], ul[1], /DATA, /TO_NORMAL) * $
+                           FLOAT([other_dim_x,other_dim_y]-1))[0:1]
+               del_lr = (CONVERT_COORD(lr[0], lr[1], /DATA, /TO_NORMAL) * $
+                           FLOAT([other_dim_x,other_dim_y]-1))[0:1]
+               delete_box_pts = FIX([del_ul[0]<del_lr[0], del_ul[1]<del_lr[1], $
+                                     del_ul[0]>del_lr[0], del_ul[1]>del_lr[1]])
+
+               ; Delete any sub windows associated with this box.
+               grid_objects[i] -> GET_CONTAINER, grid_container
+               sub_grid_objects = grid_container -> GET(/ALL, ISA='NSIDC_DIST_GRID', COUNT=n_sub_windows)
+               FOR wn=0, n_sub_windows-1 DO BEGIN
+                  sub_grid_objects[wn] -> GET_ZOOM_BOX, zoom_box
+                  sub_grid_objects[wn] -> GET_CONTAINER, sub_grid_container, sub_file_container, sub_main_container
+                  IF (MAX(ABS(delete_box_pts - zoom_box)) LE 0) THEN BEGIN ; Delete window.
+                     sub_grid_container -> REMOVE, sub_grid_objects[wn]
+                     sub_file_container -> REMOVE, sub_grid_objects[wn]
+                     sub_main_container -> REMOVE, sub_grid_objects[wn]
+                     OBJ_DESTROY, sub_grid_objects[wn]
+                  ENDIF
+               ENDFOR
+
+               status = grid_objects[i] -> GET_BOX_PTS(other_box_pts, curr_box)
+               IF (status) THEN BEGIN ; Existing points.
+                  FOR j=0, (N_ELEMENTS(other_box_pts)/4L)-1L DO BEGIN
+                     check_pts = other_box_pts[*,j]
+                     IF (MAX(ABS(delete_box_pts - check_pts)) LE 2) THEN BEGIN
+                        ; Matching box - flag it to be deleted.
+                        other_box_pts[*,j] = [0,0,0,0]
+                     ENDIF
+                  ENDFOR
+                  ; Delete flagged points.
+                  index = WHERE(((other_box_pts[0,*] NE 0) AND (other_box_pts[1,*] NE 0)) AND $
+                                ((other_box_pts[2,*] NE 0) AND (other_box_pts[3,*] NE 0)))
+
+                  IF (index[0] GE 0L) THEN BEGIN ; More than one box - delete one.
+                     other_box_pts = other_box_pts[*,index]
+                     grid_objects[i] -> SET_BOX_PTS, other_box_pts, 0
+                     ; Update the other grid object's roi box position dialog.
+                     grid_objects[i] -> UPDATE_BOX_TEXT
+                  ENDIF ELSE BEGIN ; Only one box - delete it.
+                     grid_objects[i] -> SET_BOX_PTS, /DELETE_ALL
+                     ; Update the other grid object's roi box position dialog.
+                     grid_objects[i] -> UPDATE_BOX_TEXT
+                  ENDELSE
+                  grid_objects[i] -> DRAW_UPDATE
+               ENDIF
+            ENDIF
+         ENDIF
+      ENDFOR
    ENDIF
 END
 
@@ -2105,7 +2308,7 @@ PRO NSIDC_DIST_GRID::UPDATE_LINKED, NEW_BOX=new_box, ZOOMED=zoomed
                               grid_objects[i] -> SET_ZOOM_BOX, new_box_pts
                               win_zoom = 1
                            ENDIF
-                           ; Update the other gird object's roi box position dialog.
+                           ; Update the other grid object's roi box position dialog.
                            grid_objects[i] -> SET_BOX_PTS, other_box_pts, j
                            grid_objects[i] -> UPDATE_BOX_TEXT
                         ENDIF
@@ -2144,7 +2347,6 @@ PRO NSIDC_DIST_GRID::CLEANUP
    PTR_FREE, self.fill_val_ptr
    PTR_FREE, self.box_pts_ptr
    PTR_FREE, self.box_copy_ptr
-   PTR_FREE, self.orig_dims_ptr
    IF NOT(OBJ_VALID(self.parent)) THEN BEGIN
       data_ptrs = *self.data_ptr_ptr
       PTR_FREE, data_ptrs
@@ -2156,6 +2358,32 @@ PRO NSIDC_DIST_GRID::CLEANUP
       grid_container -> REMOVE, self
    ENDELSE
    OBJ_DESTROY, self.container
+END
+
+
+PRO NSIDC_DIST_GRID::PRINT_ALL
+   PRINT, ''
+   PRINT, 'dim_x,dim_y', self.dim_x, self.dim_y
+   PRINT, 'interleave', self.interleave
+   PRINT, 'stride', self.stride
+   PRINT, 'curr_field,curr_image,n_images', self.curr_field, self.curr_image, self.n_images
+   PRINT, 'win_x,win_y', self.win_x, self.win_y
+   PRINT, 'swath', self.swath
+   PRINT, 'field_names_ptr', self.field_names_ptr
+   PRINT, 'fill_val_ptr', self.fill_val_ptr
+   PRINT, 'data_ptr_ptr', self.data_ptr_ptr
+   PRINT, 'min_dat_ptr', self.min_dat_ptr
+   PRINT, 'max_dat_ptr', self.max_dat_ptr
+   PRINT, 'bounds', self.bounds
+   PRINT, 'center', self.center
+   PRINT, 't3d', self.t3d
+   PRINT, 'zoom_box', self.zoom_box
+   PRINT, 'box_pts_ptr', self.box_pts_ptr
+   PRINT, '*box_pts_ptr', *self.box_pts_ptr
+   PRINT, 'box_copy_ptr', self.box_copy_ptr
+   PRINT, '*box_copy_ptr', *self.box_copy_ptr
+   PRINT, 'curr_box', self.curr_box
+   PRINT, ''
 END
 
 
@@ -2184,7 +2412,6 @@ PRO NSIDC_DIST_GRID__DEFINE
              box_base:0L, $					; Top-level widget base ID of roi box position dialog.
              dim_x:0, $						; Grid X dimension.
              dim_y:0, $						; Grid Y dimension.
-             orig_dims_ptr:PTR_NEW(), $		; Pointer to original INIT method dims parameter.
              interleave:0, $				; Image interleaving flag.
              stride:[0,0,0], $				; HDF field read, stride value.
              curr_field:0, $				; Currently displayed field.
