@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod02.pl,v 1.20 2001/02/19 23:56:42 haran Exp haran $
+# $Id: mod02.pl,v 1.21 2001/02/20 00:08:15 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -753,11 +753,8 @@ for ($i = 0; $i < $chan_count; $i++) {
 	      "$swath_cols $swath_scans $swath_rows_per_scan " .
 	      "$cols_file $rows_file $chan_file " .
 	      "$grid_cols $grid_rows $grid_file");
-}
-
-if (!$keep) {
-    for ($i = 0; $i < $chan_count; $i++) {
-	do_or_die("rm -f $chan_files[$i]");
+    if (!$keep) {
+	do_or_die("rm -f $chan_file");
     }
 }
 
@@ -793,12 +790,12 @@ for ($i = 0; $i < $ancil_count; $i++) {
 	      "$swath_cols $swath_scans $swath_rows_per_scan " .
 	      "$cols_file $rows_file $ancil_file " .
 	      "$grid_cols $grid_rows $grid_file");
+    if (!$keep) {
+	do_or_die("rm -f $ancil_file");
+    }
 }
 
 if (!$keep) {
-    for ($i = 0; $i < $ancil_count; $i++) {
-	do_or_die("rm -f $ancil_files[$i]");
-    }
     do_or_die("rm -f $cols_file");
     do_or_die("rm -f $rows_file");
 }
