@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.6 2001/01/30 18:54:43 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.7 2001/02/10 00:20:19 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -17,7 +17,9 @@
 ;
 ; CALLING SEQUENCE:
 ;       extract_chan, hdf_file, tag, channel, $
-;                     /get_latlon, conversion=conversion
+;                     /get_latlon, conversion=conversion, $
+;                     swath_rows=swath_rows, $
+;                     swath_row_first=swath_row_first
 ;
 ; ARGUMENTS:         
 ;
@@ -30,12 +32,17 @@
 ; REFERENCE:
 ;-
 
-PRO extract_chan, hdf_file, channel, tag, $
-                  get_latlon=get_latlon, conversion=conversion
+PRO extract_chan, hdf_file, tag, channel, $
+                  get_latlon=get_latlon, conversion=conversion, $
+                  swath_rows=swath_rows, $
+                  swath_row_first=swath_row_first
 
-  usage = 'usage: extract_chan, tag, hdf_file, channel ' + $
+  usage = 'usage: extract_chan, hdf_file, tag, channel ' + $
           '[, /get_latlon]' + $
-          '[, conversion=conversion]'
+          '[, conversion=conversion]' + $
+          '[, swath_rows=swath_rows]' + $
+          '[, swath_row_first=swath_row_first]'
+
 
   if n_params() ne 3 then $
     message, usage
@@ -43,6 +50,10 @@ PRO extract_chan, hdf_file, channel, tag, $
     get_latlon = 0
   if n_elements(conversion) eq 0 then $
     conversion = 'raw'
+  if n_elements(swath_rows) eq 0 then $
+    swath_rows = 0
+  if n_elements(swath_row_first) eq 0 then $
+    swath_row_first = 0
 
   raw = 0
   corrected = 0
@@ -59,24 +70,27 @@ PRO extract_chan, hdf_file, channel, tag, $
     temperature = 1
 
   print, 'extract_chan:'
-  print, '  hdf_file:   ', hdf_file
-  print, '  channel:    ', channel
-  print, '  get_latlon: ', get_latlon
-  print, '  conversion: ', conversion
+  print, '  hdf_file:       ', hdf_file
+  print, '  channel:        ', channel
+  print, '  get_latlon:     ', get_latlon
+  print, '  conversion:     ', conversion
+  print, '  swath_rows:     ', swath_rows
+  print, '  swath_row_first:', swath_row_first
 
   modis_type = strmid(hdf_file, 0, 5)
+  area = [0L, swath_row_first, 999999L, swath_rows]
   if get_latlon ne 0 then begin
       if modis_type eq 'MOD02' then begin
           modis_level1b_read, hdf_file, channel, image, $
             latitude=lat, longitude=lon, $
             raw=raw, corrected=corrected, reflectance=reflectance, $
-            temperature=temperature
+            temperature=temperature, area=area
       endif else if modis_type eq 'MOD10' then begin
           modis_snow_read, hdf_file, channel, image, $
-            latitude=lat, longitude=lon
+            latitude=lat, longitude=lon, area=area
       endif else begin
           modis_ice_read, hdf_file, channel, image, $
-            latitude=lat, longitude=lon
+            latitude=lat, longitude=lon, area=area
       endelse
       lat_dimen = size(lat, /dimensions)
       cols = lat_dimen[0]
@@ -97,11 +111,11 @@ PRO extract_chan, hdf_file, channel, tag, $
       if modis_type eq 'MOD02' then begin 
           modis_level1b_read, hdf_file, channel, image, $
             raw=raw, corrected=corrected, reflectance=reflectance, $
-            temperature=temperature
+            temperature=temperature, area=area
       endif else if modis_type eq 'MOD10' then begin
-          modis_snow_read, hdf_file, channel, image
+          modis_snow_read, hdf_file, channel, image, area=area
       endif else begin
-          modis_ice_read, hdf_file, channel, image
+          modis_ice_read, hdf_file, channel, image, area=area
       endelse
   endelse
   image_dimen = size(image, /dimensions)

@@ -3,7 +3,7 @@
 ;*
 ;* 8-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_ancil.pro,v 1.6 2001/01/30 18:54:43 haran Exp $
+;$Header: /export/data/modis/src/idl/fornav/extract_ancil.pro,v 1.1 2001/02/10 00:22:30 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -17,7 +17,9 @@
 ;
 ; CALLING SEQUENCE:
 ;       extract_ancil, hdf_file, tag, ancillary, $
-;                      /get_latlon, conversion=conversion
+;                      /get_latlon, conversion=conversion, $
+;                      swath_rows=swath_rows, $
+;                      swath_row_first=swath_row_first
 ;
 ; ARGUMENTS:         
 ;
@@ -31,11 +33,15 @@
 ;-
 
 PRO extract_ancil, hdf_file, tag, ancillary, $
-                   get_latlon=get_latlon, conversion=conversion
+                   get_latlon=get_latlon, conversion=conversion, $
+                   swath_rows=swath_rows, $
+                   swath_row_first=swath_row_first
 
   usage = 'usage: extract_ancil, hdf_file, tag, ancillary ' + $
           '[, /get_latlon]' + $
-          '[, conversion=conversion]'
+          '[, conversion=conversion]' + $
+          '[, swath_rows=swath_rows]' + $
+          '[, swath_row_first=swath_row_first]'
 
   if n_params() ne 3 then $
     message, usage
@@ -43,17 +49,25 @@ PRO extract_ancil, hdf_file, tag, ancillary, $
     get_latlon = 0
   if n_elements(conversion) eq 0 then $
     conversion = 'raw'
+  if n_elements(swath_rows) eq 0 then $
+    swath_rows = 0
+  if n_elements(swath_row_first) eq 0 then $
+    swath_row_first = 0
 
   print, 'extract_ancil:'
-  print, '  hdf_file:   ', hdf_file
-  print, '  tag:        ', tag
-  print, '  ancillary:  ', ancillary
-  print, '  get_latlon: ', get_latlon
-  print, '  conversion: ', conversion
+  print, '  hdf_file:       ', hdf_file
+  print, '  tag:            ', tag
+  print, '  ancillary:      ', ancillary
+  print, '  get_latlon:     ', get_latlon
+  print, '  conversion:     ', conversion
+  print, '  swath_rows:     ', swath_rows
+  print, '  swath_row_first:', swath_row_first
 
+  area = [0L, swath_row_first, 999999L, swath_rows]
   if get_latlon ne 0 then begin
       modis_ancillary_read, hdf_file, ancillary, image, $
-                            conversion=conversion, latitude=lat, longitude=lon
+                            conversion=conversion, area=area, $
+                            latitude=lat, longitude=lon, $
       lat_dimen = size(lat, /dimensions)
       cols = lat_dimen[0]
       rows = lat_dimen[1]
@@ -71,7 +85,7 @@ PRO extract_ancil, hdf_file, tag, ancillary, $
       free_lun, lon_lun
   endif else begin
       modis_ancillary_read, hdf_file, ancillary, image, $
-                            conversion=conversion
+                            conversion=conversion, area=area
   endelse
   image_dimen = size(image, /dimensions)
   conv_string = strmid(conversion, 0, 3)
