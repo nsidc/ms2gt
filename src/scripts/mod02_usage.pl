@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.16 2004/08/27 16:05:33 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.17 2004/10/23 17:39:32 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -16,7 +16,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                 [fix250 [fixcolfile [fixrowfile
        defaults:    0       none        none
                 [tile_cols [tile_rows [tile_overlap]]]]]]]]]]]
-                     1          1          50
+                     1          1          60
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
@@ -130,7 +130,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
       If both tile_cols and tile_rows are equal to 1 (the defaults) then no
       tiling will be performed.
   tile_overlap: number of pixels to add around each tile edge that borders
-        another tile. Default is 50. Must be greater than 0.\n\n";
+        another tile. Default is 60. Must be greater than 0.\n\n";
 
 # this makes the routine work properly using require in other programs
 1
