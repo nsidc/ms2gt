@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.17 2001/01/28 21:59:23 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.18 2001/01/30 18:55:16 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -30,8 +30,8 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/for
 "       defaults:  swath_fill_1    swath_fill_chan_count\n"\
 "              [-c weight_count] [-w weight_min] [-d weight_distance_max]\n"\
 "       defaults:     10000             .01               1.0\n"\
-"              [-W weight_sum_min]\n"\
-"       defaults:    weight_min\n"\
+"              [-D weight_delta_max] [-W weight_sum_min]\n"\
+"       defaults:       10.0               weight_min\n"\
 "              swath_cols swath_scans swath_rows_per_scan\n"\
 "              swath_col_file swath_row_file\n"\
 "              swath_chan_file_1 ... swath_chan_file_chan_count\n"\
@@ -96,6 +96,9 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/for
 "             Must be greater than 0.\n"\
 "         d weight_distance_max: distance in grid cell units at which to apply a\n"\
 "             weight of weight_min. Default is 1.0. Must be greater than 0.\n"\
+"         D weight_delta_max: maximum distance in grid cells in each grid\n"\
+"             dimension over which to distribute a single swath cell.\n"\
+"             Default is 10.0.\n"\
 "         W weight_sum_min: minimum weight sum value. Cells whose weight sums\n"\
 "             are less than weight_sum_min are set to the grid fill value.\n"\
 "             Default is weight_sum_min.\n"\
@@ -139,6 +142,7 @@ typedef struct {
   int   count;
   float min;
   float distance_max;
+  float delta_max;
   float sum_min;
   float alpha;
   float qmax;
@@ -267,7 +271,8 @@ static void ReadImage(image *ip)
 
 static void InitializeWeight(int chan_count,
 			     int weight_count, float weight_min,
-			     float weight_distance_max, float weight_sum_min,
+			     float weight_distance_max,
+			     float weight_delta_max, float weight_sum_min,
 			     ewa_weight *ewaw)
 {
   float  *wptr;
@@ -278,6 +283,7 @@ static void InitializeWeight(int chan_count,
   ewaw->count        = weight_count;
   ewaw->min          = weight_min;
   ewaw->distance_max = weight_distance_max;
+  ewaw->delta_max    = weight_delta_max;
   ewaw->sum_min      = weight_sum_min;
 
   ewaw->wtab         = (float *)calloc(weight_count, sizeof(float));
@@ -369,10 +375,13 @@ static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
   double f_scale;
   float qmax;
   float distance_max;
+  float delta_max;
   float a;
   float b;
   float c;
   float d;
+  float u_del;
+  float v_del;
 
   if (very_verbose) {
     fprintf(stderr, "Computing ewa parameters\n");
@@ -384,6 +393,7 @@ static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
   rowsov2 = uimg->rows / 2;
   qmax = ewaw->qmax;
   distance_max = ewaw->distance_max;
+  delta_max = ewaw->delta_max;
   u_frst_row_this_col = (float *)(uimg->buf[0]) + 1;
   u_last_row_this_col = (float *)(uimg->buf[rowsm1]) + 1;
   v_frst_row_this_col = (float *)(vimg->buf[0]) + 1;
@@ -425,8 +435,14 @@ static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
     this_ewap->b = b;
     this_ewap->c = c;
     this_ewap->f = qmax;
-    this_ewap->u_del = sqrt(c * d);
-    this_ewap->v_del = sqrt(a * d);
+    u_del = sqrt(c * d);
+    v_del = sqrt(a * d);
+    if (u_del > delta_max)
+      u_del = delta_max;
+    if (v_del > delta_max)
+      v_del = delta_max;
+    this_ewap->u_del = u_del;
+    this_ewap->v_del = v_del;
     if (very_verbose &&
 	(col == 1 || col == uimg->cols / 2 || col == uimg->cols - 2))
       fprintf(stderr,
@@ -781,6 +797,7 @@ main (int argc, char *argv[])
   int   weight_count;
   float weight_min;
   float weight_distance_max;
+  float weight_delta_max;
   float weight_sum_min;
   bool  got_weight_sum_min;
   int   swath_cols;
@@ -820,6 +837,7 @@ main (int argc, char *argv[])
   weight_count           = 10000;
   weight_min             = 0.01;
   weight_distance_max    = 1.0;
+  weight_delta_max       = 10.0;
   got_weight_sum_min     = FALSE;
 
   /*
@@ -964,6 +982,13 @@ main (int argc, char *argv[])
 	if (sscanf(*argv, "%f", &weight_distance_max) != 1)
 	  DisplayInvalidParameter("weight_distance_max");
 	break;
+      case 'D':
+	++argv; --argc;
+	if (argc <= 0)	  
+	  DisplayInvalidParameter("weight_delta_max");
+	if (sscanf(*argv, "%f", &weight_delta_max) != 1)
+	  DisplayInvalidParameter("weight_delta_max");
+	break;
       case 'W':
 	got_weight_sum_min = TRUE;
 	++argv; --argc;
@@ -1049,6 +1074,7 @@ main (int argc, char *argv[])
     fprintf(stderr, "  weight_count        = %d\n", weight_count);
     fprintf(stderr, "  weight_min          = %f\n", weight_min);
     fprintf(stderr, "  weight_distance_max = %f\n", weight_distance_max);
+    fprintf(stderr, "  weight_delta_max    = %f\n", weight_delta_max);
     fprintf(stderr, "  weight_sum_min      = %f\n", weight_sum_min);
     fprintf(stderr, "\n");
   }
@@ -1092,7 +1118,7 @@ main (int argc, char *argv[])
    *  Initialize the ewa weight structure
    */
   InitializeWeight(chan_count, weight_count, weight_min, weight_distance_max,
-		   weight_sum_min, &ewaw);
+		   weight_delta_max, weight_sum_min, &ewaw);
 
   /*
    *  Process each scan
