@@ -1,7 +1,7 @@
 #In your .cshrc file, set $MS2GT_HOME to the directory into which the ms2gt
-#package was installed. Then source ms2gt_setup.csh (this file). For example:
-#setenv MS2GT_HOME  /export/data/ms2gt
-#source $MS2GT_HOME/ms2gt_setup.csh
+#package was installed. Then source ms2gt_env.csh (this file). For example:
+#setenv MS2GT_HOME  $HOME/ms2gt
+#source $MS2GT_HOME/ms2gt_env.csh
 
 setenv PATH_MS2GT_SRC         $MS2GT_HOME/src
 setenv PATH_MS2GT_IDL         $PATH_MS2GT_SRC/idl
