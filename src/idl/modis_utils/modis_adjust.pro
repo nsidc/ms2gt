@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.49 2004/12/08 16:06:15 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.50 2004/12/08 19:07:06 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.49 2004/12/08 16:06:15 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.50 2004/12/08 19:07:06 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -500,33 +500,35 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       'u1': begin
           test_out = bytarr(cells_per_swath)
           min_out = 0.0
-          max_out = 255B
+          max_out = 255.0
       end
       'u2': begin
           test_out = uintarr(cells_per_swath)
-          min_out = 0
+          min_out = 0.0
           ;
           ; use 65534 here because 65535 is fill
           ;
-          max_out = 65534
+          max_out = 65534.0
       end
       's2': begin
           test_out = intarr(cells_per_swath)
-          min_out = -32768
-          max_out = 32767
+          min_out = -32768.0
+          max_out = 32767.0
       end
       'u4': begin
           test_out = ulonarr(cells_per_swath)
-          min_out = 0L
-          max_out = 4294967295L
+          min_out = 0
+          max_out = 4294967295.0d
       end
       's4': begin
           test_out = lonarr(cells_per_swath)
-          min_out = -2147483648L
-          max_out = 2147483647L
+          min_out = -2147483648.0d
+          max_out = 2147483647.0d
       end
       'f4': begin
           test_out = fltarr(cells_per_swath)
+          min_out = -2147483648.0d
+          max_out = 2147483647.0d
       end
       else: message, 'invalid data_type_out' + usage
   end
