@@ -9,15 +9,38 @@ require("$source_navdir/date.pl");
 
 my $Usage = "\n
 USAGE: mod02.pl dirinout tag listfile gpdfile
-                [chanlist [latlon_1km [keep [rind]]]]
-       defaults:    1           0       0     50
+                [chanfile [latlon_1km [keep [rind]]]]
+       defaults:   none         1       0     50
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
   listfile: text file containing a list of MOD02 files to be gridded.
   gpdfile: .gpd file that defines desired output grid.
-  chanlist: string specifying channel numbers to be gridded. The default
-            is 1, i.e. grid channel 1 only.
+  chanfile: text file containing a list of channels to be gridded, one line
+        per channel. The default is \"none\" indicating that only channel
+        1 should be gridded as raw 16-bit integers using weighted averaging and
+        an output fill value of 0. Each line in chanfile should have the
+        following format:
+          chan conversion weight_type fill
+            where
+              chan - specifies a channel number (1-36). Default is 1.
+              conversion is a string that specifies the type of conversion
+                that should be performed on the channel. The string must be
+                one of the following:
+                  raw - raw HDF values (16-bit integers) (default).
+                  corrected - corrected counts (floating-point).
+                  radiance - Watts per square meter per steradian per micron
+                    (floating-point).
+                  reflectance - (channels 1-19 and 26) reflectance without
+                    solar zenith angle correction (floating-point).
+                  temperature - (channels 20-25 and 27-36) brightness
+                    temperatue in Kelvins (floating-point).
+              weight_type - is a string that specifies the type of weighting
+                that should be perfomed on the channel. The string must be one
+                of the following:
+                  avg - use weighted averaging (default).
+                  max - use maximum weighting.
+              fill - specifies the output fill value. Default is 0.
   latlon_1km: 1: for 1km hdf, use 5km latlon from 1km hdf file (default).
               H: for 1km hdf, use 1km latlon from 500m hdf file.
               Q: for 1km hdf, use 1km latlon form 250m hdf file.
@@ -42,7 +65,7 @@ my $dirinout;
 my $tag;
 my $listfile;
 my $gpdfile;
-my $chanlist = "1";
+my $chanfile = "none";
 my $latlon_1km = "1";
 my $keep = 0;
 my $rind = 50;
@@ -57,7 +80,7 @@ if (@ARGV <= 8) {
     $listfile = $ARGV[2];
     $gpdfile = $ARGV[3];
     if (@ARGV >= 5) {
-	$chanlist = $ARGV[4];
+	$chanfile = $ARGV[4];
 	if (@ARGV >= 6) {
 	    $latlon_1km = $ARGV[5];
 	    if ($latlon_1km ne "1" &&
@@ -89,7 +112,7 @@ print_stderr("\n".
 	     "> tag              = $tag\n".
 	     "> listfile         = $listfile\n".
 	     "> gpdfile          = $gpdfile\n".
-	     "> chanlist         = $chanlist\n".
+	     "> chanfile         = $chanfile\n".
 	     "> latlon_1km       = $latlon_1km\n".
 	     "> keep             = $keep\n".
 	     "> rind             = $rind\n");
@@ -105,6 +128,43 @@ while (<LISTFILE>) {
 }
 close(LISTFILE);
 
+my @chans;
+my @conversions;
+my @weight_types;
+my @fills;
+if ($chanfile eq "none") {
+    @chans = (1);
+    @conversions = ("raw");
+    @weight_types = ("avg");
+    @fills = (0);
+} else {
+    open_or_die("CHANFILE", "$chanfile");
+    print_stderr("contents of chanfile:\n");
+    while (<CHANFILE>) {
+	my ($chan, $conversion, $weight_type, $fill) =
+	    /(\d+)\s*(\S*)\s*(\S*)\s*(\S*)/;
+	if (!defined($chan)) {
+	    diemail("$script: FATAL: invalid channel number\n");
+	}
+	if (!defined($conversion)) {
+	    $conversion = "raw";
+	}
+	if (!defined($weight_type)) {
+	    $weight_type = "avg";
+	}
+	if (!defined($fill)) {
+	    $fill = 0;
+	}
+	push(@chans, $chan);
+	push(@conversions, $conversion);
+	push(@weight_types, $weight_type);
+	push(@fills, $fill);
+	print "$chan $conversion $weight_type $fill\n";
+    }
+    close(CHANFILE);
+}
+my $chan_count = scalar(@chans);
+
 my $hdf;
 my $swath_cols = 0;
 my $swath_rows = 0;
@@ -112,17 +172,16 @@ my $latlon_cols = 0;
 my $latlon_rows = 0;
 my $lat_cat = "cat ";
 my $lon_cat = "cat ";
-my $chan_count = length($chanlist);
 my @chan_cat;
-my @chans;
 my $i;
 for ($i = 0; $i < $chan_count; $i++) {
     $chan_cat[$i] = "cat ";
-    $chans[$i] = sprintf("%02d", substr($chanlist, $i, 1));
+    $chans[$i] = sprintf("%02d", $chans[$i]);
 }
 my $swath_rows_per_scan;
 my $this_swath_cols;
 my $this_swath_rows;
+my $this_swath_conv;
 my $interp_factor;
 my $offset = 0;
 my $extra_latlon_col = 0;
@@ -136,8 +195,10 @@ foreach $hdf (@list) {
     do_or_die("rm -f $filestem_lon*");
     for ($i = 0; $i < $chan_count; $i++) {
 	my $chan = $chans[$i];
-	my $filestem_chan = $filestem . "_ch$chan\_";
-	do_or_die("rm -f $filestem_chan*");
+	my $conversion = $conversions[$i];
+	my $conv = substr($conversion, 0, 3);
+	my $filestem_chan_conv = "$filestem\_ch$chan\_$conv\_";
+	do_or_die("rm -f $filestem_chan_conv*");
 	my $get_latlon = "";
 	if ($i == 0) {
 	    my ($resolution) = ($hdf =~ /MOD02(.)/);
@@ -166,11 +227,11 @@ foreach $hdf (@list) {
 	    }
 	}
 	do_or_die("idl_sh.pl extract_chan \"'$hdf'\" $chan " .
-		  "$get_latlon");
-	my @chan_glob = glob("$filestem_chan*");
+		  "$get_latlon conversion=\"'$conversion'\"");
+	my @chan_glob = glob("$filestem_chan_conv*");
 	my $chan_file = $chan_glob[0];
-	($this_swath_cols, $this_swath_rows) =
-	    ($chan_file =~ /$filestem_chan(.....)_(.....)/);
+	($this_swath_cols, $this_swath_rows, $this_swath_conv) =
+	    ($chan_file =~ /$filestem_chan_conv(.....)_(.....)/);
 	print "$chan_file contains $this_swath_cols cols and " .
 	    "$this_swath_rows rows\n";
 	if ($swath_cols == 0) {
@@ -224,8 +285,9 @@ my @chan_files;
 for ($i = 0; $i < $chan_count; $i++) {
     my $chan = $chans[$i];
     my $chan_rm = $chan_cat[$i];
+    my $tagext = substr($conversions[$i], 0, 3);
     $chan_rm =~ s/cat/rm -f/;
-    $chan_files[$i] = "$tag\_ch$chan\_$swath_cols\_$swath_rows.img";
+    $chan_files[$i] = "$tag\_$tagext\_ch$chan\_$swath_cols\_$swath_rows.img";
     do_or_die("$chan_cat[$i] >$chan_files[$i]");
     do_or_die("$chan_rm");
 }
@@ -367,23 +429,36 @@ if ($swath_rows_per_scan != $cr_rows_per_scan) {
 my $swath_scans = $cr_scans;
 my $swath_scan_first = $cr_scan_first;
 
-my $chan_file_param;
-my $grid_file_param;
 for ($i = 0; $i < $chan_count; $i++) {
-    if ($i > 0) {
-	$chan_file_param .= " ";
-	$grid_file_param .= " ";
-    }
     my $chan_file = $chan_files[$i];
     my $chan = $chans[$i];
-    my $grid_file = "$tag\_ch$chan\_grid\_$grid_cols\_$grid_rows.img";
-    $chan_file_param .= $chan_file;
-    $grid_file_param .= $grid_file;
+    my $tagext = substr($conversions[$i], 0, 3);
+    my $m_option;
+    if ($weight_types[$i] eq "avg") {
+	$m_option = "";
+	$tagext .= "a";
+    } else {
+	$m_option = "-m";
+	$tagext .= "m";
+    }
+    my $grid_file = "$tag\_$tagext\_ch$chan\_$grid_cols\_$grid_rows.img";
+    my $t_option;
+    my $f_option;
+    if ($conversions[$i] eq "raw") {
+	$t_option = "-t u2";
+	$f_option = "-f 65535";
+    } else {
+	$t_option = "-t f4";
+	$f_option = "-f 65535.0";
+    }
+    my $fill = $fills[$i];
+    my $F_option = "-F $fill";
+    do_or_die("fornav 1 -v $t_option $f_option $m_option $F_option " .
+	      "-s $swath_scan_first 0 " .
+	      "$swath_cols $swath_scans $swath_rows_per_scan " .
+	      "$cols_file $rows_file $chan_file " .
+	      "$grid_cols $grid_rows $grid_file");
 }
-do_or_die("fornav $chan_count -v -s $swath_scan_first 0 " .
-	  "$swath_cols $swath_scans $swath_rows_per_scan " .
-	  "$cols_file $rows_file $chan_file_param " .
-	  "$grid_cols $grid_rows $grid_file_param");
 
 if (!$keep) {
     for ($i = 0; $i < $chan_count; $i++) {
