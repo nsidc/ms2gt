@@ -3,7 +3,7 @@
 ;*
 ;* 20-Nov-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_regress.pro,v 1.2 2002/11/24 22:19:03 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_regress.pro,v 1.3 2002/11/24 23:02:36 haran haran $
 ;*========================================================================*/
 
 ;+
@@ -129,7 +129,7 @@ Pro modis_regress, x, y, slope, intercept, $
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_regress.pro,v 1.2 2002/11/24 22:19:03 haran Exp haran $'
+  print, 'modis_regress: $Header: /hosts/icemaker/temp/tharan/inst/modis_regress.pro,v 1.3 2002/11/24 23:02:36 haran Exp haran $'
   help, x
   help, y
   print, '  y_tolerance:      ', y_tolerance
