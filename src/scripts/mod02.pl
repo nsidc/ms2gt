@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.51 2004/11/21 20:02:11 haran Exp haran $
+# $Id: mod02.pl,v 1.52 2004/11/25 05:00:42 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -1031,12 +1031,15 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 				     $tile_grid_rows_this);
 		my $t_option;
 		my $f_option;
+		my $bytes_per_cell;
 		if ($chan_conversions[$i] eq "raw") {
 		    $t_option = "-t u2";
 		    $f_option = "-f 65535";
+		    $bytes_per_cell = 2;
 		} else {
 		    $t_option = "-t f4";
 		    $f_option = "-f 65535.0";
+		    $bytes_per_cell = 4;
 		}
 		my $fill = $chan_fills[$i];
 		my $F_option = "-F $fill";
@@ -1052,7 +1055,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		if ($mask_tile) {
 		    my $grid_file_unmasked = $grid_file . ".unmasked";
 		    do_or_die("mv $grid_file $grid_file_unfixed");
-		    do_or_die("apply_mask -v $t_option " .
+		    do_or_die("apply_mask -v $bytes_per_cell " .
 			      "tile_grid_cols_this $tile_grid_rows_this " .
 			      "$mask_tile $grid_file_unmasked $grid_file");
 		    if (!$keep) {
@@ -1090,14 +1093,19 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		my $data_type = $ancil_data_types[$i];
 		my $t_option = "-t $data_type";
 		my $fill_in;
+		my $bytes_per_cell;
 		if ($data_type eq "u1") {
 		    $fill_in = 255;
+		    $bytes_per_cell = 1;
 		} elsif ($data_type eq "u2") {
 		    $fill_in = 0;
+		    $bytes_per_cell = 2;
 		} elsif ($data_type eq "s2") {
 		    $fill_in = -32767;
+		    $bytes_per_cell = 2;
 		} else {
 		    $fill_in = -999.0;
+		    $bytes_per_cell = 4;
 		}
 		my $f_option = "-f $fill_in";
 		my $fill_out = $ancil_fills[$i];
@@ -1114,7 +1122,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		if ($mask_tile) {
 		    my $grid_file_unmasked = $grid_file . ".unmasked";
 		    do_or_die("mv $grid_file $grid_file_unfixed");
-		    do_or_die("apply_mask -v $t_option " .
+		    do_or_die("apply_mask -v $bytes_per_cell " .
 			      "tile_grid_cols_this $tile_grid_rows_this " .
 			      "$mask_tile $grid_file_unmasked $grid_file");
 		    if (!$keep) {
