@@ -7,7 +7,7 @@
 #ifndef call_grids_h_
 #define call_grids_h_
 
-static const char call_grids_h_rcsid[] = "$Header: /export/data/modis/src/idl/grids/call_grids.h,v 1.1 2001/03/20 21:55:32 haran Exp haran $";
+static const char call_grids_h_rcsid[] = "$Header: /export/data/modis/src/idl/grids/call_grids.h,v 1.2 2001/03/20 23:54:40 haran Exp haran $";
 
 /*
  * call_grid parameters structure
@@ -34,5 +34,6 @@ typedef struct {
  */
 
 long call_init_grid(short argc, void *argv[]);
+long call_close_grid(short argc, void *argv[]);
 
 #endif

@@ -8,7 +8,7 @@
  * 14-Mar-2001 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char call_grids_c_rcsid[] = "$Header: /export/data/modis/src/idl/grids/call_grids.c,v 1.2 2001/03/20 21:55:23 haran Exp haran $";
+static const char call_grids_c_rcsid[] = "$Header: /export/data/modis/src/idl/grids/call_grids.c,v 1.3 2001/03/20 23:55:43 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -86,7 +86,7 @@ long call_init_grid(short argc, void *argv[])
    * Copy data from grid_class instance to grid_class_struct instance
    */
 
-  gcs->grid_class_ptr = (int)grid;
+  gcs->grid_class_ptr = (IDL_LONG)grid;
   gcs->map_origin_col = grid->map_origin_col;
   gcs->map_origin_row = grid->map_origin_row;
   gcs->cols_per_map_unit = grid->cols_per_map_unit;
@@ -122,6 +122,95 @@ long call_init_grid(short argc, void *argv[])
 
   gcs->projection_name.s = mapx->projection_name;
   gcs->projection_name.slen = strlen(mapx->projection_name);
+  
+  return 1;
+}
+
+
+/*------------------------------------------------------------------------
+ * call_close_grid - call close_grid()
+ *
+ * This function is called from an IDL program with the following statement:
+ * 
+ * ERROR = call_external('call_grids.so', 'call_close_grid', $
+ *                       gcs)
+ *
+ *      input: gcs - grid_class_struct structure to be closed.
+ *
+ *      output: gcs - grid_class_struct structure after being closed.
+ *
+ *      result: 1 if success.
+ *              0 if error closing grid_class structure.
+ *
+ *------------------------------------------------------------------------*/
+
+long call_close_grid(short argc, void *argv[])
+{
+
+  /*
+   * parameters passed in from IDL
+   */
+
+  grid_class_struct *gcs;
+  
+  /*
+   * Check that correct number of parameters was passed
+   */
+  
+  if (argc != 1)
+    return 0;
+
+  /*
+   * Cast passed parameters to local vars
+   */
+  
+  gcs = (grid_class_struct *)argv[0];
+  
+  /*
+   * Call the function
+   */
+
+  close_grid((grid_class *)(gcs->grid_class_ptr));
+
+  /*
+   * Copy data from grid_class instance to grid_class_struct instance
+   */
+
+  gcs->grid_class_ptr = (IDL_LONG)0;
+  gcs->map_origin_col = 0.0;
+  gcs->map_origin_row = 0.0;
+  gcs->cols_per_map_unit = 0.0;
+  gcs->rows_per_map_unit = 0.0;
+  gcs->cols = (IDL_LONG)0;
+  gcs->rows = (IDL_LONG)0;
+
+  gcs->gpd_filename.s = NULL;
+  gcs->gpd_filename.slen = 0;
+
+  gcs->lat0 = 0.0;
+  gcs->lon0 = 0.0;
+  gcs->lat1 = 0.0;
+  gcs->lon1 = 0.0;
+  gcs->rotation = 0.0;
+  gcs->scale = 0.0;
+  gcs->south = 0.0;
+  gcs->north = 0.0;
+  gcs->west = 0.0;
+  gcs->east = 0.0;
+  gcs->center_lat = 0.0;
+  gcs->center_lon = 0.0;
+  gcs->label_lat = 0.0;
+  gcs->label_lon = 0.0;
+  gcs->lat_interval = 0.0;
+  gcs->lon_interval = 0.0;
+  gcs->cil_detail = (IDL_LONG)0;
+  gcs->bdy_detail = (IDL_LONG)0;
+  gcs->riv_detail = (IDL_LONG)0;
+  gcs->equatorial_radius = (double)0.0;
+  gcs->eccentricity = (double)0.0;
+
+  gcs->projection_name.s = NULL;
+  gcs->projection_name.slen = 0;
   
   return 1;
 }
