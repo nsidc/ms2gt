@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.7 2001/02/10 00:20:19 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.8 2001/02/19 01:03:35 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -69,15 +69,19 @@ PRO extract_chan, hdf_file, tag, channel, $
   if conversion eq 'temperature' then $
     temperature = 1
 
+  modis_type = strmid(hdf_file, 0, 5)
+
   print, 'extract_chan:'
   print, '  hdf_file:       ', hdf_file
   print, '  channel:        ', channel
   print, '  get_latlon:     ', get_latlon
   print, '  conversion:     ', conversion
-  print, '  swath_rows:     ', swath_rows
-  print, '  swath_row_first:', swath_row_first
+  if modis_type eq 'MOD02' then begin
+      print, '  swath_rows:     ', swath_rows
+      print, '  swath_row_first:', swath_row_first
+  endif
 
-  modis_type = strmid(hdf_file, 0, 5)
+  ; NOTE -- area only supported for mod02 for now
   area = [0L, swath_row_first, 999999L, swath_rows]
   if get_latlon ne 0 then begin
       if modis_type eq 'MOD02' then begin
@@ -87,10 +91,10 @@ PRO extract_chan, hdf_file, tag, channel, $
             temperature=temperature, area=area
       endif else if modis_type eq 'MOD10' then begin
           modis_snow_read, hdf_file, channel, image, $
-            latitude=lat, longitude=lon, area=area
+            latitude=lat, longitude=lon
       endif else begin
           modis_ice_read, hdf_file, channel, image, $
-            latitude=lat, longitude=lon, area=area
+            latitude=lat, longitude=lon
       endelse
       lat_dimen = size(lat, /dimensions)
       cols = lat_dimen[0]
@@ -113,9 +117,9 @@ PRO extract_chan, hdf_file, tag, channel, $
             raw=raw, corrected=corrected, reflectance=reflectance, $
             temperature=temperature, area=area
       endif else if modis_type eq 'MOD10' then begin
-          modis_snow_read, hdf_file, channel, image, area=area
+          modis_snow_read, hdf_file, channel, image
       endif else begin
-          modis_ice_read, hdf_file, channel, image, area=area
+          modis_ice_read, hdf_file, channel, image
       endelse
   endelse
   image_dimen = size(image, /dimensions)
