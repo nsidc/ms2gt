@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: pfsetup.pl,v 1.170 2000/12/20 17:55:04 haran Exp $
+# $Id: setup.pl,v 1.1 2001/02/19 23:56:20 haran Exp haran $
 
 #========================================================================
 # setup.pl - sets up some global variables for mod02.pl, mod10_l2.pl and
@@ -10,21 +10,13 @@
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
 
-# The email address of the user running the processing
-#     mail will be sent to this user
+# The email address of the user running the processing.
+#     email will be sent to this user.
+# If you want email messages sent to you, then uncomment the next line,
+# or set $user_mail_address to a specific address
+# (but don't forget the \ in front of the @).
 
-if (!defined($ENV{HOST})) {
-    $host = "snow";
-} else {
-    $host = $ENV{HOST};
-    $host =~ s/.colorado.edu//;
-}
-
-if ($host eq "snow") {
-    $user_mail_address = "haran\@barrow.colorado.edu";
-} else {
-    $user_mail_address="$ENV{USER}\@$ENV{HOST}";
-}
+# $user_mail_address="$ENV{USER}\@$ENV{HOST}";
 
 # this makes the routine work properly using require in other programs
 1;
