@@ -156,7 +156,7 @@ foreach $hdf (@list) {
 		"inconsistent size for $lat_file");
     }
     $lat_cat .= "$lat_file ";
-    $latlon_cols += $this_lat_cols;
+    $latlon_cols = $this_lat_cols;
     $latlon_rows += $this_lat_rows;
 
     my $filestem_lon = $filestem . "_lonf_";
