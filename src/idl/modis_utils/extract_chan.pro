@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.5 2001/01/29 23:54:17 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.6 2001/01/30 18:54:43 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -16,7 +16,8 @@
 ;	Modis.
 ;
 ; CALLING SEQUENCE:
-;       extract_chan, hdf_file, channel, /get_latlon, conversion=conversion
+;       extract_chan, hdf_file, tag, channel, $
+;                     /get_latlon, conversion=conversion
 ;
 ; ARGUMENTS:         
 ;
@@ -29,14 +30,14 @@
 ; REFERENCE:
 ;-
 
-PRO extract_chan, hdf_file, channel, $
+PRO extract_chan, hdf_file, channel, tag, $
                   get_latlon=get_latlon, conversion=conversion
 
-  usage = 'usage: extract_chan, hdf_file, channel ' + $
+  usage = 'usage: extract_chan, tag, hdf_file, channel ' + $
           '[, /get_latlon]' + $
           '[, conversion=conversion]'
 
-  if n_params() ne 2 then $
+  if n_params() ne 3 then $
     message, usage
   if n_elements(get_latlon) eq 0 then $
     get_latlon = 0
@@ -63,8 +64,6 @@ PRO extract_chan, hdf_file, channel, $
   print, '  get_latlon: ', get_latlon
   print, '  conversion: ', conversion
 
-  ext_pos = strpos(hdf_file, '.hdf')
-  filestem = strmid(hdf_file, 0, ext_pos)
   modis_type = strmid(hdf_file, 0, 5)
   if get_latlon ne 0 then begin
       if modis_type eq 'MOD02' then begin
@@ -84,9 +83,9 @@ PRO extract_chan, hdf_file, channel, $
       rows = lat_dimen[1]
       cols_string = string(cols, format='(I5.5)')
       rows_string = string(rows, format='(I5.5)')
-      lat_file_out = filestem + '_latf_' + $
+      lat_file_out = tag + '_latf_' + $
         cols_string + '_' + rows_string + '.img'
-      lon_file_out = filestem + '_lonf_' + $
+      lon_file_out = tag + '_lonf_' + $
         cols_string + '_' + rows_string + '.img'
       openw, lat_lun, lat_file_out, /get_lun
       openw, lon_lun, lon_file_out, /get_lun
@@ -110,11 +109,11 @@ PRO extract_chan, hdf_file, channel, $
   conv_string = strmid(conversion, 0, 3)
   cols_string = string(image_dimen[0], format='(I5.5)')
   rows_string = string(image_dimen[1], format='(I5.5)')
-  file_out = filestem + '_ch' + channel_string + '_' + $
+  file_out = tag + '_ch' + channel_string + '_' + $
              conv_string + '_' + $
              cols_string + '_' + rows_string + '.img'
   openw, lun, file_out, /get_lun
   writeu, lun, image
   free_lun, lun
 
-END ; extract_channel
+END ; extract_chan
