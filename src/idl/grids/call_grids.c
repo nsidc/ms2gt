@@ -11,7 +11,7 @@
  * 14-Mar-2001 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char call_grids_c_rcsid[] = "$Header: /export/data/ms2gth/src/idl/grids/call_grids.c,v 1.5 2001/03/24 00:12:56 haran Exp haran $";
+static const char call_grids_c_rcsid[] = "$Header: /export/data/ms2gth/src/idl/grids/call_grids.c,v 1.6 2001/06/12 22:43:07 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -22,6 +22,11 @@ static const char call_grids_c_rcsid[] = "$Header: /export/data/ms2gth/src/idl/g
 #include "mapx.h"
 #include "grids.h"
 #include "call_grids.h"
+
+char *id_call_grids(void)
+{
+  return((char *)call_grids_c_rcsid);
+}
 
 /*------------------------------------------------------------------------
  * call_init_grid - call init_grid()
@@ -122,6 +127,14 @@ long call_init_grid(short argc, void *argv[])
   gcs->riv_detail = mapx->riv_detail;
   gcs->equatorial_radius = mapx->equatorial_radius;
   gcs->eccentricity = mapx->eccentricity;
+  gcs->x0 = mapx->x0;
+  gcs->y0 = mapx->y0;
+  gcs->false_easting = mapx->false_easting;
+  gcs->false_northing = mapx->false_northing;
+  gcs->center_scale = mapx->center_scale;
+  gcs->utm_zone = mapx->utm_zone;
+  gcs->isin_nzone = mapx->isin_nzone;
+  gcs->isin_justify = mapx->isin_justify;
 
   gcs->projection_name.s = mapx->projection_name;
   gcs->projection_name.slen = strlen(mapx->projection_name);
@@ -394,6 +407,14 @@ long call_close_grid(short argc, void *argv[])
   gcs->riv_detail = (IDL_LONG)0;
   gcs->equatorial_radius = (double)0.0;
   gcs->eccentricity = (double)0.0;
+  gcs->x0 = 0.0;
+  gcs->y0 = 0.0;
+  gcs->false_easting = 0.0;
+  gcs->false_northing = 0.0;
+  gcs->center_scale = 0.0;
+  gcs->utm_zone = (IDL_LONG)0;
+  gcs->isin_nzone = (IDL_LONG)0;
+  gcs->isin_justify = (IDL_LONG)0;
 
   gcs->projection_name.s = NULL;
   gcs->projection_name.slen = 0;

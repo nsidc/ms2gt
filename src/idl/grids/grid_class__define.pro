@@ -3,7 +3,7 @@
 ;*
 ;* 28-Feb-2001  Terry Haran  tharan@kryos.colorado.edu  303-492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/grids/grid_class__define.pro,v 1.6 2001/03/24 00:13:09 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/grids/grid_class__define.pro,v 1.7 2001/10/22 17:58:25 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -499,32 +499,182 @@ end
 ; ARGUMENTS:
 ;       None.
 ;
-; KEYWORDS:
-;       passthru: If set, then the eccentricity is passed through without
-;         regard to whether a particular ellipsoidal projection is
-;         supported by MAP_SET.
-;
 ; RESULT:
 ;       A double containing the eccentricity associated with the grid.
-;       For spherical projections, the eccentricity is set to 0.
-;
-;       If the projection specified in the gpd file is ellipsoidal but
-;       not supported by MAP_SET, then the eccentricity is set to 0.
 ;
 ; EXAMPLE:
 ;       og = obj_new('grid_class', 'Gl1250.gpd')
 ;       eccentricity = og->get_eccentricity()
 ;-
 
-function grid_class::get_eccentricity, passthru=passthru
-    if n_elements(passthru) eq 0 then $
-      passthru = 0
-    eccentricity = self.gcs.eccentricity
-    if (strpos(self.gcs.projection_name, 'ELLIPSOID') eq -1) or $
-      ((passthru eq 0) and $
-       (self.gcs.projection_name ne 'LAMBERTCONICCONFORMALELLIPSOID')) then $
-        eccentricity = 0.0D
-    return, eccentricity
+function grid_class::get_eccentricity
+    return, self.gcs.eccentricity
+end
+
+
+;+
+; NAME:
+;	grid_class::get_map_origin
+;
+; PURPOSE:
+;       Return x0 and y0 from a grid_class object instance.
+;
+; CATEGORY:
+;	nsidc modis tools package.
+;
+; CALLING SEQUENCE:
+;       Result = grid_class_object_instance->get_map_origin()
+;
+; ARGUMENTS:
+;       None.
+;
+; KEYWORDS:
+;       None.
+;
+; RESULT:
+;       A two element float array containing the translated map x,y origin
+;       in map units.
+;
+; EXAMPLE:
+;       og = obj_new('grid_class', 'Gl1250.gpd')
+;       map_origin = og->get_map_origin()
+;-
+
+function grid_class::get_map_origin
+    return, [self.gcs.x0, self.gcs.y0]
+end
+
+
+;+
+; NAME:
+;	grid_class::get_map_offset
+;
+; PURPOSE:
+;       Return false_easting and false_northing from a grid_class object
+;       instance.
+;
+; CATEGORY:
+;	nsidc modis tools package.
+;
+; CALLING SEQUENCE:
+;       Result = grid_class_object_instance->get_map_offset()
+;
+; ARGUMENTS:
+;       None.
+;
+; KEYWORDS:
+;       None.
+;
+; RESULT:
+;       A two element float array containing the offset map x,y origin
+;       in map units.
+;
+; EXAMPLE:
+;       og = obj_new('grid_class', 'Gl1250.gpd')
+;       map_offset = og->get_map_offset()
+;-
+
+function grid_class::get_map_offset
+    return, [self.gcs.false_easting, self.gcs.false_northing]
+end
+
+
+;+
+; NAME:
+;	grid_class::get_center_scale
+;
+; PURPOSE:
+;       Return the center_scale value used by the transverse mercator and
+;       universal transverse mercator projections.
+;
+; CATEGORY:
+;	nsidc modis tools package.
+;
+; CALLING SEQUENCE:
+;       Result = grid_class_object_instance->get_center_scale()
+;
+; ARGUMENTS:
+;       None.
+;
+; RESULT:
+;       A float containing the center_scale associated with the grid.
+;
+; EXAMPLE:
+;       og = obj_new('grid_class', 'Gl1250.gpd')
+;       center_scale = og->get_center_scale()
+;-
+
+function grid_class::get_center_scale
+    return, self.gcs.center_scale
+end
+
+
+;+
+; NAME:
+;	grid_class::get_utm_zone
+;
+; PURPOSE:
+;       Return the utm zone value used by the universal transverse
+;       mercator projection.
+;
+; CATEGORY:
+;	nsidc modis tools package.
+;
+; CALLING SEQUENCE:
+;       Result = grid_class_object_instance->get_utm_zone()
+;
+; ARGUMENTS:
+;       None.
+;
+; RESULT:
+;       A long integer containing the utm zone associated with the grid.
+;
+; EXAMPLE:
+;       og = obj_new('grid_class', 'Gl1250.gpd')
+;       utm_zone = og->get_utm_zone()
+;-
+
+function grid_class::get_utm_zone
+    return, self.gcs.utm_zone
+end
+
+
+;+
+; NAME:
+;	grid_class::get_isin_params
+;
+; PURPOSE:
+;       Return the isin_nzone and isin_justify parameters used by the
+;       integerized sinusoidal projection.
+;
+; CATEGORY:
+;	nsidc modis tools package.
+;
+; CALLING SEQUENCE:
+;       Result = grid_class_object_instance->get_isin_params()
+;
+; ARGUMENTS:
+;       None.
+;
+; RESULT:
+;       An anonymous structure containing two long integer tags named:
+;         nzone: Number of equally spaced latitudinal zones used by
+;             the integerized sinusoidal projection.
+;         justify: indicates what to do with zones with an odd number of
+;             columns. If it has a value of 0 or 1, it indicates the extra
+;             column is on the right (zero) or left (one) of the
+;             projection y-axis. If the flag is set to 2, the number of
+;             columns is calculated so there is always an even number of
+;             columns in each zone. 
+;
+; EXAMPLE:
+;       og = obj_new('grid_class', 'Gl1250.gpd')
+;       isin_params = og->get_isin_params()
+;-
+
+function grid_class::get_isin_params
+    return, {nzone:self.gcs.isin_nzone, $
+             justify:self.gcs.isin_justify}
 end
 
 
@@ -544,94 +694,17 @@ end
 ; ARGUMENTS:
 ;       None.
 ;
-; KEYWORDS:
-;       passthru: If set, then the map projection string as returned by
-;         grid_init is returned without modification and without regard to
-;         whether a particular ellipsoidal projection is supported by MAP_SET,
-;         and no warning message is displayed.
-;
 ; RESULT:
 ;       A string containing the name of the projection associated with
 ;       the grid.
 ;
-;       If the map projection specified by the gpd file is supported by
-;       the MAP_SET procedure, then the string returned is suitable for
-;       use with the NAME keyword to MAP_SET. If the map projection is an
-;       ellipsoidal projection not supported by the MAP_SET procedure, but
-;       the corresponding spherical projection is supported, then a
-;       spherical projection string suitable for use with the NAME keyword
-;       to MAP_SET is returned and a warning is displayed. If the
-;       spherical version of the map projection is not supported by
-;       MAP_SET, then the string 'Unsupported' is returned, and a warning
-;       is displayed.
-;
 ; EXAMPLE:
 ;       og = obj_new('grid_class', 'Gl1250.gpd')
 ;       projection_name = og->get_projection_name()
-;       map_set, name=projection_name
 ;-
 
-function grid_class::get_projection_name, passthru=passthru
-    if n_elements(passthru) eq 0 then $
-      passthru = 0
-    if passthru ne 0 then $
-      projection_name = self.gcs.projection_name $
-    else begin
-        case self.gcs.projection_name of
-            'AZIMUTHALEQUALAREA': projection_name = 'LambertAzimuthal'
-            'CYLINDRICALEQUALAREA': begin
-                projection_name = 'Unsupported'
-                message, $
-                  'Cylindrical Equal Area is not supported by MAP_SET', $
-                  /informational
-            end
-            'MERCATOR': projection_name = 'Mercator'
-            'MOLLWEIDE': projection_name = 'Mollweide'
-            'ORTHOGRAPHIC': projection_name = 'Orthographic'
-            'SINUSOIDAL': projection_name = 'Sinusoidal'
-            'CYLINDRICALEQUIDISTANT': projection_name = 'Cylindrical'
-            'POLARSTEREOGRAPHIC': projection_name = 'Stereographic'
-            'POLARSTEREOGRAPHICELLIPSOID': begin
-                projection_name = 'Stereographic'
-                message, $
-                  'Polar Stereographic Ellipsoid is not supported by MAP_SET', $
-                  /informational
-                message, 'Using Polar Stereographic', /informational
-            end
-            'AZIMUTHALEQUALAREAELLIPSOID': begin
-                projection_name = 'LambertAzimuthal'
-                message, $
-                  'Azimuthal Equal Area Ellipsoid is not supported by MAP_SET', $
-                  /informational
-                message, 'Using Lambert Azimuthal', /informational
-            end
-            'CYLINDRICALEQUALAREAELLIPSOID': begin
-                projection_name = 'Unsupported'
-                message, $
-                  'Cylindrical Equal Area Ellipsoid is not supported by MAP_SET', $
-                  /informational
-            end
-            'LAMBERTCONICCONFORMALELLIPSOID': projection_name = $
-                                                'LambertConicEllipsoid'
-            'INTERUPTEDHOMOLOSINEEQUALAREA': projection_name = $
-                                               'GoodesHomolosine'
-            'ALBERSCONICEQUALAREA': projection_name = 'AlbersEqualAreaConic'
-            'ALBERSCONICEQUALAREAELLIPSOID': begin
-                projection_name = 'AlbersEqualAreaConic'
-                message, $
-                  'Albers Conic Equal Area Ellipsoid is not supported by MAP_SET', $
-                  /informational
-                message, 'Using Albers Equal Area Conic', /informational
-            end
-            else: begin
-                projection_name = 'Unsupported'
-                message, $
-                  self.gcs.projection_name + ' is not supported by MAP_SET', $
-                  /informational
-            endelse
-        endcase
-    endelse
-    return, projection_name
+function grid_class::get_projection_name
+    return, self.gcs.projection_name
 end
 
 
@@ -892,6 +965,10 @@ pro grid_class_struct__define
                lat_interval: 0.0, lon_interval: 0.0, $
                cil_detail: 0L, bdy_detail: 0L, riv_detail: 0L, $
                equatorial_radius: 0.0D, eccentricity: 0.0D, $
+               x0: 0.0, y0: 0.0, false_easting: 0.0, false_northing: 0.0, $
+               center_scale: 0.0, $
+               utm_zone: 0L, $
+               isin_nzone: 0L, isin_justify: 0L, $
                projection_name: '' $
              }
 end

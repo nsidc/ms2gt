@@ -7,7 +7,7 @@
 #ifndef call_grids_h_
 #define call_grids_h_
 
-static const char call_grids_h_rcsid[] = "$Header: /export/data/modis/src/idl/grids/call_grids.h,v 1.3 2001/03/21 14:57:38 haran Exp haran $";
+static const char call_grids_h_rcsid[] = "$Header: /export/data/ms2gth/src/idl/grids/call_grids.h,v 1.4 2001/03/24 00:13:24 haran Exp haran $";
 
 /*
  * call_grid parameters structure
@@ -25,6 +25,10 @@ typedef struct {
   float lat_interval, lon_interval;
   IDL_LONG cil_detail, bdy_detail, riv_detail;
   double equatorial_radius, eccentricity;
+  float x0, y0, false_easting, false_northing;
+  float center_scale;
+  IDL_LONG utm_zone;
+  IDL_LONG isin_nzone, isin_justify;
   IDL_STRING projection_name;
 } grid_class_struct;
 

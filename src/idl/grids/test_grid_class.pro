@@ -1,4 +1,4 @@
-pro print_grid_class_object_instance, og, passthru=passthru
+pro print_grid_class_object_instance, og
     print, '*******************************************'
     print, 'grid_origin: ',       og->get_grid_origin()
     print, 'grid_scales: ',       og->get_grid_scales()
@@ -18,8 +18,13 @@ pro print_grid_class_object_instance, og, passthru=passthru
     print, 'grid_details: '
     help, /struct,                og->get_grid_details()
     print, 'equatorial_radius: ', og->get_equatorial_radius()
-    print, 'eccentricity: ',      og->get_eccentricity(passthru=passthru)
-    print, 'projection_name: ',   og->get_projection_name(passthru=passthru)
+    print, 'eccentricity: ',      og->get_eccentricity()
+    print, 'map_origin: ',        og->get_map_origin()
+    print, 'map_offset: ',        og->get_map_offset()
+    print, 'center_scale: ',      og->get_center_scale()
+    print, 'utm_zone: ',          og->get_utm_zone()
+    help, /struct,                og->get_isin_params()
+    print, 'projection_name: ',   og->get_projection_name()
     print, '*******************************************'
 end
         
@@ -56,9 +61,9 @@ pro test_grid_class, help=help
         obj_destroy, og, help=help
     endif
 
-    og = obj_new('grid_class', 'wilkins250.gpd', help=help)
+    og = obj_new('grid_class', 'lrsa_utm01000.gpd', help=help)
     if obj_valid(og) then begin
-        print_grid_class_object_instance, og, /passthru
+        print_grid_class_object_instance, og
         obj_destroy, og, help=help
     endif
 end
