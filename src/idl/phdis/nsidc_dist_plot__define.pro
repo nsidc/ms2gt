@@ -5,9 +5,6 @@
 ; Boulder, Colorado
 ;
 ; Plot object definition.   Stubbed-out for future use.
-;
-; $Log$
-;
 
 ; Initialization.
 ;
@@ -53,18 +50,18 @@ FUNCTION NSIDC_DIST_PLOT::INIT, main_obj, file_obj, grid_id, grid_name, field_na
                     GROUP_LEADER=self.file_base, MBAR=bar_base, $
                     KILL_NOTIFY='NSIDC_DIST_PLOT_KILL')
 
-   self.plot_draw = WIDGET_DRAW(self.grid_base, XSIZE=self.win_x, YSIZE=self.win_y)
+   self.plot_draw = WIDGET_DRAW(self.plot_base, XSIZE=self.win_x, YSIZE=self.win_y)
 
-   WIDGET_CONTROL, self.grid_base, SET_UVALUE=self
-   WIDGET_CONTROL, self.grid_base, /REALIZE
-   WIDGET_CONTROL, self.grid_draw, GET_VALUE=plot_wind
+   WIDGET_CONTROL, self.plot_base, SET_UVALUE=self
+   WIDGET_CONTROL, self.plot_base, /REALIZE
+   WIDGET_CONTROL, self.plot_draw, GET_VALUE=plot_wind
    self.plot_wind = plot_wind
 
    ; Draw plot.
    self -> DRAW, /READ_DATA
 
    ; Start event processing.
-   XMANAGER, 'NSIDC_DIST_PLOT', self.grid_base
+   XMANAGER, 'NSIDC_DIST_PLOT', self.plot_base
 
    RETURN, 1
 END
@@ -76,31 +73,27 @@ PRO NSIDC_DIST_PLOT::DRAW, READ_DATA=read_data
 
    WSET, self.plot_wind
    read_data = KEYWORD_SET(read_data)
-   IF NOT(PTR_VALID(self.data_ptr_ptr)) THEN read_data = 1B
-   IF (PTR_VALID(self.data_ptr_ptr)) THEN BEGIN
-      data_ptrs = *self.data_ptr_ptr
-      IF NOT(PTR_VALID(data_ptrs[0])) THEN read_data = 1B
-   ENDIF
+   IF NOT(PTR_VALID(self.data_ptr)) THEN read_data = 1B
 
    IF (read_data) THEN BEGIN ; Get data from file.
       load_base = WIDGET_BASE(TITLE='Load Status', /COLUMN, $
-                     GROUP_LEADER=self.grid_base, FLOATING=self.grid_base)
+                     GROUP_LEADER=self.plot_base, FLOATING=self.plot_base)
       wid = WIDGET_LABEL(load_base, VALUE='Loading data, please wait...')
       load_field_labl = WIDGET_LABEL(load_base, VALUE='Field: '+self.field_name)
       WIDGET_CONTROL, load_base, /REALIZE
 
       PTR_FREE, self.data_ptr
 
-      status = EOS_GD_READFIELD(self.grid_id, (*(self.field_names_ptr))[i], $
+      status = EOS_GD_READFIELD(self.grid_id, self.field_name, $
                   plot_data, STRIDE=self.stride)
 
       fill_val = self.fill_val
 
-      data_index = WHERE(grid_data NE fill_val)
+      data_index = WHERE(plot_data NE fill_val)
       min_dat = fill_val
       max_dat = fill_val
       IF (data_index[0] GE 0L) THEN min_dat = MIN(plot_data[data_index], MAX=max_dat)
-      IF (i EQ 0) THEN sz_data = SIZE(plot_data)
+      sz_data = SIZE(plot_data)
       self.data_ptr = PTR_NEW(TEMPORARY(plot_data))
       self.min_dat = min_dat
       self.max_dat = max_dat
@@ -112,15 +105,19 @@ PRO NSIDC_DIST_PLOT::DRAW, READ_DATA=read_data
    max_dat = self.max_dat
 
    ; Plot the data.
-   PLOT, *(self.data_ptr), MISSING=self.fill_val, YRANGE=[min_dat,max_dat], T3D=0
+   pd = *(self.data_ptr)
+   index = WHERE(pd EQ self.fill_val)
+   pd = FLOAT(TEMPORARY(pd))
+   IF (index[0] GE 0L) THEN pd[TEMPORARY(index)] = !VALUES.F_NAN
+   PLOT, TEMPORARY(pd), YRANGE=[min_dat,max_dat], T3D=0
 END
 
 
 ; Plot object event handler.
 ;
 PRO NSIDC_DIST_PLOT_EVENT, event
-   WIDGET_CONTROL, event.handler, GET_UVALUE=grid_obj
-   grid_obj -> EVENT, event
+   WIDGET_CONTROL, event.handler, GET_UVALUE=plot_obj
+   plot_obj -> EVENT, event
 END
 PRO NSIDC_DIST_PLOT::EVENT, event
 
@@ -137,9 +134,9 @@ END
 
 ; Plot object cleanup.
 ;
-PRO NSIDC_DIST_PLOT_KILL, grid_base
-   WIDGET_CONTROL, grid_base, GET_UVALUE=grid_obj
-   OBJ_DESTROY, grid_obj
+PRO NSIDC_DIST_PLOT_KILL, plot_base
+   WIDGET_CONTROL, plot_base, GET_UVALUE=plot_obj
+   OBJ_DESTROY, plot_obj
 END
 PRO NSIDC_DIST_PLOT::CLEANUP
    IF (OBJ_VALID(self.file_container)) THEN self.file_container -> REMOVE, self
