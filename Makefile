@@ -4,7 +4,7 @@
 # 12-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /export/data/modis/src/fornav/Makefile,v 1.4 2001/02/20 17:46:50 haran Exp $
+RCSID = $Header: /export/data/ms2gth/Makefile,v 1.1 2001/04/13 18:04:59 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -119,10 +119,10 @@ SRCS = $(SRCMAKE) $(NAVSRCS) $(IDLSRCS) $(LL2SRCS) $(MAPSRCS) $(SCTSRCS)
 all:	srcs
 
 srcs:
-	$(CD) $(SRCDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all; $(CD) ..
+	$(CD) $(SRCDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
 
 clean:
-	$(CD) $(SRCDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean; $(CD) ..
+	$(CD) $(SRCDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
 	$(RM) $(LIBDIR)/libmaps.a
 
 tar:
