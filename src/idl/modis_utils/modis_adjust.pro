@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.22 2002/12/01 18:31:27 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.23 2002/12/01 18:52:09 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -326,11 +326,16 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   if n_elements(row_plot_max) eq 0 then $
     row_plot_max = 1.5
 
+  if reg_cols eq 0 then $
+    col_plot_tag = ''
+  if reg_rows eq 0 then $
+    row_plot_tag = ''
+
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
-  time_start = systime(/seconds) 
+  time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.22 2002/12/01 18:31:27 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.23 2002/12/01 18:52:09 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -632,14 +637,17 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
           line = ''
           openr, lun, file_reg_rows_in, /get_lun
           readf, lun, line
-          free_lun, lun
       endif
 
-      case rows_per_scan of
-          40: pass_count = 6
-          20: pass_count = 5
-          10: pass_count = 4
-      endcase
+      if reg_rows ne 0 then begin
+          case rows_per_scan of
+              40: pass_count = 6
+              20: pass_count = 5
+              10: pass_count = 4
+          endcase
+      endif else begin
+          pass_count = 1
+      endelse
       mean_count = rows_per_ds_scan
       for pass_ctr = 0, pass_count - 1 do begin
           mean_count = mean_count / 2
@@ -663,41 +671,47 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                       if ds_det_test eq ds_det + vec_ctr then begin
                           if abs(slope) ge epsilon then $
                             vector = (temporary(vector) - intcp) / slope
-                          reg_slope[ds_det] = slope
-                          reg_intcp[ds_det] = intcp
+                          reg_slope[ds_det + vec_ctr] = slope
+                          reg_intcp[ds_det + vec_ctr] = intcp
                       endif else begin
                           message, 'Entry for DS_Detector ' + $
                                    string(det, format='(i2)') + $
                                    ' missing from ' + file_reg_rows_in
                       endelse
                   endif         ; if file_reg_rows ne '' and pass_ctr eq 0
-                  mean = vector * weight_per_vector + mean
+                  if reg_rows ne 0 then $
+                    mean = vector * weight_per_vector + mean
                   vectors[*, vec_ctr] = temporary(vector)
               endfor ; vec_ctr
               for vec_ctr = 0, vectors_per_mean - 1 do begin
                   vector = reform(vectors[*, vec_ctr])
-                  plot_tag = row_plot_tag
-                  if plot_tag ne '' then $
-                    plot_tag = string(plot_tag + '_', pass_ctr, '_', ds_det, $
-                                      format='(a, i1.1, a, i2.2)')
-                  xtitle=string('pass_ctr: ', pass_ctr, $
-                                '  mean_ctr: ', mean_ctr, $
-                                format='(a, i1, a, i2.2)')
-                  ytitle=string('ds_det: ', ds_det, $
-                                format='(a, i2.2)')
-                  modis_regress, mean, vector, $
-                                 slope, intcp, $
-                                 y_tolerance=row_y_tolerance, $
-                                 slope_delta_max=row_slope_delta_max, $
-                                 regression_max=row_regression_max, $
-                                 density_bin_width=row_density_bin_width, $
-                                 plot_tag=plot_tag, $
-                                 plot_max=row_plot_max, $
-                                 plot_titles=[xtitle,ytitle]
-                  if abs(slope) ge epsilon then $
-                    swath[*, ds_det, *] = (vector - intcp) / slope
-                  reg_slope[ds_det] = slope * reg_slope[ds_det]
-                  reg_intcp[ds_det] = slope * reg_intcp[ds_det] + intcp
+                  if reg_rows ne 0 then begin
+                      plot_tag = row_plot_tag
+                      if plot_tag ne '' then $
+                        plot_tag = string(plot_tag + '_', pass_ctr, $
+                                          '_', ds_det, $
+                                          format='(a, i1.1, a, i2.2)')
+                      xtitle=string('pass_ctr: ', pass_ctr, $
+                                    '  mean_ctr: ', mean_ctr, $
+                                    format='(a, i1, a, i2.2)')
+                      ytitle=string('ds_det: ', ds_det, $
+                                    format='(a, i2.2)')
+                      modis_regress, mean, vector, $
+                                     slope, intcp, $
+                                     y_tolerance=row_y_tolerance, $
+                                     slope_delta_max=row_slope_delta_max, $
+                                     regression_max=row_regression_max, $
+                                     density_bin_width=row_density_bin_width, $
+                                     plot_tag=plot_tag, $
+                                     plot_max=row_plot_max, $
+                                     plot_titles=[xtitle,ytitle]
+                      if abs(slope) ge epsilon then $
+                        swath[*, ds_det, *] = (vector - intcp) / slope
+                      reg_slope[ds_det] = slope * reg_slope[ds_det]
+                      reg_intcp[ds_det] = slope * reg_intcp[ds_det] + intcp
+                  endif else begin
+                      swath[*, ds_det, *] = vector
+                  endelse
                   ds_det = ds_det + 1
               endfor ; vec_ctr
               vectors = 0
