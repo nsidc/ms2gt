@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.7 --  11 September 2003
+Readme for MODIS Swath-to-Grid Toolbox 0.8 --  06 April 2004
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -19,22 +19,28 @@ files. All four Perl programs can optionally read MOD03 files for
 geolocation and/or ancillary data.
 
 The software and associated documentation can be downloaded
-from ftp://sidads.colorado.edu/pub/incoming/tharan/ms2gt/ms2gt0.6.tar.gz.
+from ftp://sidads.colorado.edu/pub/incoming/tharan/ms2gt/ms2gt0.8.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.7.tar.gz
-tar xvf ms2gt0.7.tar 
+gunzip ms2gt0.8.tar.gz
+tar xvf ms2gt0.8.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
 installation and use of MS2GT can be then found in html files in the
 ms2gt/doc subdirectory. Point your browser to ms2gt/doc/index.html. Note
 that the html documentation is for 0.5 and has not yet been updated of
-0.7.
+0.6 and higher.
 
-Note also that there is an updated version of ppgc.html, "Points,
+As of 0.7 there is an updated version of ppgc.html, "Points,
 Pixels, Grids, and Cells", which describes the updated gpd
 syntax. Included in the grids directory are some examples of gpd files
 using the new format.
 
-
+As of 0.8, mod02.pl was modified to use a row offset of 0.5 when
+interpolating data from 1 km to 500 m resolution, and a row offset of 1.5
+when interpolating data from 1 km to 250 m resolution. Also, congridx.pro
+was modified to allow for fractional offsets. These modifications were
+implemented to fix geolocation problems arising from apparently incorrect
+row offsets that are specified in the HDF-EOS structural metadata for
+geolocation mappings.
