@@ -4,7 +4,7 @@
  * 26-Nov-2001 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char lle2cre_c_rcsid[] = "$Header: /home/haran/photoclin/src/lle2cre/lle2cre.c,v 1.6 2003/08/22 20:41:16 haran Exp haran $";
+static const char lle2cre_c_rcsid[] = "$Header: /home/haran/photoclin/src/lle2cre/lle2cre.c,v 1.7 2003/08/22 20:48:38 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -16,8 +16,8 @@ static const char lle2cre_c_rcsid[] = "$Header: /home/haran/photoclin/src/lle2cr
 #include "matrix.h"
 
 #define USAGE \
-"usage: lle2cre [-v] [-g gpdfile] [-t]\n"\
-"       default:         Sa0.gpd\n"\
+"usage: lle2cre [-v] [-i] [-g gpdfile] [-t]\n"\
+"       default:           Sa0.gpd\n"\
 "               [-c col_start row_start cols rows corfile]\n"\
 "               <filein >fileout\n"\
 "\n"\
@@ -40,7 +40,9 @@ static const char lle2cre_c_rcsid[] = "$Header: /home/haran/photoclin/src/lle2cr
 "                 row is a row number in the defined grid.\n"\
 "                 elevation is elevation above wgs84 ellipsoid in meters.\n"\
 "\n"\
-" option: v - verbose\n"\
+" option: v - verbose (may be repeated)\n"\
+"         i - ignore values that fall outside of the grid boundaries,\n"\
+"             and do not display an error (unless -vv is specified).\n"\
 "         g gpdfile - defines the grid used to map latitude-longitude\n"\
 "             pairs to column-row pairs. The default value of gpdfile is\n"\
 "             Sa0.gpd.\n"\
@@ -70,6 +72,8 @@ static void DisplayInvalidParameter(char *param)
 main (int argc, char *argv[])
 {
   bool verbose;
+  bool very_verbose;
+  bool ignore;
   bool temp_mode;
   char *option;
   char *gpdfile;
@@ -102,6 +106,8 @@ main (int argc, char *argv[])
  *	set defaults
  */
   verbose = FALSE;
+  very_verbose = FALSE;
+  ignore = FALSE;
   gpdfile = "Sa0.gpd";
   do_correction = FALSE;
   temp_mode = 0;
@@ -113,7 +119,12 @@ main (int argc, char *argv[])
     for (option = argv[0]+1; *option != '\0'; option++) {
       switch (*option) {
       case 'v':
+	if (verbose)
+	  very_verbose = TRUE;
 	verbose = TRUE;
+	break;
+      case 'i':
+        ignore = TRUE;
 	break;
       case 'g':
 	++argv; --argc;
@@ -166,15 +177,17 @@ main (int argc, char *argv[])
 
   if (verbose) {
     fprintf(stderr, "lle2cre: %s\n", lle2cre_c_rcsid);
-    fprintf(stderr, "  gpdfile   = %s\n", gpdfile);
+    fprintf(stderr, "  very_verbose = %d\n", very_verbose);
+    fprintf(stderr, "  ignore       = %d\n", ignore);
+    fprintf(stderr, "  gpdfile      = %s\n", gpdfile);
     if (do_correction) {
-      fprintf(stderr, "  col_start = %d\n", col_start);
-      fprintf(stderr, "  row_start = %d\n", row_start);
-      fprintf(stderr, "  cols      = %d\n", cols);
-      fprintf(stderr, "  rows      = %d\n", rows);
-      fprintf(stderr, "  corfile   = %s\n", corfile);
+      fprintf(stderr, "  col_start    = %d\n", col_start);
+      fprintf(stderr, "  row_start    = %d\n", row_start);
+      fprintf(stderr, "  cols         = %d\n", cols);
+      fprintf(stderr, "  rows         = %d\n", rows);
+      fprintf(stderr, "  corfile      = %s\n", corfile);
     }
-    fprintf(stderr, "  temp_mode = %d\n", temp_mode);
+    fprintf(stderr, "  temp_mode    = %d\n", temp_mode);
   }
 
   /*
@@ -238,13 +251,17 @@ main (int argc, char *argv[])
        *  convert lat-lon pair to col-row pair
        */
       
+      in_region = TRUE;
       status = forward_grid(grid_def, lat, lon, &col, &row);
       if (status == 0) {
-	fprintf(stderr, "Error mapping lat-lon to col-row on line %d:\n",
-		count_input);
-	fprintf(stderr, "  %s\n", line);
+	if (very_verbose || !ignore) {
+	  fprintf(stderr, "Error mapping lat-lon to col-row on line %d:\n",
+		  count_input);
+	  fprintf(stderr, "  %s\n", line);
+	}
+	if (ignore)
+	  in_region = FALSE;
       }
-      in_region = TRUE;
       
       /*
        *  perform correction as needed
