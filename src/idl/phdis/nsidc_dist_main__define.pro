@@ -8,7 +8,10 @@
 
 ; Initialization.
 ;
-; $Log$
+; $Log: nsidc_dist_main__define.pro,v $
+; Revision 1.3  2001/03/13 18:50:43  haran
+; added log
+;
 ;
 ;----------------------------
 ;revision 1.2	locked by: haran;
@@ -161,7 +164,7 @@ PRO NSIDC_DIST_MAIN::EVENT, event
 
    CASE uname OF
       'file_bttn': BEGIN ; Load a file.
-         hdf_files = DIALOG_PICKFILE(FILTER='*.hdf', /FIX_FILTER, $
+         hdf_files = DIALOG_PICKFILE(FILTER='*.hdf', $
             PATH=self.fp, GET_PATH=out_fp, /MUST_EXIST, /READ, $
             /MULTIPLE_FILES, DIALOG_PARENT=event.top, GROUP=event.top, $
             TITLE='Select one or more HDF-EOS files')
