@@ -1,3 +1,5 @@
+#! /usr/bin/csh
+
 #In your .cshrc file, set $MS2GT_HOME to the directory into which the ms2gt
 #package was installed. Then source ms2gt_env.csh (this file). For example:
 #setenv MS2GT_HOME  $HOME/ms2gt
@@ -20,5 +22,5 @@ if (!($?PATHMPP)) then
 endif
 setenv PATHMPP                $PATHMPP\:$MS2GT_HOME/grids
 
-set path = ( $path . $MS2GT_HOME/bin \
-		     $MS2GT_HOME/src/scripts )
+set path = ( $path $MS2GT_HOME/bin \
+		   $MS2GT_HOME/src/scripts )
