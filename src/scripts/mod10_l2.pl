@@ -1,11 +1,21 @@
 #!/usr/local/bin/perl -w
-$|=1;
-$path_navdir_src = $ENV{PATH_NAVDIR_SRC};
-$source_navdir = "$path_navdir_src/scripts";
 
-require("$source_navdir/pfsetup.pl");
-require("$source_navdir/error_mail.pl");
-require("$source_navdir/date.pl");
+# $Id: mod02.pl,v 1.21 2001/02/20 00:08:15 haran Exp $
+
+#========================================================================
+# mod02.pl - grids MOD10_L2 data
+#
+# 28-Jan-2001 T. Haran tharan@colorado.edu 303-492-1847
+# National Snow & Ice Data Center, University of Colorado, Boulder
+#========================================================================
+
+$|=1;
+
+$path_modis_src = $ENV{PATH_MODIS_SRC};
+$source_modis = "$path_modis_src/scripts";
+
+require("$source_modis/setup.pl");
+require("$source_modis/error_mail.pl");
 
 my $Usage = "\n
 USAGE: mod10_l2.pl dirinout tag listfile gpdfile
@@ -29,11 +39,6 @@ USAGE: mod10_l2.pl dirinout tag listfile gpdfile
         1: do not delete intermediate chan, lat, lon, col, and row files.
   rind: number of pixels to add around intermediate grid to eliminate
         holes in final grid. Default is 50.\n\n";
-
-#The following symbols are defined in pfsetup.pl and were used only once in
-#this module. They appear here to suppress warning messages.
-
-my $junk = $script;
 
 # define a global used by do_or_die and invoke_or_die
 
@@ -145,7 +150,7 @@ foreach $hdf (@list) {
     do_or_die("rm -f $filestem_lon*");
     for ($i = 0; $i < $chan_count; $i++) {
 	my $chan = $chans[$i];
-	my $filestem_chan = $filestem . "_ch$chan\_";
+	my $filestem_chan = $filestem . "_ch$chan\_raw_";
 	do_or_die("rm -f $filestem_chan*");
 	my $get_latlon = "";
 	if ($i == 0) {
@@ -167,7 +172,7 @@ foreach $hdf (@list) {
 		do_or_die("idl_sh.pl extract_latlon \"'$hdf_latlon'\"");
 	    }
 	}
-	do_or_die("idl_sh.pl extract_chan \"'$hdf'\" $chan " .
+	do_or_die("idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" $chan " .
 		  "$get_latlon");
 	my @chan_glob = glob("$filestem_chan*");
 	my $chan_file = $chan_glob[0];
