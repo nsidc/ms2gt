@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.21 2001/05/03 15:37:03 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.22 2001/05/24 23:26:13 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -641,7 +641,7 @@ bool ComputeEwa(image *uimg, image *vimg,
 	    dq = a2up1 + b * v;
 	    q = (c * v + bu) * v + au2;
 	    for (iu = iu1; iu <= iu2; iu++) {
-	      if (q < f) {
+	      if (q < f && q >= 0) {
 		iw = (int)(q * qfactor);
 		if (iw >= weight_count)
 		  iw = weight_count - 1;
