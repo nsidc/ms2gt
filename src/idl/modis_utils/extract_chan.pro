@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.3 2001/01/26 17:27:48 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.4 2001/01/28 22:13:38 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -62,6 +62,8 @@ PRO extract_chan, hdf_file, channel, get_latlon=get_latlon
   print, '  get_latlon: ', get_latlon
   print, '  conversion: ', conversion
 
+  ext_pos = strpos(hdf_file, '.hdf')
+  filestem = strmid(hdf_file, 0, ext_pos)
   modis_type = strmid(hdf_file, 0, 5)
   if get_latlon ne 0 then begin
       if modis_type eq 'MOD02' then begin
@@ -69,14 +71,16 @@ PRO extract_chan, hdf_file, channel, get_latlon=get_latlon
             latitude=lat, longitude=lon, $
             raw=raw, corrected=corrected, reflectance=reflectance, $
             temperature=temperature
-      endif else begin
+      endif else if modis_type eq 'MOD10' then begin
           modis_snow_read, hdf_file, channel, image, $
+            latitude=lat, longitude=lon
+      endif else begin
+          modis_ice_read, hdf_file, channel, image, $
             latitude=lat, longitude=lon
       endelse
       lat_dimen = size(lat, /dimensions)
       cols = lat_dimen[0]
       rows = lat_dimen[1]
-      filestem = strmid(hdf_file, 0, 40)
       cols_string = string(cols, format='(I5.5)')
       rows_string = string(rows, format='(I5.5)')
       lat_file_out = filestem + '_latf_' + $
@@ -94,12 +98,13 @@ PRO extract_chan, hdf_file, channel, get_latlon=get_latlon
           modis_level1b_read, hdf_file, channel, image, $
             raw=raw, corrected=corrected, reflectance=reflectance, $
             temperature=temperature
-      endif else begin
+      endif else if modis_type eq 'MOD10' then begin
           modis_snow_read, hdf_file, channel, image
+      endif else begin
+          modis_ice_read, hdf_file, channel, image
       endelse
   endelse
   image_dimen = size(image, /dimensions)
-  filestem = strmid(hdf_file, 0, 40)
   channel_string = string(channel, format='(I2.2)')
   cols_string = string(image_dimen[0], format='(I5.5)')
   rows_string = string(image_dimen[1], format='(I5.5)')
