@@ -4,7 +4,7 @@
 # 12-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/haran/ms2gth/Makefile,v 1.14 2003/08/11 18:40:43 haran Exp $
+RCSID = $Header: /home/haran/ms2gth/Makefile,v 1.15 2003/09/10 06:19:57 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -125,7 +125,7 @@ MAPSRCS = $(MAPMAKE) $(MAPDIR)/*.c $(MAPDIR)/*.h
 SCTSRCS = $(SCTDIR)/*.pl
 
 TOPS = $(TOPDIR)/*.txt $(TOPDIR)/Makefile $(TOPDIR)/ms2gt_env.csh
-DOCS = $(DOCDIR)/*.html $(DOCDIR)/*usage
+DOCS = $(DOCDIR)/*.html $(DOCDIR)/*usage $(DOCDIR)/*.gif
 HDRS = $(INCDIR)/*.h
 GRDS = $(GPDSRCS) $(MPPSRCS)
 SRCS = $(SRCMAKE) $(NAVSRCS) $(IDLSRCS) $(LL2SRCS) $(MAPSRCS) $(SCTSRCS)
