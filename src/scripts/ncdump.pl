@@ -1,5 +1,18 @@
 #!/usr/local/bin/perl -w
+
 $|=1;
+
+$path_ms2gt_src = $ENV{PATH_MS2GT_SRC};
+$source_ms2gt = "$path_ms2gt_src/scripts";
+
+require("$source_ms2gt/mod35_l2_usage.pl");
+require("$source_ms2gt/setup.pl");
+require("$source_ms2gt/error_mail.pl");
+
+$script = "NCDUMP";
+$junk = $script;
+$junk = $junk;
+
 $Usage = "\n
 USAGE: ncdump.pl hdf_file\n";
 
@@ -9,4 +22,4 @@ if (@ARGV != 1) {
 }
 
 my $hdf_file = $ARGV[0];
-system("ncdump -h $hdf_file >$hdf_file.atr");
+do_or_die("ncdump -h $hdf_file >$hdf_file.atr");
