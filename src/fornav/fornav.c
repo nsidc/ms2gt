@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.15 2001/01/17 00:37:01 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.16 2001/01/19 18:44:24 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -537,9 +537,9 @@ static bool ComputeEwa(image *uimg, image *vimg,
   this_grid_chanpp = grid_chanpp;
   this_grid_fillp  = grid_fillp;
   for (chan = 0; chan < chan_count; chan++) {
-    *swath_fillp++ = (this_swath++)->fill;
+    *this_swath_fillp++ = (this_swath++)->fill;
     *this_grid_chanpp++ = (float *)((this_grid)->buf[0]);
-    *grid_fillp++ = (this_grid++)->fill;
+    *this_grid_fillp++ = (this_grid++)->fill;
   }
   got_point = FALSE;
   for (row = 0; row < rows; row++) {
