@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.19 2002/11/27 18:01:25 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.20 2002/11/28 00:41:21 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -330,7 +330,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds) 
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.19 2002/11/27 18:01:25 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.20 2002/11/28 00:41:21 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -523,7 +523,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               det_test = 0L
               slope = 1.0
               intcp = 0.0
-              readf, lun, det_test, slope, intcp
+              readf, lun, det_test, intcp, slope
               if det_test eq det then begin
                   if abs(slope) ge epsilon then $
                     target = (target - intcp) / slope
@@ -659,7 +659,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                       ds_det_test = 0L
                       slope = 1.0
                       intcp = 0.0
-                      readf, lun, ds_det_test, slope, intcp
+                      readf, lun, ds_det_test, intcp, slope
                       if ds_det_test eq ds_det + vec_ctr then begin
                           if abs(slope) ge epsilon then $
                             vector = (temporary(vector) - intcp) / slope
