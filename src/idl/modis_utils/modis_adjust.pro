@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.30 2003/01/21 22:59:08 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.31 2004/10/29 21:51:55 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -366,7 +366,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.30 2003/01/21 22:59:08 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.31 2004/10/29 21:51:55 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -653,7 +653,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       ; write the column slopes and intercepts to a file
 
       openw, lun, file_reg_cols_out, /get_lun
-      printf, lun, 'SS_Detector  Col_Slope        Col_Intercept'
+      printf, lun, 'DS_Detector  Col_Intercept    Col_Slope'
       for det = 0, rows_per_scan - 1 do $
         printf, lun, det, reg_intcp[det], reg_slope[det], $
                 format='(i2.2, 11X, e15.8, 2x, e15.8)'
