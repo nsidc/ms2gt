@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.43 2004/11/29 20:03:39 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.44 2004/11/29 22:10:28 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.43 2004/11/29 20:03:39 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.44 2004/11/29 22:10:28 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -1003,8 +1003,12 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   if count_min_in gt 0 then $
     swath[i_min_in] = min_in
-  if count_max_in gt 0 then $
-    swath[i_max_in] = max_in
+  if count_max_in gt 0 then begin
+      if data_type_in eq 'u2' then $
+        swath[i_max_in] = 0 $
+      else $
+        swath[i_max_in] = max_in
+  endif
  
   ;  put the swath back into output data type as needed
 
@@ -1016,7 +1020,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       ; use max_out - 1  here because we don't want to set high values
       ; to 65535, which is fill
 
-      i = where(swath gt max_out - 1, count)
+      i = where(swath ge max_out, count)
       if count gt 0 then $
         swath[i] = max_out - 1
       swath = fix(round(temporary(swath)), type=type_code)
