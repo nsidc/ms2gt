@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.11 --  21 January 2005
+Readme for MODIS Swath-to-Grid Toolbox 0.12 --  12 March 2005
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -64,3 +64,7 @@ modis_adjust.pro in support of MOA version 11 and higher including keeping
 the mask file and using 16-bit solar zenith values for solar zenith
 normalization.
 
+As of 0.12, modifications to extract_valid_scans.pro and
+modis_level1b_read.pro were made such that valid scans are now determined
+exclusively by the latitude array. However, out of range data values are
+still mapped to the fill value for valid scans.
