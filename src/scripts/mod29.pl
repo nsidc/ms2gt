@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: mod29.pl,v 1.10 2001/04/27 22:55:46 haran Exp haran $
+# $Id: mod29.pl,v 1.11 2001/04/30 22:53:38 haran Exp haran $
 
 #========================================================================
 # mod29.pl - grids MOD29 data
@@ -34,9 +34,9 @@ USAGE: mod29.pl dirinout tag listfile gpdfile
   chanlist: string specifying channel numbers to be gridded. The default
             is 1, i.e. grid channel 1 only. The channel numbers are:
               1: icrf Sea Ice by Reflectance - 8-bit unsigned
-              2: irqa Sea Ice by Reflectance PixelQA - 8-bit unsigned
+              2: qarf Sea Ice by Reflectance PixelQA - 8-bit unsigned
               3: temp Ice Surface Temperature - 16-bit unsigned (Kelvin * 100)
-              4: tmqa Ice Surface Temperature PixelQA - 8-bit unsigned
+              4: qatm Ice Surface Temperature PixelQA - 8-bit unsigned
               5: ictm Sea Ice by IST - 8-bit unsigned
               6: icrt Combined Sea Ice - 8-bit unsigned
   latlonlistfile: text file containing a list of MOD02 or MOD03 files whose
@@ -111,7 +111,7 @@ my $chan_count = length($chanlist);
 my @chan_cat;
 my @chans;
 my $i;
-my @chan_names_table = ("icrf", "irqa", "temp", "tmqa", "ictm", "icrt");
+my @chan_names_table = ("icrf", "qarf", "temp", "qatm", "ictm", "icrt");
 my @chan_names;
 for ($i = 0; $i < $chan_count; $i++) {
     $chan_cat[$i] = "cat ";
