@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: pfsetup.pl,v 1.170 2000/12/20 17:55:04 haran Exp $
+# $Id: mod02.pl,v 1.20 2001/02/19 23:56:42 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -18,9 +18,6 @@ require("$source_modis/mod02_usage.pl");
 require("$source_modis/mod02_case.pl");
 require("$source_modis/setup.pl");
 require("$source_modis/error_mail.pl");
-require("$source_modis/date.pl");
-
-my $junk = $script;
 
 # define a global used by do_or_die and invoke_or_die
 
@@ -40,7 +37,7 @@ my $keep = 0;
 my $rind = 50;
 
 if (@ARGV < 4) {
-    print $Usage;
+    print $mod02_usage;
     exit 1;
 }
 if (@ARGV <= 10) {
@@ -58,20 +55,20 @@ if (@ARGV <= 10) {
 		    $latlon_src ne "3" &&
 		    $latlon_src ne "H" &&
 		    $latlon_src ne "Q") {
-		    print "invalid latlon_src\n$Usage";
+		    print "invalid latlon_src\n$mod02_usage";
 		    exit 1;
 		}
 		if (@ARGV >= 8) {
 		    $ancil_src = $ARGV[7];
 		    if ($ancil_src ne "1" &&
 			$ancil_src ne "3") {
-			print "invalid ancil_src\n$Usage";
+			print "invalid ancil_src\n$mod02_usage";
 			exit 1;
 		    }
 		    if (@ARGV >= 9) {
 			$keep = $ARGV[8];
 			if ($keep ne "0" && $keep ne "1") {
-			    print "invalid keep\n$Usage";
+			    print "invalid keep\n$mod02_usage";
 			    exit 1;
 			}
 			if (@ARGV >= 10) {
@@ -83,7 +80,7 @@ if (@ARGV <= 10) {
 	}
     }
 } else {
-    print $Usage;
+    print $mod02_usage;
     exit 1;
 }
 
