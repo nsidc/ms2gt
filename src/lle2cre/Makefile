@@ -4,7 +4,7 @@
 # 26-Nov-2001 T.Haran 303-492-1847  tharan@kryos.colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /usr/people/haran/photoclin/src/lle2cre/Makefile,v 1.1 2001/11/26 18:25:22 haran Exp $
+RCSID = $Header: /home/haran/photoclin/src/lle2cre/Makefile,v 1.2 2003/06/24 16:54:03 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -33,17 +33,14 @@ COMPRESS = gzip
 #
 #	debug or optimization settings
 #
-#	on least significant byte first machines (Intel, Vax)
-#	add -DLSB1ST option to enable byteswapping of cdb files
-#
-#CONFIG_CFLAGS = -O
-CONFIG_CFLAGS = -DDEBUG -g -DLSB1ST
+CONFIG_CFLAGS = -O
+#CONFIG_CFLAGS = -DDEBUG -g
 #CONFIG_CFLAGS =
 
 #
 #	libraries
 #
-LOCAL_LIBS = -lmaps
+LOCAL_LIBS = -lmapx
 SYSLIBS = -lm
 
 #
@@ -57,6 +54,9 @@ all : lle2cre
 
 lle2cre: lle2cre.o
 	$(CC) $(CFLAGS) -o $(BINDIR)/lle2cre lle2cre.o $(LIBS)
+
+clean:
+	$(RM) *.o
 
 .SUFFIXES : .c,v .h,v
 
