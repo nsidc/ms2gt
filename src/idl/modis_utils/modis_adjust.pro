@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.42 2004/11/24 01:21:39 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.43 2004/11/29 20:03:39 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.42 2004/11/24 01:21:39 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.43 2004/11/29 20:03:39 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -541,6 +541,16 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   if data_type_in ne 'f4' then $
     swath = float(temporary(swath))
 
+  ;  make sure that values stay within valid range
+  ;  use le and ge so we can reset these min/max values at the end
+
+  i_min_in = where(swath le min_in, count_min_in)
+  if count_min_in gt 0 then $
+    swath[i_min_in] = min_in
+  i_max_in = where(swath ge max_in, count_max_in)
+  if count_max_in gt 0 then $
+    swath[i_max_in] = max_in
+
   if file_soze ne '' then begin
       soze = fltarr(cells_per_swath)
 
@@ -560,6 +570,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       if count gt 0 then begin
           soze[i] = 1.0
           swath[i] = max_in
+          i_max_in = [temporary(i_max_in), i]
       endif
       i = 0
 
@@ -568,16 +579,6 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       swath = temporary(swath) / soze
   endif
 
-
-  ;  make sure that values stay within valid range
-  ;  use le and ge so we can reset these min/max values at the end
-
-  i_min_in = where(swath le min_in, count_min_in)
-  if count_min_in gt 0 then $
-    swath[i_min_in] = min_in
-  i_max_in = where(swath ge max_in, count_max_in)
-  if count_max_in gt 0 then $
-    swath[i_max_in] = max_in
 
   reg_slope = make_array(rows_per_scan, /float, value=1.0)
   reg_intcp = make_array(rows_per_scan, /float, value=0.0)
@@ -1004,18 +1005,18 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     swath[i_min_in] = min_in
   if count_max_in gt 0 then $
     swath[i_max_in] = max_in
-
+ 
   ;  put the swath back into output data type as needed
 
   if data_type_out ne 'f4' then begin
       i = where(swath lt min_out, count)
       if count gt 0 then $
         swath[i] = min_out
-      i = where(swath gt max_out, count)
 
-    ; use max_out - 1  here because we don't want to set high values
-    ; to 65535, which is fill
+      ; use max_out - 1  here because we don't want to set high values
+      ; to 65535, which is fill
 
+      i = where(swath gt max_out - 1, count)
       if count gt 0 then $
         swath[i] = max_out - 1
       swath = fix(round(temporary(swath)), type=type_code)
