@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.28 2002/12/05 19:03:14 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.29 2003/01/21 22:43:30 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -365,7 +365,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.28 2002/12/05 19:03:14 haran Exp haran $'
+  print, 'modis_adjust: $Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.29 2003/01/21 22:43:30 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -486,20 +486,20 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   type_code_out = size(test_out, /type)
   test_out = 0
 
-  if file_soze ne '' then $
-    soze = fltarr(cells_per_swath)
-
-  ; convert swath to floating-point as needed
-
   ; open, read, and close input raster files
 
   openr, lun, file_in, /get_lun
   readu, lun, swath
   free_lun, lun
+
+  ; convert swath to floating-point as needed
+
   if data_type_in ne 'f4' then $
     swath = float(temporary(swath))
 
   if file_soze ne '' then begin
+      soze = fltarr(cells_per_swath)
+
       openr, lun, file_soze, /get_lun
       readu, lun, soze
       free_lun, lun
