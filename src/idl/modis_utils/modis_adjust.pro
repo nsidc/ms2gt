@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.4 2002/04/17 15:19:29 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.5 2002/04/18 23:39:48 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -12,10 +12,15 @@
 ;	modis_adjust
 ;
 ; PURPOSE:
-;       Optionally modify modis data with solar zenith correction. Then
-;       optionally compute a regression for each sensor relative to a
-;       particular sensor and adjust the data accordingly. Optionally
-;       undo the solar zenith correction.
+;       1) Optionally modify modis data with a solar zenith correction.
+;       2) Optionally compute a regression for every reg_col_stride column
+;          relative to the mean of the preceding and following columns
+;          for a particular set of detectors at a given column offset.
+;       3) Optionally compute a regression for each pair of detectors
+;          relative to their mean, then regress each pair of means
+;          against its mean, and so on until only one mean is left,
+;          and then adjust the data accordingly.
+;       4) Optionally undo the solar zenith correction.
 ;
 ; CATEGORY:
 ;	Modis.
@@ -24,15 +29,24 @@
 ;       MODIS_ADJUST, cols, scans, file_in, file_out,
 ;               [, rows_per_scan=rows_per_scan]
 ;               [, data_type=data_type]
-;               [, regress_sensor=regress_sensor]
 ;               [, file_soze=file_soze]
 ;               [, /undo_soze]
-;               [, y_tolerance=y_tolerance]
-;               [, slope_delta_max=slope_delta_max]
-;               [, regression_max=regression_max]
-;               [, density_bin_width=density_bin_width]
-;               [, plot_tag=plot_tag]
-;               [, plot_max=plot_max]
+;               [, reg_col_detectors=reg_col_detectors]
+;               [, reg_col_stride=reg_col_stride]
+;               [, reg_col_offset=reg_col_offset]
+;               [, /reg_rows]
+;               [, col_y_tolerance=col_y_tolerance]
+;               [, col_slope_delta_max=col_slope_delta_max]
+;               [, col_regression_max=col_regression_max]
+;               [, col_density_bin_width=col_density_bin_width]
+;               [, col_plot_tag=col_plot_tag]
+;               [, col_plot_max=col_plot_max]
+;               [, row_y_tolerance=row_y_tolerance]
+;               [, row_slope_delta_max=row_slope_delta_max]
+;               [, row_regression_max=row_regression_max]
+;               [, row_density_bin_width=row_density_bin_width]
+;               [, row_plot_tag=row_plot_tag]
+;               [, row_plot_max=row_plot_max]
 ;
 ; ARGUMENTS:
 ;    Inputs:
@@ -43,8 +57,8 @@
 ;       file_out: file containing adjusted channel data.
 ;
 ; KEYWORDS:
-;       rows_per_scan: number of rows in each scan in file_in. The default
-;         is 40.
+;       rows_per_scan: number of rows in each scan in file_in. Valid
+;         values are limited to 40 (the default), 20, or 10.
 ;       data_type: 2-character string specifying the data type of the data
 ;         if file in to be adjusted:
 ;           u1: unsigned 8-bit integer.
@@ -53,10 +67,6 @@
 ;           u4: unsigned 32-bit integer.
 ;           s4: signed 32-bit integer.
 ;           f4: 32-bit floating-point (default).
-;       regress_sensor: the 1-based sensor index indicating which sensor to
-;         use as the dependent variable when performing regressions.
-;         Use 0 to indicate that regressions should not be performed. Must
-;         be less than or equal to rows_per_scan. The default value is 20.
 ;       file_soze: file containing solar zenith values in 32-bit floating-point
 ;         degrees. Should have the same number of cols and scans as file_in.
 ;         Each input value is divided by the cosine of the corresponding
@@ -65,46 +75,96 @@
 ;         file should be read.
 ;       undo_soze: If set then each input value is multiplied by the cosine
 ;         of the corresponding solar zenith value after regressions are
-;         performed. If file_soze is a null string, then unod_soze is ignored.
+;         performed. If file_soze is a null string, then undo_soze is
+;         ignored.
+;       reg_col_detectors: Array of zero-based detector numbers to use for
+;         column regressions. If reg_col_detectors is -1 or is not
+;         specified, then no column regressions are performed.
+;       reg_col_stride: the stride value to use for performing column
+;         regressions. The default value of reg_col_stride is 4.
+;       reg_col_offset: the offset value to use for performing column
+;         regressions. The default value of reg_col_offset is 0.
+;       reg_rows: If set then row regressions are computed.
+;       NOTE: The keywords below are preceded by either col_ or row_
+;         indicating to which set of regressions they refer.
 ;       y_tolerance: the value to use after the first linear regression
-;           has been performed to find "outliers" that will be eliminated
-;           from the second linear regression. That is, after k and m have
-;           been determined from the first linear regression, the values
-;           y'(i) = k + m * x(i) are calculated. Then outliers are defined
-;           to be all points x(i) for which abs(y'(i) - y(i)) >= y_tolerance.
-;           Then a second regression is performed on the remaining x(i) after
-;           the outliers have been removed to determine the final k and m
-;           values. The default value of y_tolerance is 0.0.
-;           NOTE: If y_tolerance is 0.0, then no second linear regression
-;                 is performed.
+;         has been performed to find "outliers" that will be eliminated
+;         from the second linear regression. That is, after k and m have
+;         been determined from the first linear regression, the values
+;         y'(i) = k + m * x(i) are calculated. Then outliers are defined
+;         to be all points x(i) for which abs(y'(i) - y(i)) >= y_tolerance.
+;         Then a second regression is performed on the remaining x(i) after
+;         the outliers have been removed to determine the final k and m
+;         values. The default value of y_tolerance is 0.0.
+;         NOTE: If y_tolerance is 0.0, then no second linear regression
+;               is performed.
 ;       slope_delta_max: the outlier detection procedure described for
-;           y_tolerance is repeated until slope_delta =
-;           abs(slope - slope_old) / slope_old is less than or equal to
-;           slope_delta_max. The default value of slope_delta_max is 0.001.
-;           NOTE: If slope_delta_max is 0.0, then no third linear regression
-;                 or higher is performed.
+;         y_tolerance is repeated until slope_delta =
+;         abs(slope - slope_old) / slope_old is less than or equal to
+;         slope_delta_max. The default value of slope_delta_max is 0.001.
+;         NOTE: If slope_delta_max is 0.0, then no third linear regression
+;               or higher is performed.
 ;       regression_max: the outlier detection procedure is repeated a maximum
-;           of regression max total number of regressions.
-;           The default value of regression_max is 10.
+;         of regression max total number of regressions.
+;         The default value of regression_max is 10.
 ;       density_bin_width: the bin width used to create a weight map based on
-;           the density of the scatterplot. If density_bin_width is 0 (default)
-;           then all weights are set to 1 for the regressions.
-;       plot_tag: string used to name and label regression plot files. Plot
-;         files will be labelled plot_tag_xx.ps where xx is a 1-based sensor
-;         sensor index. No plot will be generated for regress_sensor. The
-;         default value of plot_tag is a null string indicating that no plots
-;         should be created. If regress_sensor is 0, then plot_tag is ignored.
+;         the density of the scatterplot. If density_bin_width is 0 (default)
+;         then all weights are set to 1 for the regressions.
+;       plot_tag: string used to name and label regression plot files.
+;         Row plot files will be labelled row_plot_tag_p_rr.ps where p is a
+;         zero-based pass index and rr is a zero-based regression index
+;         within the pass.
+;         The default value of plot_tag is a null string indicating
+;         that no plots should be created.
 ;       plot_max: maximum values to plot. Default is 0 meaning use the maximum
 ;         values in the data. if plot_tag is a null string, then plot_max is
 ;         ignored.
 ;
 ; EXAMPLE:
-;         modis_adjust, 5416, 47, $
-;                       'inst20020204_ref_ch01_5416_01880.img', $
-;                       'inst20020204_ref_ch01_5416_01880_adj.img', $
-;                       file_soze='instref20020204_soze_scaa_05416_00047_00000_40.img', $
-;                       y_tolerance=0.1, density_bin_width=0.01, $
-;                       plot_tag='inst20020204_ref_ch01', plot_max=1.5
+;       modis_adjust, $
+;         5416, 51, $
+;         'modis_inst_2001341_ref_ch01_5416_02040.img', $
+;         'modis_inst_2001341_ref_ch01_5416_02040_nor.img', $
+;         file_soze='modis_inst_2001341_soze_scaa_05416_00051_00000_40.img'
+;
+;       modis_adjust, $
+;         5416, 51, $
+;         'modis_inst_2001341_ref_ch01_5416_02040_nor.img', $
+;         'modis_inst_2001341_ref_ch01_5416_02040_adj.img', $
+;         reg_col_detectors=[28,29], $
+;         reg_col_offset=3, $
+;         /reg_rows, $
+;         col_y_tolerance=0.1, $
+;         col_density_bin_width=0.01, $
+;         col_plot_tag='modis_inst_2001341_ch01_col', $
+;         col_plot_max=1.5, $
+;         row_y_tolerance=0.1, $
+;         row_density_bin_width=0.01, $
+;         row_plot_tag='modis_inst_2001341_ch01_row', $
+;         row_plot_max=1.5
+;
+;       modis_adjust, $
+;         5416, 51, $
+;         'modis_inst_2001341_ref_ch02_5416_02040.img', $
+;         'modis_inst_2001341_ref_ch02_5416_02040_nor.img', $
+;         file_soze='modis_inst_2001341_soze_scaa_05416_00051_00000_40.img', $
+;         reg_col_detectors=0
+;
+;       modis_adjust, $
+;         5416, 51, $
+;         'modis_inst_2001341_ref_ch02_5416_02040_nor.img', $
+;         'modis_inst_2001341_ref_ch02_5416_02040_adj.img', $
+;         reg_col_detectors=[28,29], $
+;         reg_col_offset=0, $
+;         /reg_rows, $
+;         col_y_tolerance=0.1, $
+;         col_density_bin_width=0.01, $
+;         col_plot_tag='modis_inst_2001341_ch02_col', $
+;         col_plot_max=1.5, $
+;         row_y_tolerance=0.1, $
+;         row_density_bin_width=0.01, $
+;         row_plot_tag='modis_inst_2001341_ch02_row', $
+;         row_plot_max=1.5
 ;
 ; ALGORITHM:
 ;
@@ -114,15 +174,23 @@
 Pro modis_adjust, cols, scans, file_in, file_out, $
                   rows_per_scan=rows_per_scan, $
                   data_type=data_type, $
-                  regress_sensor=regress_sensor, $
-                  file_soze=file_soze, $
                   undo_soze=undo_soze, $
-                  y_tolerance=y_tolerance, $
-                  slope_delta_max=slope_delta_max, $
-                  regression_max=regression_max, $
-                  density_bin_width=density_bin_width, $
-                  plot_tag=plot_tag, $
-                  plot_max=plot_max
+                  reg_col_detectors=reg_col_detectors, $
+                  reg_col_stride=reg_col_stride, $
+                  reg_col_offset=reg_col_offset, $
+                  reg_rows=reg_rows, $
+                  col_y_tolerance=col_y_tolerance, $
+                  col_slope_delta_max=col_slope_delta_max, $
+                  col_regression_max=col_regression_max, $
+                  col_density_bin_width=col_density_bin_width, $
+                  col_plot_tag=col_plot_tag, $
+                  col_plot_max=col_plot_max, $
+                  row_y_tolerance=row_y_tolerance, $
+                  row_slope_delta_max=row_slope_delta_max, $
+                  row_regression_max=row_regression_max, $
+                  row_density_bin_width=row_density_bin_width, $
+                  row_plot_tag=row_plot_tag, $
+                  row_plot_max=row_plot_max
 
   epsilon = 1e-6
 
@@ -132,15 +200,24 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                 'cols, scans, file_in, file_out, ' + lf + $
                 '[, rows_per_scan=rows_per_scan] ' + lf + $
                 '[, data_type=data_type] ' +   lf + $
-                '[, regress_sensor=regress_sensor] ' + lf + $
                 '[, file_soze=file_soze] ' + lf + $
                 '[, /undo_soze] ' + lf + $
-                '[, y_tolerance=y_tolerance] ' + lf + $
-                '[, slope_delta_max=slope_delta_max] ' + lf + $
-                '[, regression_max=regression_max] ' + lf + $
-                '[, density_bin_width=density_bin_width] ' + lf + $
-                '[, plot_tag=plot_tag] ' + lf + $
-                '[, plot_max=plot_max]'
+                '[, reg_col_detectors=reg_col_detectors] ' + lf + $
+                '[, reg_col_stride=reg_col_stride] ' + lf + $
+                '[, reg_col_offset=reg_col_offset] ' + lf + $
+                '[, /reg_rows] ' + lf + $
+                '[, col_y_tolerance=col_y_tolerance] ' + lf + $
+                '[, col_slope_delta_max=col_slope_delta_max] ' + lf + $
+                '[, col_regression_max=col_regression_max] ' + lf + $
+                '[, col_density_bin_width=col_density_bin_width] ' + lf + $
+                '[, col_plot_tag=col_plot_tag] ' + lf + $
+                '[, col_plot_max=col_plot_max] ' + lf + $
+                '[, row_y_tolerance=row_y_tolerance] ' + lf + $
+                '[, row_slope_delta_max=row_slope_delta_max] ' + lf + $
+                '[, row_regression_max=row_regression_max] ' + lf + $
+                '[, row_density_bin_width=row_density_bin_width] ' + lf + $
+                '[, row_plot_tag=row_plot_tag] ' + lf + $
+                '[, row_plot_max=row_plot_max]'
 
   if n_params() ne 4 then $
     message, usage
@@ -149,81 +226,131 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     rows_per_scan = 40
   if n_elements(data_type) eq 0 then $
     data_type = 'f4'
-  if n_elements(regress_sensor) eq 0 then $
-    regress_sensor = 20
   if n_elements(file_soze) eq 0 then $
     file_soze = ''
   if n_elements(undo_soze) eq 0 then $
     undo_soze = 0
-  if n_elements(y_tolerance) eq 0 then $
-    y_tolerance = 0.0
-  if n_elements(slope_delta_max) eq 0 then $
-    slope_delta_max = 0.001
-  if n_elements(regression_max) eq 0 then $
-    regression_max = 10
-  if n_elements(density_bin_width) eq 0 then $
-    density_bin_width = 0
-  if n_elements(plot_tag) eq 0 then $
-    plot_tag = ''
-  if n_elements(plot_max) eq 0 then $
-    plot_max = 0
+  if n_elements(reg_col_detectors) eq 0 then $
+    reg_col_detectors = -1
+  if n_elements(reg_col_stride) eq 0 then $
+    reg_col_stride = 4
+  if n_elements(reg_col_offset) eq 0 then $
+    reg_col_offset = 0
+  if n_elements(reg_rows) eq 0 then $
+    reg_rows = 0
+  if n_elements(col_y_tolerance) eq 0 then $
+    col_y_tolerance = 0.0
+  if n_elements(col_slope_delta_max) eq 0 then $
+    col_slope_delta_max = 0.001
+  if n_elements(col_regression_max) eq 0 then $
+    col_regression_max = 10
+  if n_elements(col_density_bin_width) eq 0 then $
+    col_density_bin_width = 0
+  if n_elements(col_plot_tag) eq 0 then $
+    col_plot_tag = ''
+  if n_elements(col_plot_max) eq 0 then $
+    col_plot_max = 0
+  if n_elements(row_y_tolerance) eq 0 then $
+    row_y_tolerance = 0.0
+  if n_elements(row_slope_delta_max) eq 0 then $
+    row_slope_delta_max = 0.001
+  if n_elements(row_regression_max) eq 0 then $
+    row_regression_max = 10
+  if n_elements(row_density_bin_width) eq 0 then $
+    row_density_bin_width = 0
+  if n_elements(row_plot_tag) eq 0 then $
+    row_plot_tag = ''
+  if n_elements(row_plot_max) eq 0 then $
+    row_plot_max = 0
+
+  reg_col_detectors_count = n_elements(reg_col_detectors)
 
   print, 'modis_adjust:'
-  print, '  cols:             ', cols
-  print, '  scans:            ', scans
-  print, '  file_in:          ', file_in
-  print, '  file_out:         ', file_out
-  print, '  rows_per_scan:    ', rows_per_scan
-  print, '  data_type:        ', data_type
-  print, '  regress_sensor:   ', regress_sensor
-  print, '  file_soze:        ', file_soze
-  print, '  undo_soze:        ', undo_soze
-  print, '  y_tolerance:      ', y_tolerance
-  print, '  slope_delta_max:  ', slope_delta_max
-  print, '  regression_max:   ', regression_max
-  print, '  density_bin_width:', density_bin_width
-  print, '  plot_tag:         ', plot_tag
-  print, '  plot_max:         ', plot_max
+  print, '  cols:                 ', cols
+  print, '  scans:                ', scans
+  print, '  file_in:              ', file_in
+  print, '  file_out:             ', file_out
+  print, '  rows_per_scan:        ', rows_per_scan
+  print, '  data_type:            ', data_type
+  print, '  file_soze:            ', file_soze
+  print, '  undo_soze:            ', undo_soze
+  for i = 0, reg_col_detectors_count - 1 do $
+    print, '  reg_col_detectors[', i, ']: ', reg_col_detectors[i]
+  print, '  reg_col_stride:       ', reg_col_stride
+  print, '  reg_col_offset:       ', reg_col_offset
+  print, '  reg_rows:             ', reg_rows
+  print, '  col_y_tolerance:      ', col_y_tolerance
+  print, '  col_slope_delta_max:  ', col_slope_delta_max
+  print, '  col_regression_max:   ', col_regression_max
+  print, '  col_density_bin_width:', col_density_bin_width
+  print, '  col_plot_tag:         ', col_plot_tag
+  print, '  col_plot_max:         ', col_plot_max
+  print, '  row_y_tolerance:      ', row_y_tolerance
+  print, '  row_slope_delta_max:  ', row_slope_delta_max
+  print, '  row_regression_max:   ', row_regression_max
+  print, '  row_density_bin_width:', row_density_bin_width
+  print, '  row_plot_tag:         ', row_plot_tag
+  print, '  row_plot_max:         ', row_plot_max
 
-  if regress_sensor gt rows_per_scan then $
-    message, 'regress_sensor must be less than or equal to rows_per_scan' + $
-             usage
+  ; check for valid input
+
+  if (rows_per_scan ne 40) and $
+     (rows_per_scan ne 20) and $
+     (rows_per_scan ne 10) then $
+    message, 'rows_per_scan must be 40, 20, or 10'
+
+  for i = 0, reg_col_detectors_count - 1 do begin
+      if reg_col_detector[i] ge rows_per_scan then $
+        message, 'Each element of reg_col_detector ' + $
+                 'must be less than rows_per_scan' + $
+                 usage
+  endfor
+
+  if scans lt 2 then $
+    message, 'scans must be 2 or greater'
+
+  if (rows_per_scan mod 2) ne 0 then $
+    message, 'rows_per_scan must be even'
+
+  rows = scans * rows_per_scan
+  cells_per_scan = long(cols) * rows_per_scan
+  cells_per_swath = cells_per_scan * scans
 
   ; allocate arrays
 
   case data_type of
       'u1': begin
-          swath = bytarr(cols, rows_per_scan, scans)
+          swath = bytarr(cells_per_swath)
           bytes_per_element = 1
           min_out = 0.0
           max_out = 255.0
       end
       'u2': begin
-          swath = uintarr(cols, rows_per_scan, scans)
+          swath = uintarr(cells_per_swath)
           bytes_per_element = 2
           min_out = 0.0
           max_out = 65535.0
       end
       's2': begin
-          swath = intarr(cols, rows_per_scan, scans)
+          swath = intarr(cells_per_swath)
           bytes_per_element = 2
           min_out = -32768.0
           max_out = 32767.0
       end
       'u4': begin
-          swath = ulonarr(cols, rows_per_scan, scans)
+          swath = ulonarr(cells_per_swath)
           bytes_per_element = 4
           min_out = 0.0
           max_out = 4294967295.0
       end
       's4': begin
-          swath = lontarr(cols, rows_per_scan, scans)
+          swath = lonarr(cells_per_swath)
           bytes_per_element = 4
           min_out = -2147483648.0
           max_out = 2147483647.0
       end
       'f4': begin
-          swath = fltarr(cols, rows_per_scan, scans)
+          swath = fltarr(cells_per_swath)
           bytes_per_element = 4
       end
       else: message, 'invalid data_type' + usage
@@ -231,7 +358,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   type_code = size(swath, /type)
 
   if file_soze ne '' then $
-    soze = fltarr(cols, rows_per_scan, scans)
+    soze = fltarr(cells_per_swath)
 
   ; open, read, and close input files
 
@@ -263,180 +390,164 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       swath = temporary(swath) * soze
   endif
 
-  if regress_sensor gt 0 then begin
+  if reg_rows ne 0 then begin
 
-      ;  perform regression
+      ;  perform row regressions
 
-      n = long(cols) * scans
+      ;  compute the number of double-sided scans,
+      ;  the number of rows per double-sided scan, and
+      ;  the number of cells for a single-side detector 
 
-      ;  x is all the data for the regress_sensor
+      ds_scans = scans / 2
+      rows_per_ds_scan = 2 * rows_per_scan
+      cells_per_ss_det = cols * ds_scans
 
-      x = reform(swath[*, regress_sensor - 1, *], 1, n)
+      ;  if scans is odd, then increment the number of double scans,
+      ;  duplicate the penultimate scan, and concatenate it onto the end
 
-      ;  if using weights, then compute y density parameters
-
-      if density_bin_width gt 0 then begin
-          x_max = max(x, min=x_min)
-          x_bin_count = floor((x_max - x_min) / density_bin_width) + 1L
-          x_factor = x_bin_count / (x_max - x_min)
+      if (scans mod 2) eq 1 then begin
+          ds_scans = ds_scans + 1
+          ipen_first = cells_per_scan * (scans - 2)
+          ipen_last = ipen_first + cells_per_scan - 1
+          ipen = swath[ipen_first:ipen_last]
+          swath = [temporary(swath), ipen]
+          ipen = 0
       endif
 
-      ;  process one sensor at a time
+      ; reform swath so that it holds double-sided scans
 
-      for sensor = 1, rows_per_scan do begin
-          if sensor ne regress_sensor then begin
+      swath = reform(swath, cols, rows_per_ds_scan, ds_scans, /overwrite)
 
-              ;  y is all the data for the sensor
+      ; initialize slope and intercept arrays
 
-              y = reform(swath[*, sensor - 1, *], n)
-              slope = 1.0
-              intercept = 0.0
-              status = 0L
+      slope = make_array(rows_per_ds_scan, /float, value=1.0)
+      intcp = make_array(rows_per_ds_scan, /float, value=0.0)
 
-              ;  if using weights, then compute y density parameters
-
-              if density_bin_width gt 0 then begin
-                  y_max = max(y, min=y_min)
-                  y_bin_count = floor((y_max - y_min) / density_bin_width) + 1L
-                  y_factor = y_bin_count / (y_max - y_min)
-                  h = long((x - x_min) * x_factor) * y_bin_count + $
-                      long((y - y_min) * y_factor)
-                  h = histogram(h, reverse_indices=r)
-                  weight = fltarr(n)
-                  for i = 0L, n_elements(h) - 1 do begin
-                      if (r[i] ne r[i+1]) then begin
-                          weight[r[r[i] : r[i+1] - 1]] = h[i]
-                      endif
-                  endfor
-                  h = 0
-                  r = 0
-                  i = where(weight lt epsilon, count)
-                  if count gt 0 then $
-                    weight[i] = epsilon
-                  i = 0
-                  weight = 1.0 / temporary(weight)
-                  slope = regress(x, y, const=intercept, status=status, $
-                                  measure_errors=weight)
+      reg_count = rows_per_ds_scan
+      case rows_per_scan of
+          40: pass_count = 5
+          20: pass_count = 4
+          10: pass_count = 3
+      endcase
+      for pass_ctr = 0, pass_count - 1 do begin
+          mean_count = reg_count / 2
+          reg_count_mod_2 = reg_count mod 2
+          if reg_count_mod_2 eq 1 then $
+            mean_count = mean_count - 1
+          reg_ctr = 0
+          for mean_ctr = 0, mean_count - 1 do begin
+              vectors_per_mean = 2
+              if (reg_count_mod_2 eq 1) and $
+                 ((mean_ctr mod 2) eq 0) then $
+                vectors_per_mean = 3
+              if pass_ctr eq 0 then begin
+                  if mean_ctr eq 0 then begin
+                      idx_first = reg_ctr
+                      idx_last  = reg_ctr + vectors_per_mean - 1
+                  endif else begin
+                      idx_first = [idx_first, reg_ctr]
+                      idx_last  = [idx_last,  reg_ctr + vectors_per_mean - 1]
+                  endelse
               endif else begin
-                  slope = regress(x, y, const=intercept, status=status)
+                  if mean_ctr eq 0 then begin
+                      idx_first = idx_first_old[reg_ctr]
+                      idx_last  = idx_last_old[reg_ctr + vectors_per_mean - 1]
+                  endif else begin
+                      idx_first = [idx_first, $
+                                   idx_first_old[reg_ctr]]
+                      idx_last  = [idx_last, $
+                                   idx_last_old[reg_ctr + vectors_per_mean - 1]]
+                  endelse
               endelse
-              regression_count = 1
-              if (status eq 0) and (y_tolerance gt 0) then $
-                final = '' $
-              else $
-                final = ' final'
-              annot = string('sensor: ', sensor, $
-                             '  regress: ', regression_count, $
-                             '  status: ', status, $
-                             '  intercept: ', intercept, $
-                             '  slope: ', slope[0], final, $
-                             format='(a,i2,a,i2,a,i2,a,e12.5,a,f8.5,a)')
-              print, annot
-              if final eq '' then begin
+              weight_per_vector = 1.0 / vectors_per_mean
+              mean_this = 0
+              vectors = fltarr(cells_per_ss_det, vectors_per_mean)
+              for vec_ctr = 0, vectors_per_mean - 1 do begin
+                  if mean_ctr eq 0 then $
+                    mean_old_this = reform(swath[*, reg_ctr + vec_ctr, *], $
+                                           1, cells_per_ss_det) $
+                  else $
+                    mean_old_this = reform(mean_old[*, reg_ctr + vec_ctr], $
+                                           1, cells_per_ss_det)
+                  mean_this = mean_old_this * weight_per_vector + mean_this
+                  vectors[*, vec_ctr] = reform(mean_old_this, /overwrite)
+              endfor ; vec_ctr
+              for vec_ctr = 0, vectors_per_mean - 1 do begin
+                  mean_old_this = reform(vectors[*, vec_ctr])
+                  plot_tag = row_plot_tag
+                  if plot_tag ne '' then $
+                    plot_tag = string(plot_tag + '_', pass_ctr, '_', reg_ctr, $
+                                      format='(a, i1.1, a, i2.2)')
+                  xtitle=string('pass_ctr: ', pass_ctr, $
+                                'mean_ctr: ', mean_ctr, $
+                                format='(a, i2.2, a, i2.2)')
+                  ytitle=string('reg_ctr: ', reg_ctr, $
+                                format='(a, i2.2)')
+                  modis_regress, mean_this, mean_old_this, $
+                                 slope_this, intcp_this, $
+                                 y_tolerance=row_y_tolerance, $
+                                 slope_delta_max=row_slope_delta_max, $
+                                 regression_max=row_regression_max, $
+                                 density_bin_width=row_density_bin_width, $
+                                 plot_tag=plot_tag, $
+                                 plot_max=row_plot_max, $
+                                 plot_titles=[xtitle,ytitle]
 
-                  ; compare original y values to computed y values and
-                  ; select only those within y_tolerance
+                  ; accumulate the new slope and intercept values
+                  ; into what we have so far for each ss detector
+                  ; that contributed to this mean
 
-                  ; keep iterating until the change in slope is less than
-                  ; slope_delta_max or until the number of iterations exceeds
-                  ; regression_max
+                  if pass_ctr eq 0 then begin
+                      slope[reg_ctr] = slope_this
+                      intcp[reg_ctr] = intcp_this
+                  endif else begin
+                      for idx = idx_first_old[mean_ctr], $
+                                idx_last_old[mean_ctr] do begin
+                          slope[idx] = slope[idx] * slope_this
+                          intcp[idx] = intcp[idx] * slope_this + intcp_this
+                      endfor
+                  endelse
+                  reg_ctr = reg_ctr + 1
+              endfor ; vec_ctr
+              vectors = 0
+              mean_old_this = 0
+              if mean_ctr eq 0 then begin
+                  mean = temporary(mean_this)
+              endif else begin
+                  mean = [mean, temporary(mean_this)]
+              endelse
+          endfor ; mean_ctr
+          mean_old = reform(mean, cells_per_ss_det, mean_count, /overwrite)
+          idx_first_old = temporary(idx_first)
+          idx_last_old  = temporary(idx_last)
+          pass_ctr = pass_ctr + 1
+          reg_count = mean_count
+      endfor ; pass_ctr
+      mean = 0
+      mean_old = 0
 
-                  repeat begin
-                      slope_old = slope[0]
-                      i = where(abs(y - (slope[0] * x + intercept)) lt $
-                                y_tolerance, n2)
-                      if n2 eq 0 then begin
-                          slope = 1.0
-                          intercept = 0.0
-                          regression_count = regression_max
-                      endif else begin
-                          x2 = reform(x[i], 1, n2)
-                          y2 = y[i]
-                          status = 0L
-                          slope = 1.0
-                          intercept = 0.0
-                          if density_bin_width gt 0 then begin
-                              weight2 = weight[i]
-                              slope = regress(x2, y2, const=intercept, $
-                                              status=status, $
-                                              measure_errors=weight2)
-                          endif else begin
-                              slope = regress(x2, y2, const=intercept, $
-                                              status=status)
-                          endelse
-                          i = 0
-                          if (status ne 0) then begin
-                              regression_count = regression_max
-                          endif
-                      endelse
-                      regression_count = regression_count + 1
-                      if abs(slope_old) gt epsilon then $
-                        slope_delta = abs(slope[0] - slope_old) / slope_old $
-                      else $
-                        slope_delta = 0.0
-                      if (slope_delta_max eq 0) or $
-                        (slope_delta le slope_delta_max) or $
-                        (regression_count ge regression_max) then $
-                        final = ' final' $
-                      else $
-                        final = ''
-                      annot = string('sensor: ', sensor, $
-                                     '  regress: ', regression_count, $
-                                     '  status: ', status, $
-                                     '  intercept: ', intercept, $
-                                     '  slope: ', slope[0], $
-                                     '  slope_delta: ', slope_delta, final, $
-                                     format=$
-                                     '(a,i2,a,i2,a,i2,a,e12.5,2(a,f8.5),a)')
-                      print, annot
-                  endrep until (final ne '')
-                  x2 = 0
-                  y2 = 0
-              endif  ; if (status eq 0) and (y_tolerance gt 0)
-              weight = 0
+      ; apply slope and intercept corrections for each ss detector
 
-              if plot_tag ne '' then begin
+      for ss_det_ctr = 0, rows_per_ds_scan - 1 do begin
+          slope_this = slope[ss_det_ctr]
+          if abs(slope_this) ge epsilon then begin
+              y = reform(swath[*, ss_det_ctr, *])
+              swath[*, ss_det_ctr, *] = $
+                (y - intercept[ss_det_ctr]) / slope_this
+          endif
+      endfor ; ss_det_ctr
 
-                  ;  create the scatter plot for this sensor
+      ; reform the swath array back into its original structure
 
-                  file_plot = string(plot_tag + '_', sensor, '.ps', $
-                                     format='(a, i2.2, a)')
-                  mydev = !D.NAME
-                  set_plot, 'ps'
-                  
-                  device, filename=file_plot, /landscape, /color, $
-                    bits_per_pixel=8
-                  device, xsize=10.0, ysize=7.5, /inches
-                  x_min = 0
-                  if plot_max eq 0 then $
-                    plot_max = max(x)
-                  plot, x, y, psym=3, xstyle=1, ystyle=1, charsize=1.0, $
-                    xrange=[x_min, plot_max], yrange=[x_min, plot_max], $
-                    title=plot_file, $
-                    xtitle=string('sensor: ', regress_sensor, $
-                                  format='(a, i2.2)'), $
-                    ytitle=string('sensor: ', sensor, $
-                                  format='(a, i2.2)')
-                  xmm = [x_min, plot_max]
-                  ymm = slope[0] * xmm + intercept
-                  oplot, xmm, ymm, psym=0, color=125
-                  if y_tolerance gt 0 then begin
-                      ymm = slope[0] * xmm + intercept + y_tolerance
-                      oplot, xmm, ymm, psym=0, color=125
-                      ymm = slope[0] * xmm + intercept - y_tolerance
-                      oplot, xmm, ymm, psym=0, color=125
-                  endif
-                  xyouts, .12, .92, annot, charsize=1.0, /normal
-                  annot = string('y_tolerance: ', y_tolerance)
-                  xyouts, .12, .89, annot, charsize=1.0, /normal
-                  annot = string('regression count: ', regression_count)
-                  xyouts, .12, .86, annot, charsize=1.0, /normal
-              endif
-              if abs(slope[0]) ge epsilon then $
-                swath[*, sensor - 1, *] = (y - intercept) / slope[0]
-          endif ; if sensor ne regress_sensor
-      endfor ; for sensor = 1, rows_per_scan
-  endif ; if regress_sensor eq 0
+      swath = reform(swath, cols, rows_per_scan, ds_scans * 2, /overwrite)
+
+      ; remove bogus scan at end if necessary
+
+      if (scans mod 2) eq 1 then $
+        swath = temporary(swath[*, *, 0:scans - 2])
+
+  endif  ; if reg_rows ne 0
+
 
   ;  undo soze normalization if required
 
