@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.50 2004/12/08 19:07:06 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.51 2004/12/08 19:33:41 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.50 2004/12/08 19:07:06 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.51 2004/12/08 19:33:41 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -1012,7 +1012,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   i = where(swath gt max_out, count)
   if count gt 0 then $
     swath[i] = max_out
-  swath = fix(round(temporary(swath)), type=type_code)
+  swath = fix(round(temporary(swath)), type=type_code_out)
 
 
   ;  make min and max values the same as on input
