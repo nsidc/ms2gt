@@ -4,7 +4,7 @@
 # 12-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /export/data/ms2gth/Makefile,v 1.1 2001/04/13 18:04:59 haran Exp haran $
+RCSID = $Header: /export/data/ms2gth/Makefile,v 1.2 2001/04/13 18:35:48 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -27,6 +27,7 @@ LIBDIR = $(TOPDIR)/lib
 SRCDIR = $(TOPDIR)/src
 
 NAVDIR = $(SRCDIR)/fornav
+GSZDIR = $(SRCDIR)/gridsize
 IDLDIR = $(SRCDIR)/idl
 LL2DIR = $(SRCDIR)/ll2cr
 MAPDIR = $(SRCDIR)/maps
@@ -47,6 +48,7 @@ TLIBDIR = $(TARDIR)/lib
 TSRCDIR = $(TARDIR)/src
 
 TNAVDIR = $(TSRCDIR)/fornav
+TGSZDIR = $(TSRCDIR)/gridsize
 TIDLDIR = $(TSRCDIR)/idl
 TLL2DIR = $(TSRCDIR)/ll2cr
 TMAPDIR = $(TSRCDIR)/maps
@@ -98,14 +100,15 @@ SRCMAKE	= $(SRCDIR)/Makefile
 #------------------------------------------------------------------------
 
 NAVMAKE = $(NAVDIR)/Makefile
+GSZMAKE = $(GSZDIR)/Makefile
 LL2MAKE = $(LL2DIR)/Makefile
 MAPMAKE = $(MAPDIR)/Makefile
-
 
 L1BSRCS = $(L1BDIR)/*.pro *.txt
 UTLSRCS = $(UTLDIR)/*.pro
 
 NAVSRCS = $(NAVMAKE) $(NAVDIR)/*.c
+GSZSRCS = $(GSZMAKE) $(GSZDIR)/*.c
 IDLSRCS = $(L1BSRCS) $(UTLSRCS)
 LL2SRCS = $(LL2MAKE) $(LL2DIR)/*.c
 MAPSRCS = $(MAPMAKE) $(MAPDIR)/*.c $(MAPDIR)/*.h
@@ -130,13 +133,15 @@ tar:
 	- $(RMDIR) $(TARDIR)
 	$(MKDIR) $(TARDIR)
 	$(MKDIR) $(TBINDIR) $(TDOCDIR) $(TGRDDIR) $(TINCDIR) $(TLIBDIR)
-	$(MKDIR) $(TSRCDIR) $(TNAVDIR) $(TLL2DIR) $(TMAPDIR) $(TSCTDIR)
+	$(MKDIR) $(TSRCDIR)
+	$(MKDIR) $(TNAVDIR) $(TGSZDIR) $(TLL2DIR) $(TMAPDIR) $(TSCTDIR)
 	$(MKDIR) $(TIDLDIR) $(TL1BDIR) $(TUTLDIR)
 	$(CP) $(TOPS) $(TARDIR)
 	$(CP) $(DOCS) $(TDOCDIR)
 	$(CP) $(HDRS) $(TINCDIR)
 	$(CP) $(SRCMAKE) $(TSRCDIR)
 	$(CP) $(NAVSRCS) $(TNAVDIR)
+	$(CP) $(GSZSRCS) $(TGSZDIR)
 	$(CP) $(L1BSRCS) $(TL1BDIR)
 	$(CP) $(UTLSRCS) $(TUTLDIR)
 	$(CP) $(LL2SRCS) $(TLL2DIR)
