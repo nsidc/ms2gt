@@ -45,13 +45,13 @@ Suppose we want to put some MODIS 250 m Level 1b swath data covering all
 of Greenland into the same grid used in <a href="tutorial_1.html">Tutorial
 1</a>, except that we want to change the resolution of the grid from 1.25
 km to 250 m. We want to grid reflective channels 1 and 2, which are the
-only MODIS channels available at 250m. We need to order <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+only MODIS channels available at 250m. We need to order <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM.shtml">MOD02QKM</a>
 data; however, as we can see in <a href="index.html#datasets">Supported
-Data Sets</a>, the lat-lon data are stored at only 1 km resolution in <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+Data Sets</a>, the lat-lon data are stored at only 1 km resolution in <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM.shtml">MOD02QKM</a>
 granules. Therefore, <a href="index.html#mod02">mod02.pl</a> will need
-to interpolate the 1 km lat-lon data in the <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
-granules to 250 m resolution. There is no need to work with <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
-granules since the lat-lon data are also at 1 km resolution in <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+to interpolate the 1 km lat-lon data in the <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM.shtml">MOD02QKM</a>
+granules to 250 m resolution. There is no need to work with <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03.shtml">MOD03</a>
+granules since the lat-lon data are also at 1 km resolution in <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03.shtml">MOD03</a>
 granules and we're not gridding any ancillary data.
 <p>NOTE: To run this example, you'll need a machine with at least 750 MB
 of memory and about 1.5 GB of free disk space.
@@ -59,11 +59,11 @@ of memory and about 1.5 GB of free disk space.
 <a NAME="searching"></a>Searching for the Data</h2>
 Let's assume that we want to use data from the same date and time as in
 <a href="tutorial_1.html">Tutorial
-1</a>, except that this time we want to search for <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
-granules rather than <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD021KM_L1B.shtml">MOD021KM</a>
-and <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+1</a>, except that this time we want to search for <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM.shtml">MOD02QKM</a>
+granules rather than <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD021KM.shtml">MOD021KM</a>
+and <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03.shtml">MOD03</a>
 granules. We use the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>
-to order two <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+to order two <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM.shtml">MOD02QKM</a>
 granules acquired on June 1, 2000 at 1445 and 1450 that appear to cover
 Greenland. You can use the following values for performing the search using
 the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>:
@@ -124,7 +124,7 @@ data.</li>
 
 <li>
 latlon_src is "Q" indicating that&nbsp; the 1 km latitude and longitude
-data in the <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+data in the <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM.shtml">MOD02QKM</a>
 files should be used.</li>
 
 <li>
@@ -147,7 +147,7 @@ Create a text file called listfile.txt in the tutorial_2 directory containing
 the following two lines:
 <p><tt>MOD02QKM.A2000153.1445.002.2000156075718.hdf</tt>
 <br><tt>MOD02QKM.A2000153.1450.002.2000156075717.hdf</tt>
-<p>Note that we list the <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+<p>Note that we list the <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM.shtml">MOD02QKM</a>
 files to be gridded.
 <h2>
 <a NAME="gpdfile"></a>Creating the gpd and mpp files</h2>
@@ -163,7 +163,7 @@ grid cells per map unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <br><tt>1949.5&nbsp; -250.5&nbsp; map origin column,row</tt>
 <p>We wish now to create Gl0250.gpd which will specify the same grid but
 at 250 m resolution rather than 1.25 km. The mpp file will be the same,
-namely <a href="http://nsidc.org/NASA/GUIDE/EASE/N200correct.mpp">N200correct.mpp</a>.
+namely <a href="http://nsidc.org/data/grids/N200correct.mpp">N200correct.mpp</a>.
 Note that 1250 / 250 = 5, so the number of columns and rows in Gl0250.gpd
 will be 5 * 1860 = 9300 columns and 5 * 1740 = 8700 rows. The grid cells
 per map unit will be 5 * 160 = 800. The map origin column will be 5 * (1949.5
@@ -244,10 +244,10 @@ script runs various IDL and C programs. In this example, the programs include:
 <ol>
 <li>
 extract_latlon - an IDL procedure for extracting latitude and longitude
-data from a MOD02 or <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+data from a MOD02 or <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03.shtml">MOD03</a>
 file. This program calls another IDL procedure, modis_ancillary_read. In
 this example, extract_latlon is called twice, once for each of the two
-<a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+<a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM.shtml">MOD02QKM</a>
 files. Two binary floating-point files are created per call containing
 latitude and longitude data, respectively. The <a href="index.html#mod02">mod02.pl</a>
 script concatenates the two latitude files and the two longitude files
@@ -280,7 +280,7 @@ script then deletes the pre-interpolated column and row files.</li>
 extract_chan - an IDL procedure for extracting channel data from a MOD02
 file. This program calls another IDL procedure, modis_level1b_read. In
 this example, extract_chan is called two times, once for each of the two
-<a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+<a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM.shtml">MOD02QKM</a>
 files; on each call, channel 1 or channel 2 is extracted, and the result
 is converted to reflectance. One binary floating-point file is created
 per call containing the channel data. The <a href="index.html#mod02">mod02.pl</a>
@@ -315,13 +315,13 @@ binary floating-point values (9300 * 8700 * 4 = 323640000 bytes).
 <a href="tutorial_1.html#examining">Tutorial
 1</a>.
 <p>
-<hr><font size=-1>Last updated: May 31, 2001 by</font>
+<hr><font size=-1>Last updated: January 2, 2002 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>
 <br><font size=-1>University of Colorado</font>
 <br><font size=-1>Boulder, CO 80309-0449</font>
 <br><font size=-1>303-492-1847</font>
-<br><font size=-1><a href="mailto:tharan@colorado.edu">tharan@colorado.edu</a></font>
+<br><font size=-1><a href="mailto:tharan@nsidc.org">tharan@nsidc.org</a></font>
 </body>
 </html>
