@@ -1,10 +1,10 @@
 ;*========================================================================
-;* extract_latlon.pro - extract latitude and longitude from a level1b
-;                       modis file
+;* extract_latlon.pro - extract latitude and longitude from a mod02 or
+;                       mod03 file
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_latlon.pro,v 1.4 2001/01/10 00:45:26 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/extract_latlon.pro,v 1.5 2001/01/29 23:53:35 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -17,7 +17,7 @@
 ;	Modis.
 ;
 ; CALLING SEQUENCE:
-;       extract_latlon, hdf_file
+;       extract_latlon, hdf_file, tag
 ;
 ; ARGUMENTS:
 ;
@@ -30,30 +30,27 @@
 ; REFERENCE:
 ;-
 
-PRO extract_latlon, hdf_file
+PRO extract_latlon, hdf_file, tag
 
-  usage = 'usage: extract_latlon, hdf_file'
+  usage = 'usage: extract_latlon, hdf_file, tag'
 
-  if n_params() ne 1 then $
+  if n_params() ne 2 then $
     message, usage
 
   print, 'extract_latlon:'
   print, '  hdf_file:       ', hdf_file
 
-  channel = 1
-  modis_level1b_read, hdf_file, channel, image, /raw, $
-                      latitude=lat, longitude=lon
+  ancillary = 'none'
+  modis_ancillary_read, hdf_file, ancillary, image, $
+                        latitude=lat, longitude=lon
   lat_dimen = size(lat, /dimensions)
   cols = lat_dimen[0]
   rows = lat_dimen[1]
-  image = 0
-  ext_pos = strpos(hdf_file, '.hdf')
-  filestem = strmid(hdf_file, 0, ext_pos)
   cols_string = string(cols, format='(I5.5)')
   rows_string = string(rows, format='(I5.5)')
-  lat_file_out = filestem + '_latf_' + $
+  lat_file_out = tag + '_latf_' + $
                  cols_string + '_' + rows_string + '.img'
-  lon_file_out = filestem + '_lonf_' + $
+  lon_file_out = tag + '_lonf_' + $
                  cols_string + '_' + rows_string + '.img'
   openw, lat_lun, lat_file_out, /get_lun
   openw, lon_lun, lon_file_out, /get_lun
