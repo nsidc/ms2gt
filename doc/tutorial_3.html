@@ -27,7 +27,7 @@ Tutorial 3: Gridding 500 m Snow Cover Data over Colorado Using mod10_l2.pl</h1>
 <a href="#listfile">Creating the listfile</a></li>
 
 <li>
-<a href="#gpdfile">Creating the *.gpd and *.mpp files</a></li>
+<a href="#gpdfile">Creating the gpd and mpp files</a></li>
 
 <li>
 <a href="#latlonlistfile">Creating the latlonlistfile</a></li>
@@ -48,14 +48,16 @@ due north towards the top of the grid. We want the grid resolution to be
 500 m and we want to use a spherical earth radius value of 6370.997 km.
 We want the upper left corner of the grid to be at about 44 N 110 W and
 the lower right corner of the grid to be at about 36 N 100 W. We want to
-grid all available MOD10_L2 "channels." These include channel 1 Snow Cover
-and channel 2 Snow Cover Pixel QA. We could simply order MOD10_L2 data;
-however, as we can see in <a href="index.html#datasets">Supported Data
-Sets</a>, the latlon data are stored at only 5 km resolution in MOD10_L2
-granules. We could have <a href="index.html#mod10_l2_usage">mod10_l2.pl</a>
-work with only the MOD10_L2 granules (i.e. by setting latlonlistfile to
-"none"); however we decide to order the corresponding MOD03 granules as
-well in order to minimize interpolation error.
+grid all available <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+"channels." These include channel 1 Snow Cover and channel 2 Snow Cover
+Pixel QA. We could simply order <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+data; however, as we can see in <a href="index.html#datasets">Supported
+Data Sets</a>, the latlon data are stored at only 5 km resolution in <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+granules. We could have <a href="index.html#mod10_l2">mod10_l2.pl</a> work
+with only the <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+granules (i.e. by setting latlonlistfile to "none"); however we decide
+to order the corresponding <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+granules as well in order to minimize interpolation error.
 <p>NOTE: To run this example, you'll need a machine with at least 100 MB
 of memory and at least 300 MB of free disk space.
 <h2>
@@ -63,10 +65,11 @@ of memory and at least 300 MB of free disk space.
 Let's assume that we happen to know that the afternoon of September 25,
 2000 was fairly clear over Colorado and that there was a significant amount
 of snow on the ground, so we use the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>
-to order two MOD10_L2 granules and the corresponding two MOD03 granules
-acquired on September 25, 2000 at 1745 and 1750 that appear to cover Colorado
-and the neighboring region. You can use the following values for performing
-the search using the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>:
+to order two <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+granules and the corresponding two <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+granules acquired on September 25, 2000 at 1745 and 1750 that appear to
+cover Colorado and the neighboring region. You can use the following values
+for performing the search using the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>:
 <p>Data Set
 <br><tt>MODIS/TERRA SNOW COVER 5-MIN L2 SWATH 500M</tt>
 <br><tt>MODIS/TERRA GEOLOCATION FIELDS 5-MIN L1A SWATH 1KM</tt>
@@ -97,7 +100,7 @@ Create a text file in the tutorial_3 directory called colo_2000269_1745.csh
 containing the following line:
 <p><tt>mod10_l2.pl . colo_2000269_1745 listfile.txt Colorado500.gpd 12
 latlonlist.txt</tt>
-<p>This command specifies the following information (see <a href="index.html#mod10_l2_usage">mod10_l2.pl</a>):
+<p>This command specifies the following information (see <a href="index.html#mod10_l2">mod10_l2.pl</a>):
 <ul>
 <li>
 dirinout is "." indicating that the current directory in effect when colo_2000269_1745.csh
@@ -105,27 +108,27 @@ is invoked will contain the input and output files.</li>
 
 <li>
 tag is "colo_2000269_1745" indicating that all output filenames containing
-gridded data created by <a href="index.html#mod10_l2_usage">mod10_l2.pl</a>
-will begin with the string "colo_2000269_1745".</li>
+gridded data created by <a href="index.html#mod10_l2">mod10_l2.pl</a> will
+begin with the string "colo_2000269_1745".</li>
 
 <li>
-listfile is "listfile.txt" containing a list of the MOD10_L2 files to be
-processed (see <a href="#listfile">Creating the listfile</a>).</li>
+listfile is "listfile.txt" containing a list of the <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+files to be processed (see <a href="#listfile">Creating the listfile</a>).</li>
 
 <li>
 gpdfile is "Colorado500.gpd" containing a specification of the grid and
 its associated map projection to use in gridding the data (see <a href="#gpdfile">Creating
-the *.gpd and *.mpp files</a>).</li>
+the gpd and mpp files</a>).</li>
 
 <li>
 chanlist is "12" specifying that both channels 1 (Snow Cover) and 2 (Snow
 Cover PixelQA) should be gridded.</li>
 
 <li>
-latlonlistfile is "latlonlist.txt" containing a list of the MOD03 files
-whose latitude and longitude data should be used in place of the latlon
-data in the corresponding MOD10_L2 files in listfile.txt (See <a href="#latlonlistfile">Creating
-the latlonlistfile</a>).</li>
+latlonlistfile is "latlonlist.txt" containing a list of the <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+files whose latitude and longitude data should be used in place of the
+latlon data in the corresponding <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+files in listfile.txt (See <a href="#latlonlistfile">Creating the latlonlistfile</a>).</li>
 
 <li>
 keep is not specified, so the default value of "0" is used indicating that
@@ -144,19 +147,20 @@ Create a text file called listfile.txt in the tutorial_3 directory containing
 the following two lines:
 <p><tt>MOD10_L2.A2000269.1745.002.2000290231013.hdf</tt>
 <br><tt>MOD10_L2.A2000269.1750.002.2000290231230.hdf</tt>
-<p>Note that we list the MOD10_L2 files to be gridded.
+<p>Note that we list the <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+files to be gridded.
 <h2>
-<a NAME="gpdfile"></a>Creating the *.gpd and *.mpp files</h2>
+<a NAME="gpdfile"></a>Creating the gpd and mpp files</h2>
 See <a href="http://nsidc.org/NASA/GUIDE/docs/reference_documents/ppgc.html#parameters">Points,
-Pixels, Grids, and Cells</a> for a description of the *.gpd and *.mpp file
+Pixels, Grids, and Cells</a> for a description of the gpd and mpp file
 formats used by the mapx library in defining a grid and its associated
-map projection. In the previous two tutorials, we modified existing *.gpd
-files and used an existing *.mpp file (namely <a href="http://nsidc.org/NASA/GUIDE/EASE/N200correct.mpp">N200correct.mpp</a>)
-that specified EASE-Grid projections. Here we are going to create *.gpd
-and *.mpp files from scratch. We'll start with creating the *.mpp file,
-which we'll call Colorado.mpp, in the ms2gt/grids directory (or, if you
-don't want to type it in, copy Colorado.mpp from the ms2gt/tutorial_3 directory
-to the ms2gt/grids directory):
+map projection. In the previous two tutorials, we modified existing gpd
+files and used an existing mpp file (namely <a href="http://nsidc.org/NASA/GUIDE/EASE/N200correct.mpp">N200correct.mpp</a>)
+that specified EASE-Grid projections. Here we are going to create gpd and
+mpp files from scratch. We'll start with creating the mpp file, which we'll
+call Colorado.mpp, in the ms2gt/grids directory (or, if you don't want
+to type it in, copy Colorado.mpp from the ms2gt/tutorial_3 directory to
+the ms2gt/grids directory):
 <p><tt>Azimuthal Equal-Area</tt>
 <br><tt>40.0&nbsp;&nbsp;&nbsp; -105.0&nbsp; lat0 lon0</tt>
 <br><tt>0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -188,8 +192,8 @@ the top of the map.</li>
 
 <li>
 The fourth line specifies an arbitrary scale for the map as opposed to
-the grid, which will be defined by the *.gpd file as grid cells per map
-unit. Here we define a map unit to be 100 km.</li>
+the grid, which will be defined by the gpd file as grid cells per map unit.
+Here we define a map unit to be 100 km.</li>
 
 <li>
 The fifth line specifies the center of the map which is usually (but not
@@ -200,7 +204,7 @@ the map projection origin, namely 40 N 105 W.</li>
 The next five lines (the sixth through tenth lines) specify parameters
 that would be useful to programs that produce graphic overlays (see <a href="http://nsidc.org/NASA/GUIDE/docs/reference_documents/ppgc.html#parameters">Points,
 Pixels, Grids, and Cells</a>). They are not used by the MS2GT software,
-but they need to be present in the *.mpp file as place holders.</li>
+but they need to be present in the mpp file as place holders.</li>
 
 <li>
 The eleventh line, if present, specifies the equatorial radius to use instead
@@ -208,11 +212,11 @@ of the default 6371.228 km. Here we specify 6370.997 km, which happens
 to be the default radius used by the <a href="http://edcwww.cr.usgs.gov/programs/sddm/lasdist/contrib/gctpdisclaimer.html">General
 Cartographic Transformation Package (GCTP)</a>.</li>
 </ul>
-In preparing the *.gpd file which will define our grid, we will need to
-know following:
+In preparing the gpd file which will define our grid, we will need to know
+following:
 <ul>
 <li>
-The name of the *.mpp file which will define our map, namely Colorado.mpp.</li>
+The name of the mpp file which will define our map, namely Colorado.mpp.</li>
 
 <li>
 The number of columns and rows. We don't know these yet, but we do know:</li>
@@ -249,9 +253,9 @@ are measured relative to the center of the upper left cell, it turns out
 that the grid cell coordinates of the center of the map are (1700 columns
 / 2) - 0.5 = column 849.5 and (1776 rows / 2) - 0.5 = row 887.5.</li>
 </ul>
-We now have all the information we need to create the *.gpd file which
-we'll call Colorado500.gpd in the ms2gt/grids directory (or, if you don't
-want to type it in, copy Colorado500.gpd from the ms2gt/tutorial_3 directory
+We now have all the information we need to create the gpd file which we'll
+call Colorado500.gpd in the ms2gt/grids directory (or, if you don't want
+to type it in, copy Colorado500.gpd from the ms2gt/tutorial_3 directory
 to the ms2gt/grids directory):
 <p><tt>Colorado.mpp&nbsp;&nbsp;&nbsp; map projection parameters&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # azimuthal equal area</tt>
@@ -296,33 +300,38 @@ Create a text file in the tutorial_3 directory called latlonlist.txt containing
 the following two lines:
 <p><tt>MOD03.A2000269.1745.002.2000282120258.hdf</tt>
 <br><tt>MOD03.A2000269.1750.002.2000282120547.hdf</tt>
-<p>Note that we list the MOD03 files from which we wish to extract the
-1 km latitude and longitude data to be used in place of the latlon data
-in the corresponding MOD10_L2 files in listfile.
+<p>Note that we list the <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+files from which we wish to extract the 1 km latitude and longitude data
+to be used in place of the latlon data in the corresponding <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+files in listfile.
 <h2>
 <a NAME="running"></a>Running the mod10_l2.pl Command File</h2>
-Run the shell script containing the <a href="index.html#mod10_l2_usage">mod10_l2.pl</a>
+Run the shell script containing the <a href="index.html#mod10_l2">mod10_l2.pl</a>
 command by changing to the tutorial_3 directory, and then typing:
 <p><b><tt>colo_2000269_1745.csh</tt></b>
-<p>You'll see lots of messages displayed while the <a href="index.html#mod10_l2_usage">mod10_l2.pl</a>
+<p>You'll see lots of messages displayed while the <a href="index.html#mod10_l2">mod10_l2.pl</a>
 script runs various IDL and C programs. In this example, the programs are:
 <ol>
 <li>
 extract_latlon - an IDL procedure for extracting latitude and longitude
-data from a MOD10_L2 or MOD03 file. This program calls another IDL procedure,
-modis_ancillary_read. In this example, extract_latlon is called twice,
-once for each of the two MOD03 files. Two binary floating-point files are
-created per call containing latitude and longitude data, respectively.
-The <a href="index.html#mod10_l2_usage">mod10_l2.pl</a> script concatenates
-the two latitude files and the two longitude files to create a single latitude
-file and a single longitude file, and the pre-concatenated files are deleted.</li>
+data from a <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+or <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+file. This program calls another IDL procedure, modis_ancillary_read. In
+this example, extract_latlon is called twice, once for each of the two
+<a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+files. Two binary floating-point files are created per call containing
+latitude and longitude data, respectively. The <a href="index.html#mod10_l2">mod10_l2.pl</a>
+script concatenates the two latitude files and the two longitude files
+to create a single latitude file and a single longitude file, and the pre-concatenated
+files are deleted.</li>
 
 <li>
-extract_chan - an IDL procedure for extracting channel data from a MOD10_L2
+extract_chan - an IDL procedure for extracting channel data from a <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
 file. This program calls another IDL procedure, modis_snow_read. In this
 example, extract_chan is called four times: two times for each of the two
-MOD10_L2 files; on each call, channel 1 or channel 2 is extracted. One
-binary byte file is created per call containing the channel data. The <a href="index.html#mod10_l2_usage">mod10_l2.pl</a>
+<a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+files; on each call, channel 1 or channel 2 is extracted. One binary byte
+file is created per call containing the channel data. The <a href="index.html#mod10_l2">mod10_l2.pl</a>
 script concatenates each pair of channel files, creates two concatenated
 channel files, and then deletes the pre-concatenated channel files.</li>
 
@@ -331,7 +340,7 @@ ll2cr - a C program for converting latitude, longitude pairs to column,
 row pairs for a particular grid. The grid specified in this example is
 Colorado500.gpd. The concatenated latitude and longitude files are read
 and two binary floating-point files are created containing column and row
-numbers, respectively. The <a href="index.html#mod10_l2_usage">mod10_l2.pl</a>
+numbers, respectively. The <a href="index.html#mod10_l2">mod10_l2.pl</a>
 script then deletes the concatenated latitude and longitude files.</li>
 
 <li>
@@ -345,7 +354,7 @@ The congridx function is called once for the column array and once for
 the row array. The congridx function first performs an extrapolation of
 the given array to a slightly expanded array, which it then interpolates
 (bicubic interpolation is used here) to a fully expanded array. The final
-array is extracted from the fully expanded array. The <a href="index.html#mod10_l2_usage">mod10_l2.pl</a>
+array is extracted from the fully expanded array. The <a href="index.html#mod10_l2">mod10_l2.pl</a>
 script then deletes the pre-interpolated column and row files.</li>
 
 <li>
@@ -355,7 +364,7 @@ two concatenated channel files. On each call, the column and row files
 are read as well. An elliptical weighted maximum algorithm is applied during
 forward navigation to minimize holes and aliasing in the gridded data.
 One binary byte file is created per call containing the gridded data. The
-<a href="index.html#mod10_l2_usage">mod10_l2.pl</a>
+<a href="index.html#mod10_l2">mod10_l2.pl</a>
 script then deletes the concatenated channel files as well as the column
 and row files.</li>
 </ol>
@@ -372,12 +381,12 @@ Enter the command:
 3019200 Apr 27 13:04 colo_2000269_1745_rawm_snqa_01700_01776.img</tt>
 <p>Each file contains a gridded array of 1700 columns and 1776 rows of
 binary byte values (1700 * 1776 * 1 = 3019200 bytes).
-<p>The file naming convention for gridded MOD10_L2 files is as follows:
+<p>The file naming convention for gridded <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD10_L2.html">MOD10_L2</a>
+files is as follows:
 <p>&lt;tag>_&lt;conversion>&lt;weight_type>_&lt;chan>_&lt;columns>_&lt;rows>.img
 <ul>
 <li>
-&lt;tag> is the <a href="index.html#mod10_l2_usage">mod10_l2.pl</a> tag
-parameter</li>
+&lt;tag> is the <a href="index.html#mod10_l2">mod10_l2.pl</a> tag parameter</li>
 
 <li>
 &lt;conversion> is:</li>
@@ -425,7 +434,7 @@ Snow Cover Bit Processing</a> for a description of coded values.</li>
 &lt;rows> is the number of rows in the grid</li>
 </ul>
 
-<hr><font size=-1>Last updated: May 1, 2001 by</font>
+<hr><font size=-1>Last updated: May 31, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>

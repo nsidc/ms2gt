@@ -17,19 +17,15 @@ Observing System (EOS) Data Gateway (EDG)</a>. Detailed instructions for
 using the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>
 are not provided in the tutorials found here; however <a href="http://redhook.gsfc.nasa.gov/~imswww/Tutorial/main.html">a
 tutorial for using the EDG is available online</a>.
-<p>The MS2GT software uses the mapx library to define grids for various
-map projection. This library reads two kinds of text files called *.gpd
-*.mpp files that define a grid and a map projection, respectively. The
-*.gpd and *.mpp files referred to in the tutorials can be found in the
-ms2gt/grids directory. If you followed the procedures under <a href="index.html#environment">Setting
-up the Environment</a>, then you should have an environment variable called
-$PATHMPP defined that points to this directory. To verify that $PATHMPP
-has been set correctly, type:
-<p><b><tt>ls $PATHMPP</tt></b>
-<p>You should see a directory listing showing some *.gpd and *.mpp files.
+<p>The MS2GT software uses the <a href="http://nsidc.org/NASA/GUIDE/docs/reference_documents/ppgc.html">mapx
+library</a> to define grids for various map projection. This library reads
+two kinds of text files called <a href="http://nsidc.org/NASA/GUIDE/docs/reference_documents/ppgc.html#parameters">gpd
+and mpp</a> files that define a grid and a map projection, respectively.
+Pre-existing gpd and mpp files referred to in the tutorials can be found
+in the ms2gt/grids directory.
 <p>Each tutorial has a corresponding directory under ms2gt. These directories
-contain the text files (including any *.gpd and *.mpp files) created in
-in the particular tutorial to save you the trouble of typing them in.
+contain the text files (including any gpd and mpp files) created in in
+the particular tutorial to save you the trouble of typing them in.
 <ul>
 <li>
 <a href="tutorial_1.html">Tutorial 1: Gridding 1 km Level 1b Data over
@@ -48,7 +44,7 @@ Colorado US Using mod10_l2.pl</a></li>
 Ross Sea Using mod29.pl</a></li>
 </ul>
 
-<hr><font size=-1>Last updated: May 1, 2001 by</font>
+<hr><font size=-1>Last updated: May 31, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>

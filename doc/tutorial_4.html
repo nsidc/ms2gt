@@ -27,7 +27,7 @@ Tutorial 4: Gridding 1 km Sea Ice Data over the Ross Sea Using mod29.pl</h1>
 <a href="#listfile">Creating the listfile</a></li>
 
 <li>
-<a href="#gpdfile">Creating the *.gpd and *.mpp files</a></li>
+<a href="#gpdfile">Creating the gpd and mpp files</a></li>
 
 <li>
 <a href="#running">Running the mod29.pl Command File</a></li>
@@ -46,13 +46,16 @@ the top of the grid and parallel to 180 E. We want the upper left corner
 of the grid at exactly 70 S 165 E and the lower right corner near 79 S
 160 W. We want the grid resolution to be 1 km and we want to use the WGS84
 ellipsoid (equatorial radius of 6378.137 km and an eccentricity of 0.081819190843).
-We want to grid all available MOD29 "channels." We could simply order MOD29
+We want to grid all available <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+"channels." We could simply order <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
 data; however, as we can see in <a href="index.html#datasets">Supported
-Data Sets</a>, the latlon data are stored at only 5 km resolution in MOD29
-granules. We could have <a href="index.html#mod29_usage">mod29.pl</a> work
-with only the MOD29 granules (i.e. by setting latlonlistfile to "none");
-we decide that 5 km resolution for the latlon data is good enough for our
-purposes, so we won't order any MOD03 granules.
+Data Sets</a>, the latlon data are stored at only 5 km resolution in <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+granules. We could have <a href="index.html#mod29">mod29.pl</a> work with
+only the <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+granules (i.e. by setting latlonlistfile to "none"); we decide that 5 km
+resolution for the latlon data is good enough for our purposes, so we won't
+order any <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+granules.
 <p>NOTE: To run this example, you'll need a machine with at least 100 MB
 of memory and at least 200 MB of free disk space.
 <h2>
@@ -60,9 +63,10 @@ of memory and at least 200 MB of free disk space.
 Let's assume that we happen to know that January 24, 2001 was fairly clear
 over the western Ross Sea and that there was a significant amount of sea
 ice present, so we use the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>
-to order two MOD29 granules acquired on January 24, 2001 at 1635 and 1640
-that appear to cover the Ross Sea. You can use the following values for
-performing the search using the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>:
+to order two <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+granules acquired on January 24, 2001 at 1635 and 1640 that appear to cover
+the Ross Sea. You can use the following values for performing the search
+using the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>:
 <p>Data Set
 <br><tt>MODIS/TERRA SEA ICE EXTENT 5-MIN L2 SWATH 1KM</tt>
 <p>Search Area
@@ -76,7 +80,7 @@ performing the search using the <a href="http://redhook.gsfc.nasa.gov/~imswww/pu
 <p>The search should find two granules having the following names:
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 MOD29.A2001024.1635.002.2001089060137.hdf</tt>
-<br><tt>MOD29.A2001024.1640.002.2001089060152.</tt>hdf
+<br><tt>MOD29.A2001024.1640.002.2001089060152.hdf</tt>
 <p>Note that January 24, 2001 is day-of-year 024.
 <h2>
 <a NAME="order"></a>Ordering and Downloading the Data</h2>
@@ -89,7 +93,7 @@ the MS2GT software doesn't use them.
 Create a text file in the tutorial_4 directory called wross_2001024_1635.csh
 containing the following line:
 <p><tt>mod29.pl . wross_2001024_1635 listfile.txt WRoss1km.gpd 123456</tt>
-<p>This command specifies the following information (see <a href="index.html#mod29_usage">mod29.pl</a>):
+<p>This command specifies the following information (see <a href="index.html#mod29">mod29.pl</a>):
 <ul>
 <li>
 dirinout is "." indicating that the current directory in effect when wross_2001024_1635.csh
@@ -97,26 +101,26 @@ is invoked will contain the input and output files.</li>
 
 <li>
 tag is "wross_2001024_1635" indicating that all output filenames containing
-gridded data created by <a href="index.html#mod29_usage">mod29.pl</a> will
-begin with the string "wross_2001024_1635".</li>
+gridded data created by <a href="index.html#mod29">mod29.pl</a> will begin
+with the string "wross_2001024_1635".</li>
 
 <li>
-listfile is "listfile.txt" containing a list of the MOD29 files to be processed
-(see <a href="#listfile">Creating the listfile</a>).</li>
+listfile is "listfile.txt" containing a list of the <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+files to be processed (see <a href="#listfile">Creating the listfile</a>).</li>
 
 <li>
 gpdfile is "WRoss1km.gpd" containing a specification of the grid and its
 associated map projection to use in gridding the data (see <a href="#gpdfile">Creating
-the *.gpd and *.mpp files</a>).</li>
+the gpd and mpp files</a>).</li>
 
 <li>
-chanlist is "123456" specifying that all the MOD29 "channels" should be
-gridded.</li>
+chanlist is "123456" specifying that all the <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+"channels" should be gridded.</li>
 
 <li>
 latlonlistfile is not specified, so the default value of "none" is used
-indicating that the 5 km latlon data in the MOD29 files should be used
-for geolocation.</li>
+indicating that the 5 km latlon data in the <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+files should be used for geolocation.</li>
 
 <li>
 keep is not specified, so the default value of "0" is used indicating that
@@ -135,17 +139,18 @@ Create a text file called listfile.txt in the tutorial_4 directory containing
 the following two lines:
 <p><tt>MOD29.A2001024.1635.002.2001089060137.hdf</tt>
 <br><tt>MOD29.A2001024.1640.002.2001089060152.hdf</tt>
-<p>Note that we list the MOD29 files to be gridded.
+<p>Note that we list the <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+files to be gridded.
 <h2>
-<a NAME="gpdfile"></a>Creating the *.gpd and *.mpp files</h2>
+<a NAME="gpdfile"></a>Creating the gpd and mpp files</h2>
 See <a href="http://nsidc.org/NASA/GUIDE/docs/reference_documents/ppgc.html#parameters">Points,
-Pixels, Grids, and Cells</a> for a description of the *.gpd and *.mpp file
+Pixels, Grids, and Cells</a> for a description of the gpd and mpp file
 formats used by the mapx library in defining a grid and its associated
 map projection. In <a href="tutorial_3.html">Tutorial 3</a>, we created
-*.gpd and *.mpp files from scratch, but we required an exact location for
-the center of the grid. Here we'll do something similar, but we'll specify
+gpd and mpp files from scratch, but we required an exact location for the
+center of the grid. Here we'll do something similar, but we'll specify
 an exact location for the center of the upper left cell. We'll start with
-creating the *.mpp file, which we'll call S_stereo.mpp, in the ms2gt/grids
+creating the mpp file, which we'll call S_stereo.mpp, in the ms2gt/grids
 directory (or, if you don't want to type it in, copy S_stereo.mpp from
 the ms2gt/tutorial_4 directory to the ms2gt/grids directory):
 <p><tt>Polar Stereographic ellipsoid</tt>
@@ -181,8 +186,8 @@ top of the grid and parallel to 180 E.</li>
 
 <li>
 The fourth line specifies an arbitrary scale for the map as opposed to
-the grid, which will be defined by the *.gpd file as grid cells per map
-unit. Here we define a map unit to be 100 km.</li>
+the grid, which will be defined by the gpd file as grid cells per map unit.
+Here we define a map unit to be 100 km.</li>
 
 <li>
 The fifth line specifies the center of the map which is usually (but not
@@ -193,7 +198,7 @@ the map projection origin, namely the south pole.</li>
 The next five lines (the sixth through tenth lines) specify parameters
 that would be useful to programs that produce graphic overlays (see <a href="http://nsidc.org/NASA/GUIDE/docs/reference_documents/ppgc.html#parameters">Points,
 Pixels, Grids, and Cells</a>). They are not used by the MS2GT software,
-but they need to be present in the *.mpp file as place holders.</li>
+but they need to be present in the mpp file as place holders.</li>
 
 <li>
 The eleventh line, if present, specifies the equatorial radius to use instead
@@ -205,11 +210,11 @@ The twelfth line, if present, specifies the eccentricity to use for ellipsoidal
 projections instead of the default 0.082271673. Here we specify 0.081819190843,
 which is the eccentricity of the WGS84 ellipsoid.</li>
 </ul>
-In preparing the *.gpd file which will define our grid, we will need to
-know following:
+In preparing the gpd file which will define our grid, we will need to know
+following:
 <ul>
 <li>
-The name of the *.mpp file which will define our map, namely S_stereo.mpp.</li>
+The name of the mpp file which will define our map, namely S_stereo.mpp.</li>
 
 <li>
 The number of columns and rows. We don't know these yet, but we can calculate
@@ -249,7 +254,7 @@ south pole). Then we will use gtest to determine the coordinates of 70
 S 165 E. We will then set the grid cell coordinates of the center of the
 map to be the negative of these coordinates determined by gtest.</li>
 </ul>
-We now have all the information we need to create a preliminary *.gpd file
+We now have all the information we need to create a preliminary gpd file
 which we'll call WRoss1km0.gpd in the ms2gt/grids directory (or, if you
 don't want to type it in, copy WRoss1km0.gpd from the ms2gt/tutorial_4
 directory to the ms2gt/grids directory):
@@ -268,16 +273,16 @@ can use gtest to determine the negative grid coordinates of the center
 of the map:
 <p><b><tt>gtest</tt></b>
 <p><tt>enter .gpd file name: <b>WRoss1km0.gpd</b></tt>
-<br><tt>> assuming old style fixed format file</tt><tt></tt>
+<br><tt>> assuming old style fixed format file</tt>
 <p><tt>gpd: WRoss1km0.gpd</tt>
-<br><tt>mpp:S_stereo.mpp</tt><tt></tt>
+<br><tt>mpp:S_stereo.mpp</tt>
 <p><tt>forward_grid:</tt>
 <br><tt>enter lat lon: <b>-70 165</b></tt>
 <br><tt>col,row = -567.976929 -2119.718262&nbsp;&nbsp;&nbsp; status = 0</tt>
 <br><tt>lat,lon = -70.000000 164.999985&nbsp;&nbsp;&nbsp; status = 1</tt>
-<br><tt>enter lat lon:</tt><tt></tt>
+<br><tt>enter lat lon:</tt>
 <p><tt>inverse_grid:</tt>
-<br><tt>enter r s:</tt><tt></tt>
+<br><tt>enter r s:</tt>
 <p><tt>enter .gpd file name:</tt>
 <p>So we see that the grid cell coordinates of the center of the map should
 be column 567.976929 and row 2119.718262. Edit WRoss1km0.gpd to create
@@ -292,28 +297,28 @@ directory):
 <br><tt>100&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 grid cells per map unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # 1 km</tt>
-<br><tt>567.976929 2119.718262&nbsp;&nbsp;&nbsp;&nbsp; origin column, row</tt><tt></tt>
+<br><tt>567.976929 2119.718262&nbsp;&nbsp;&nbsp;&nbsp; origin column, row</tt>
 <p>We still have only approximate values for the number of columns and
 rows. We use gtest again, this time with WRoss1km1.gpd, to find the grid
 coordinates of 79 S 160 W which will be close to the center of our lower
 right cell, and we'll use these grid coordinates to determine the final
 number of columns and rows for our grid:
-<p><b><tt>gtest</tt></b><tt></tt>
+<p><b><tt>gtest</tt></b>
 <p><tt>enter .gpd file name: <b>WRoss1km1.gpd</b></tt>
-<br><tt>> assuming old style fixed format file</tt><tt></tt>
+<br><tt>> assuming old style fixed format file</tt>
 <p><tt>gpd: WRoss1km1.gpd</tt>
-<br><tt>mpp:S_stereo.mpp</tt><tt></tt>
+<br><tt>mpp:S_stereo.mpp</tt>
 <p><tt>forward_grid:</tt>
 <br><tt>enter lat lon: <b>-79 -160</b></tt>
 <br><tt>col,row = 977.960999 993.297119&nbsp;&nbsp;&nbsp; status = 1</tt>
 <br><tt>lat,lon = -79.000000 -160.000000&nbsp;&nbsp;&nbsp; status = 1</tt>
-<br><tt>enter lat lon:</tt><tt></tt>
+<br><tt>enter lat lon:</tt>
 <p><tt>inverse_grid:</tt>
-<br><tt>enter r s:</tt><tt></tt>
+<br><tt>enter r s:</tt>
 <p><tt>enter .gpd file name:</tt>
 <p>So we see that our grid should have round(977.96099) + 1 = 979 columns
 and round(993.297119) + 1 = 994 rows. Edit WRoss1km1.gpd to create the
-final *.gpd file which we'll call WRoss1km.gpd in the ms2gt/grids directory
+final gpd file which we'll call WRoss1km.gpd in the ms2gt/grids directory
 where we have replaced the preliminary numbers of columns and rows with
 the values 979 and 994, respectively (or, if you don't want to type it
 in, copy WRoss1km.gpd from the ms2gt/tutorial_4 directory to the ms2gt/grids
@@ -326,16 +331,16 @@ rows&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs
 <br><tt>100&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 grid cells per map unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # 1 km</tt>
-<br><tt>567.976929 2119.718262&nbsp;&nbsp;&nbsp;&nbsp; origin column, row</tt><tt></tt>
+<br><tt>567.976929 2119.718262&nbsp;&nbsp;&nbsp;&nbsp; origin column, row</tt>
 <p>We now use gtest a third and final time to check that the upper left
 and lower right corners of WRoss1km.gpd are where they should be:
-<p><b><tt>gtest</tt></b><tt></tt>
+<p><b><tt>gtest</tt></b>
 <p><tt>enter .gpd file name: <b>WRoss1km.gpd</b></tt>
-<br><tt>> assuming old style fixed format file</tt><tt></tt>
+<br><tt>> assuming old style fixed format file</tt>
 <p><tt>gpd: WRoss1km.gpd</tt>
-<br><tt>mpp:S_stereo.mpp</tt><tt></tt>
+<br><tt>mpp:S_stereo.mpp</tt>
 <p><tt>forward_grid:</tt>
-<br><tt>enter lat lon:</tt><tt></tt>
+<br><tt>enter lat lon:</tt>
 <p><tt>inverse_grid:</tt>
 <br><tt>enter r s: <b>0 0</b></tt>
 <br><tt>lat,lon = -70.000000 164.999985&nbsp;&nbsp;&nbsp; status = 1</tt>
@@ -343,43 +348,45 @@ and lower right corners of WRoss1km.gpd are where they should be:
 <br><tt>enter r s: <b>978 993</b></tt>
 <br><tt>lat,lon = -78.997337 -160.003098&nbsp;&nbsp;&nbsp; status = 1</tt>
 <br><tt>col,row = 977.999878 993.000488&nbsp;&nbsp;&nbsp; status = 1</tt>
-<br><tt>enter r s:</tt><tt></tt>
-<p><tt>enter .gpd file name:</tt><tt></tt>
+<br><tt>enter r s:</tt>
+<p><tt>enter .gpd file name:</tt>
 <p>So we see that the upper left corner values of -70.000000 164.999985
 are essentially the same as our target values of 70 S and 165 E and that
 the lower right corner values of -78.997337 -160.003098 are very close
 to our target values of 79 S and 160 W.
 <h2>
 <a NAME="running"></a>Running the mod29.pl Command File</h2>
-Run the shell script containing the <a href="index.html#mod29_usage">mod29.pl</a>
+Run the shell script containing the <a href="index.html#mod29">mod29.pl</a>
 command by changing to the tutorial_4 directory, and then typing:
 <p><b><tt>wross_2001024_1635.csh</tt></b>
-<p>You'll see lots of messages displayed while the <a href="index.html#mod29_usage">mod29.pl</a>
+<p>You'll see lots of messages displayed while the <a href="index.html#mod29">mod29.pl</a>
 script runs various IDL and C programs. In this example, the programs are:
 <ol>
 <li>
 extract_chan - an IDL procedure for extracting channel data and optionally
-latlon data from a MOD29 file. This program calls another IDL procedure,
-modis_ice_read. In this example, extract_chan is called twelve times: six
-times for each of the two MOD29 files; on each call, channel 1, 2, 3, 4,
-5, or 6 is extracted. One binary byte file is created per call containing
-the channel data. In addition, on the first call for each of the MOD29
+latlon data from a <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+file. This program calls another IDL procedure, modis_ice_read. In this
+example, extract_chan is called twelve times: six times for each of the
+two <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+files; on each call, channel 1, 2, 3, 4, 5, or 6 is extracted. One binary
+byte file is created per call containing the channel data. In addition,
+on the first call for each of the <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
 files, the latitude and longitude data are extracted and two binary floating-point
 files are created per call containing latitude and longitude data, respectively.
-The <a href="index.html#mod29_usage">mod29.pl</a> script concatenates the
-two latitude files and the two longitude files to create a single latitude
+The <a href="index.html#mod29">mod29.pl</a> script concatenates the two
+latitude files and the two longitude files to create a single latitude
 file and a single longitude file, and the pre-concatenated files are deleted.
-The <a href="index.html#mod29_usage">mod29.pl</a> script concatenates each
-pair of channel files, creates six concatenated channel files, and then
-deletes the pre-concatenated channel files.</li>
+The <a href="index.html#mod29">mod29.pl</a> script concatenates each pair
+of channel files, creates six concatenated channel files, and then deletes
+the pre-concatenated channel files.</li>
 
 <li>
 ll2cr - a C program for converting latitude, longitude pairs to column,
 row pairs for a particular grid. The grid specified in this example is
 WRoss1km.gpd. The concatenated latitude and longitude files are read and
 two binary floating-point files are created containing column and row numbers,
-respectively. The <a href="index.html#mod29_usage">mod29.pl</a> script
-then deletes the concatenated latitude and longitude files.</li>
+respectively. The <a href="index.html#mod29">mod29.pl</a> script then deletes
+the concatenated latitude and longitude files.</li>
 
 <li>
 interp_colrow - an IDL procedure for interpolating column, row pairs from
@@ -392,8 +399,8 @@ is called once for the column array and once for the row array. The congridx
 function first performs an extrapolation of the given array to a slightly
 expanded array, which it then interpolates (bilinear interpolation is used
 here) to a fully expanded array. The final array is extracted from the
-fully expanded array. The <a href="index.html#mod29_usage">mod29.pl</a>
-script then deletes the pre-interpolated column and row files.</li>
+fully expanded array. The <a href="index.html#mod29">mod29.pl</a> script
+then deletes the pre-interpolated column and row files.</li>
 
 <li>
 fornav - a C program for performing forward navigation from a swath to
@@ -404,9 +411,8 @@ forward navigation to minimize holes and aliasing in the gridded data.
 One binary byte file (or, in the case of channel 3 Ice Surface Temperature,
 one binary 2-byte unsigned integer file) is created per call containing
 the gridded data. The
-<a href="index.html#mod29_usage">mod29.pl</a> script
-then deletes the concatenated channel files as well as the column and row
-files.</li>
+<a href="index.html#mod29">mod29.pl</a> script then
+deletes the concatenated channel files as well as the column and row files.</li>
 </ol>
 The final message should contain the string:
 <p><tt>MOD29: MESSAGE: done</tt>
@@ -432,11 +438,12 @@ columns and 994 rows of binary byte values (979 * 994 * 1 = 973126 bytes).
 The sixth file listed (the "temp" or Ice Surface Temperature file) contains
 a gridded array of 979 columns and 994 rows of binary 2-byte unsigned values
 (979 * 994 * 2 =&nbsp; 1946252 bytes).
-<p>The file naming convention for gridded MOD29 files is as follows:
+<p>The file naming convention for gridded <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/MOD29.html">MOD29</a>
+files is as follows:
 <p>&lt;tag>_&lt;conversion>&lt;weight_type>_&lt;chan>_&lt;columns>_&lt;rows>.img
 <ul>
 <li>
-&lt;tag> is the <a href="index.html#mod29_usage">mod29.pl</a> tag parameter</li>
+&lt;tag> is the <a href="index.html#mod29">mod29.pl</a> tag parameter</li>
 
 <li>
 &lt;conversion> is:</li>
@@ -528,7 +535,7 @@ Local Attributes</a> for a table of coded values.</li>
 &lt;rows> is the number of rows in the grid</li>
 </ul>
 
-<hr><font size=-1>Last updated: May 1, 2001 by</font>
+<hr><font size=-1>Last updated: May 31, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>

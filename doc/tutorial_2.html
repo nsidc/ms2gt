@@ -27,7 +27,7 @@ Tutorial 2: Gridding MODIS 250 m Level 1b Data over Greenland Using mod02.pl</h1
 <a href="#listfile">Creating the listfile</a></li>
 
 <li>
-<a href="#gpdfile">Creating the *.gpd and *.mpp files</a></li>
+<a href="#gpdfile">Creating the gpd and mpp files</a></li>
 
 <li>
 <a href="#chanfile">Creating the chanfile</a></li>
@@ -45,25 +45,28 @@ Suppose we want to put some MODIS 250 m Level 1b swath data covering all
 of Greenland into the same grid used in <a href="tutorial_1.html">Tutorial
 1</a>, except that we want to change the resolution of the grid from 1.25
 km to 250 m. We want to grid reflective channels 1 and 2, which are the
-only MODIS channels available at 250m. We need to order MOD02QKM data;
-however, as we can see in <a href="index.html#datasets">Supported Data
-Sets</a>, the latlon data are stored at only 1 km resolution in MOD02QKM
-granules. Therefore, <a href="index.html#mod02_usage">mod02.pl</a> will
-need to interpolate the 1 km latlon data in the MOD02QKM granules to 250m
-resolution. There is no need to work with MOD03 granules since the latlon
-data are also at 1 km resolution in MOD03 granules and we're not gridding
-any ancillary data.
+only MODIS channels available at 250m. We need to order <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+data; however, as we can see in <a href="index.html#datasets">Supported
+Data Sets</a>, the lat-lon data are stored at only 1 km resolution in <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+granules. Therefore, <a href="index.html#mod02">mod02.pl</a> will need
+to interpolate the 1 km lat-lon data in the <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+granules to 250 m resolution. There is no need to work with <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+granules since the lat-lon data are also at 1 km resolution in <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+granules and we're not gridding any ancillary data.
 <p>NOTE: To run this example, you'll need a machine with at least 750 MB
 of memory and about 1.5 GB of free disk space.
 <h2>
 <a NAME="searching"></a>Searching for the Data</h2>
 Let's assume that we want to use data from the same date and time as in
 <a href="tutorial_1.html">Tutorial
-1</a>, except that this time we want to search for MOD02QKM granules rather
-than MOD21KM and MOD03 granules. We use the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>
-to order two MODQKM granules acquired on June 1, 2000 at 1445 and 1450
-that appear to cover Greenland. You can use the following values for performing
-the search using the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>:
+1</a>, except that this time we want to search for <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+granules rather than <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD021KM_L1B.shtml">MOD021KM</a>
+and <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+granules. We use the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>
+to order two <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+granules acquired on June 1, 2000 at 1445 and 1450 that appear to cover
+Greenland. You can use the following values for performing the search using
+the <a href="http://redhook.gsfc.nasa.gov/~imswww/pub/imswelcome/">EDG</a>:
 <p>Data Set
 <br><tt>MODIS/TERRA CALIBRATED RADIANCES 5-MIN L1B SWATH 250M</tt>
 <p>Search Area
@@ -90,7 +93,7 @@ Create a text file in the tutorial_2 directory called gl250_2000153_1445.csh
 containing the following line:
 <p><tt>mod02.pl . gl250_2000153_1445 listfile.txt Gl0250.gpd chanfile.txt
 none Q</tt>
-<p>This command specifies the following information (see <a href="index.html#mod02_usage">mod02.pl</a>):
+<p>This command specifies the following information (see <a href="index.html#mod02">mod02.pl</a>):
 <ul>
 <li>
 dirinout is "." indicating that the current directory in effect when gl250_2000153_1445.csh
@@ -98,8 +101,8 @@ is invoked will contain the input and output files.</li>
 
 <li>
 tag is "gl250_2000153_1445" indicating that all output filenames containing
-gridded data created by <a href="index.html#mod02_usage">mod02.pl</a> will
-begin with the string "gl250_2000153_1445".</li>
+gridded data created by <a href="index.html#mod02">mod02.pl</a> will begin
+with the string "gl250_2000153_1445".</li>
 
 <li>
 listfile is "listfile.txt" containing a list of the MOD02 files to be processed
@@ -108,7 +111,7 @@ listfile is "listfile.txt" containing a list of the MOD02 files to be processed
 <li>
 gpdfile is "Gl0250.gpd" containing a specification of the grid and its
 associated map projection to use in gridding the data (see <a href="#gpdfile">Creating
-the *.gpd and *.mpp files</a>).</li>
+the gpd and mpp files</a>).</li>
 
 <li>
 chanfile is "chanfile.txt" containing a list of the channels to be gridded
@@ -121,7 +124,8 @@ data.</li>
 
 <li>
 latlon_src is "Q" indicating that&nbsp; the 1 km latitude and longitude
-data in the MOD02QKM files should be used.</li>
+data in the <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+files should be used.</li>
 
 <li>
 ancil_src is not specified, and ancilfile is "none," so ancil_src is ignored.</li>
@@ -143,9 +147,10 @@ Create a text file called listfile.txt in the tutorial_2 directory containing
 the following two lines:
 <p><tt>MOD02QKM.A2000153.1445.002.2000156075718.hdf</tt>
 <br><tt>MOD02QKM.A2000153.1450.002.2000156075717.hdf</tt>
-<p>Note that we list the MOD02QKM files to be gridded.
+<p>Note that we list the <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+files to be gridded.
 <h2>
-<a NAME="gpdfile"></a>Creating the *.gpd and *.mpp files</h2>
+<a NAME="gpdfile"></a>Creating the gpd and mpp files</h2>
 Let's review the Gl1250.gpd file we created in <a href="#gpdfile">Tutorial
 1</a>:
 <p><tt>N200correct.mpp map projection parameters&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -157,7 +162,7 @@ grid cells per map unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # 1.25 km</tt>
 <br><tt>1949.5&nbsp; -250.5&nbsp; map origin column,row</tt>
 <p>We wish now to create Gl0250.gpd which will specify the same grid but
-at 250 m resolution rather than 1.25 km. The *.mpp file will be the same,
+at 250 m resolution rather than 1.25 km. The mpp file will be the same,
 namely <a href="http://nsidc.org/NASA/GUIDE/EASE/N200correct.mpp">N200correct.mpp</a>.
 Note that 1250 / 250 = 5, so the number of columns and rows in Gl0250.gpd
 will be 5 * 1860 = 9300 columns and 5 * 1740 = 8700 rows. The grid cells
@@ -231,29 +236,31 @@ specify weight type or fill, they are set to their default values, namely
 "avg" and "0".
 <h2>
 <a NAME="running"></a>Running the mod02.pl Command File</h2>
-Run the shell script containing the <a href="index.html#mod02_usage">mod02.pl</a>
+Run the shell script containing the <a href="index.html#mod02">mod02.pl</a>
 command by changing to the tutorial_2 directory, and then typing:
 <p><b><tt>gl250_2000153_1445.csh</tt></b>
-<p>You'll see lots of messages displayed while the <a href="index.html#mod02_usage">mod02.pl</a>
+<p>You'll see lots of messages displayed while the <a href="index.html#mod02">mod02.pl</a>
 script runs various IDL and C programs. In this example, the programs include:
 <ol>
 <li>
 extract_latlon - an IDL procedure for extracting latitude and longitude
-data from a MOD02 or MOD03 file. This program calls another IDL procedure,
-modis_ancillary_read. In this example, extract_latlon is called twice,
-once for each of the two MOD02QKM files. Two binary floating-point files
-are created per call containing latitude and longitude data, respectively.
-The <a href="index.html#mod02_usage">mod02.pl</a> script concatenates the
-two latitude files and the two longitude files to create a single latitude
-file and a single longitude file, and the pre-concatenated files are deleted.</li>
+data from a MOD02 or <a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD03_L1B.shtml">MOD03</a>
+file. This program calls another IDL procedure, modis_ancillary_read. In
+this example, extract_latlon is called twice, once for each of the two
+<a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+files. Two binary floating-point files are created per call containing
+latitude and longitude data, respectively. The <a href="index.html#mod02">mod02.pl</a>
+script concatenates the two latitude files and the two longitude files
+to create a single latitude file and a single longitude file, and the pre-concatenated
+files are deleted.</li>
 
 <li>
 ll2cr - a C program for converting latitude, longitude pairs to column,
 row pairs for a particular grid. The grid specified in this example is
 Gl0250.gpd. The concatenated latitude and longitude files are read and
 two binary floating-point files are created containing column and row numbers,
-respectively. The <a href="index.html#mod02_usage">mod02.pl</a> script
-then deletes the concatenated latitude and longitude files.</li>
+respectively. The <a href="index.html#mod02">mod02.pl</a> script then deletes
+the concatenated latitude and longitude files.</li>
 
 <li>
 interp_colrow - an IDL procedure for interpolating column, row pairs from
@@ -266,16 +273,17 @@ The congridx function is called once for the column array and once for
 the row array. The congridx function first performs an extrapolation of
 the given array to a slightly expanded array, which it then interpolates
 (bicubic interpolation is used here) to a fully expanded array. The final
-array is extracted from the fully expanded array. The <a href="index.html#mod02_usage">mod02.pl</a>
+array is extracted from the fully expanded array. The <a href="index.html#mod02">mod02.pl</a>
 script then deletes the pre-interpolated column and row files.</li>
 
 <li>
 extract_chan - an IDL procedure for extracting channel data from a MOD02
 file. This program calls another IDL procedure, modis_level1b_read. In
 this example, extract_chan is called two times, once for each of the two
-MOD02QKM files; on each call, channel 1 or channel 2 is extracted, and
-the result is converted to reflectance. One binary floating-point file
-is created per call containing the channel data. The <a href="index.html#mod02_usage">mod02.pl</a>
+<a href="http://daac.gsfc.nasa.gov/CAMPAIGN_DOCS/MODIS/rad_geo/MOD02QKM_L1B.shtml">MOD02QKM</a>
+files; on each call, channel 1 or channel 2 is extracted, and the result
+is converted to reflectance. One binary floating-point file is created
+per call containing the channel data. The <a href="index.html#mod02">mod02.pl</a>
 script concatenates the pair of channel files, creates one concatenated
 channel file, and then deletes the pre-concatenated channel files.</li>
 
@@ -286,9 +294,9 @@ two concatenated channel files. On each call, the interpolated column and
 row files are read as well. An elliptical weighted averaging algorithm
 is applied during forward navigation to minimize holes and aliasing in
 the gridded data. One binary floating-point file is created per call containing
-the gridded data. The <a href="index.html#mod02_usage">mod02.pl</a> script
-then deletes the concatenated channel files as well as the interpolated
-column and row files.</li>
+the gridded data. The <a href="index.html#mod02">mod02.pl</a> script then
+deletes the concatenated channel files as well as the interpolated column
+and row files.</li>
 </ol>
 The final message should contain the string:
 <p><tt>MOD02: MESSAGE: done</tt>
@@ -307,7 +315,7 @@ binary floating-point values (9300 * 8700 * 4 = 323640000 bytes).
 <a href="tutorial_1.html#examining">Tutorial
 1</a>.
 <p>
-<hr><font size=-1>Last updated: May 1, 2001 by</font>
+<hr><font size=-1>Last updated: May 31, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>
