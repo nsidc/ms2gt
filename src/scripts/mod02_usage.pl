@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.19 2004/11/10 22:47:14 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.20 2004/11/25 05:01:04 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -112,7 +112,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
              undo solar zenith correction.
           3: apply solar zenith correction only for MOD02QKM or MYD02QKM data.
       NOTE: If fix250 is not 0, then param must be set to soze (Solar Zenith)
-      and conversion must be set to scaled (decimal degrees) in ancilfile.
+      and conversion must be set to raw (16-bit signed integers) in ancilfile.
       NOTE: If fix250 is 1 or 2, then only channels 1 and/or 2 may be
       specified in chanfile.
   fixcolfileN: Specifies the name of an input text file containing a set of
