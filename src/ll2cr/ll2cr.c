@@ -4,7 +4,7 @@
  * 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.6 2001/01/19 18:41:10 haran Exp haran $";
+static const char ll2cr_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.7 2001/01/24 17:14:50 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -161,7 +161,7 @@ main (int argc, char *argv[])
     fprintf(stderr, "  lonfile       = %s\n", lonfile);
     fprintf(stderr, "  gpdfile       = %s\n", gpdfile);
     fprintf(stderr, "  tag           = %s\n", tag);
-    fprintf(stderr, "  ll2xy_c_rcsid = %s\n", ll2xy_c_rcsid);
+    fprintf(stderr, "  ll2cr_c_rcsid = %s\n", ll2cr_c_rcsid);
   }
   
   /*
