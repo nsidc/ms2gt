@@ -16,7 +16,39 @@ if n_elements(bytes_per_cell) eq 0 then $
   bytes_per_cell = 2
 if n_elements(color_table) eq 0 then $
   color_table = 0
-loadct, color_table
+rgb = bytarr(256, 3)
+if color_table eq -1 then begin
+    loadct, 0
+    tvlct, rgb, /get
+    black = 0               ; Sensor data missing
+    magenta = 1             ; No decision
+    dark_grey = 11          ; Darkness, terminator
+    chocolate = 25          ; Land (no snow detected)
+    blue = 37               ; Inland water
+    olive_green = 39        ; Ocean
+    sky_blue = 50           ; Cloud obscured
+    dark_blue = 100         ; Snow-covered lake ice
+    white = 200             ; Snow
+    yellow = 253            ; Dead MODIS sensor detector
+    grey = 254              ; Saturated MODIS sensor detector
+    red = 255               ; Fill data (no data expected for pixel
+    rgb[black,*]       = [  0,   0,   0]
+    rgb[magenta,*]     = [255,   0, 255]
+    rgb[dark_grey,*]   = [ 64,  64,  64]
+    rgb[chocolate,*]   = [210, 105,  30]
+    rgb[blue,*]        = [  0,   0, 255]
+    rgb[olive_green,*] = [ 85, 107,  47]
+    rgb[sky_blue,*]    = [135, 206, 235]
+    rgb[dark_blue,*]   = [  0,   0, 139]
+    rgb[white,*]       = [255, 255, 255]
+    rgb[yellow,*]      = [255, 255,   0]
+    rgb[grey,*]        = [128, 128, 128]
+    rgb[red,*]         = [255,   0,   0]
+    tvlct, rgb
+endif else begin
+    loadct, color_table
+    tvlct, rgb
+endelse
 cols_out = cols_in / shrink_factor
 rows_out = rows_in / shrink_factor
 if n_elements(file_in) eq 1 then begin
@@ -33,7 +65,7 @@ if n_elements(file_in) eq 1 then begin
     if n_elements(max_in) eq 0 then $
       max_in = max(img_in)
     img_in = reverse(bytscl(img_in, min=min_in, max=max_in), 2)
-    write_gif, file_out, img_in
+    write_gif, file_out, img_in, rgb[*,0], rgb[*,1], rgb[*,2]
 endif else begin
     img_out = bytarr(3, cols_out, rows_out)
     for i = 0, 2 do begin
