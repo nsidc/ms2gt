@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.59 2004/11/28 19:21:38 haran Exp haran $
+# $Id: mod02.pl,v 1.60 2004/12/02 18:55:30 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -1078,7 +1078,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 			  "$cols_file $rows_file $chan_file " .
 			  "$tile_grid_cols_this $tile_grid_rows_this " .
 			  "$grid_file");
-		if ($mask_tile) {
+		if (-e $grid_file && $mask_tile) {
 		    my $grid_file_unmasked = $grid_file . ".unmasked";
 		    do_or_die("mv $grid_file $grid_file_unmasked");
 		    do_or_die("apply_mask -v -d $bytes_per_cell " .
@@ -1147,7 +1147,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 			  "$cols_file $rows_file $ancil_file " .
 			  "$tile_grid_cols_this $tile_grid_rows_this " .
 			  "$grid_file");
-		if ($mask_tile) {
+		if (-e $grid_file && $mask_tile) {
 		    my $grid_file_unmasked = $grid_file . ".unmasked";
 		    do_or_die("mv $grid_file $grid_file_unmasked");
 		    do_or_die("apply_mask -v -d $bytes_per_cell " .
