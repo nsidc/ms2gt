@@ -3,7 +3,7 @@
 ;*
 ;* 28-Feb-2001  Terry Haran  tharan@kryos.colorado.edu  303-492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/grids/grid_class__define.pro,v 1.2 2001/03/20 23:55:13 haran Exp haran $
+;$Header: /export/data/modis/src/idl/grids/grid_class__define.pro,v 1.3 2001/03/21 14:56:07 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -61,22 +61,6 @@ end
 
 
 ;-----------------------------------------------------------------------------
-; grid_class::get_gpd_filename
-;
-function grid_class::get_gpd_filename
-    return, self.gcs.gpd_filename
-end
-
-
-;-----------------------------------------------------------------------------
-; grid_class::get_grid_dimensions
-;
-function grid_class::get_grid_dimensions
-    return, [self.gcs.cols, self.gcs.rows]
-end
-
-
-;-----------------------------------------------------------------------------
 ; grid_class::get_grid_origin
 ;
 function grid_class::get_grid_origin
@@ -97,6 +81,91 @@ function grid_class::get_grid_scale
     else $
       row_scale = 0.0
     return, [col_scale, row_scale]
+end
+
+
+;-----------------------------------------------------------------------------
+; grid_class::get_grid_dimensions
+;
+function grid_class::get_grid_dimensions
+    return, [self.gcs.cols, self.gcs.rows]
+end
+
+
+;-----------------------------------------------------------------------------
+; grid_class::get_gpd_filename
+;
+function grid_class::get_gpd_filename
+    return, self.gcs.gpd_filename
+end
+
+;-----------------------------------------------------------------------------
+; grid_class::get_grid_coordinates
+;
+function grid_class::get_grid_coordinates
+    return, {lat0:self.gcs.lat0, lon0:self.gcs.lon0, $
+             lat1:self.gcs.lat1, lon1:self.gcs.lon1}
+end
+
+
+;-----------------------------------------------------------------------------
+; grid_class::get_grid_bounds
+;
+function grid_class::get_grid_bounds
+    return, {south:self.gcs.south, north:self.gcs.north, $
+             west:self.gcs.west, east:self.gcs.east}
+end
+
+
+;-----------------------------------------------------------------------------
+; grid_class::get_grid_center
+;
+function grid_class::get_grid_center
+    return, {center_lat:self.gcs.center_lat, center_lon:self.gcs.center_lon}
+end
+
+
+;-----------------------------------------------------------------------------
+; grid_class::get_grid_labels
+;
+function grid_class::get_grid_labels
+    return, {label_lat:self.gcs.label_lat, $
+             label_lon:self.gcs.label_lon}
+end
+
+
+;-----------------------------------------------------------------------------
+; grid_class::get_grid_intervals
+;
+function grid_class::get_grid_intervals
+    return, {lat_interval:self.gcs.lat_interval, $
+             lon_interval:self.gcs.lon_interval}
+end
+
+
+;-----------------------------------------------------------------------------
+; grid_class::get_grid_details
+;
+function grid_class::get_grid_details
+    return, {cil_detail:self.gcs.cil_detail, $
+             bdy_detail:self.gcs.bdy_detail, $
+             riv_detail:self.gcs.riv_detail}
+end
+
+
+;-----------------------------------------------------------------------------
+; grid_class::get_equatorial_radius
+;
+function grid_class::get_equatorial_radius
+    return, self.gcs.equatorial_radius
+end
+
+
+;-----------------------------------------------------------------------------
+; grid_class::get_eccentricity
+;
+function grid_class::get_eccentricity
+    return, self.gcs.eccentricity
 end
 
 
