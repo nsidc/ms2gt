@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /usr/people/haran/photoclin/src/fornav/fornav.c,v 1.11 2000/05/26 22:43:13 haran Exp $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.1 2000/12/28 23:31:13 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -103,16 +103,21 @@ static const char fornav_c_rcsid[] = "$Header: /usr/people/haran/photoclin/src/f
 #define TYPE_FLOAT  6
 
 typedef struct {
-  char *file;
-  FILE *fp;
-  char *data_type_str;
-  char *data_type;
-  int  bytes;
+  char  *name;
+  char  *file;
+  FILE  *fp;
+  char  *data_type_str;
+  int   data_type;
+  int   bytes_per_cell;
   float fill;
-  int  rows;
-  int  cols;
-  void **buf;
+  int   cols;
+  int   rows;
+  int   bytes_per_row;
+  void  **buf;
 } item;
+
+static int verbose;
+static int very_verbose;
 
 static void DisplayUsage(void)
 {
@@ -125,12 +130,81 @@ static void DisplayInvalidParameter(char *param)
   DisplayUsage();
 }
 
+static void InitializeItem(char *name, item *ip, char *open_type_str,
+			   char *data_type_str, int cols, int rows)
+{
+  if (very_verbose)
+    fprintf(stderr, "Initializing %s\n", name);
+  ip->name = strdup(name);
+  if (strlen(open_type_str)) {
+    if ((ip->fp = fopen(ip->file, open_type_str)) == NULL) {
+      fprintf(stderr, "fornav: InitializeItem: error opening %s\n", ip->file);
+      perror("fornav");
+      exit(ABORT);
+    }
+  } else
+    ip->fp = NULL;
+  ip->data_type_str = strdup(data_type_str);
+  if (!strcmp(ip->data_type_str, "u1"))
+    ip->data_type = TYPE_BYTE;
+  else if (!strcmp(ip->data_type_str, "u2"))
+    ip->data_type = TYPE_UINT2;
+  else if (!strcmp(ip->data_type_str, "s2"))
+    ip->data_type = TYPE_SINT2;
+  else if (!strcmp(ip->data_type_str, "u4"))
+    ip->data_type = TYPE_UINT4;
+  else if (!strcmp(ip->data_type_str, "s4"))
+    ip->data_type = TYPE_SINT4;
+  else if (!strcmp(ip->data_type_str, "f4"))
+    ip->data_type = TYPE_FLOAT;
+  else
+    ip->data_type = TYPE_UNDEF;
+
+  switch (ip->data_type) {
+  case TYPE_BYTE:
+    ip->bytes_per_cell = 1;
+    break;
+  case TYPE_UINT2:
+  case TYPE_SINT2:
+    ip->bytes_per_cell = 2;
+    break;
+  case TYPE_UINT4:
+  case TYPE_SINT4:
+  case TYPE_FLOAT:
+    ip->bytes_per_cell = 4;
+    break;
+  case TYPE_UNDEF:
+  default:
+    error_exit("fornav: InitializeItem: Undefined data type");
+    break;
+  }
+
+  ip->bytes_per_row = ip->bytes_per_cell * cols;
+  ip->buf = matrix(ip->rows, ip->cols, ip->bytes_per_cell, 0);
+  if (ip->buf == NULL) {
+    fprintf(stderr, "Error initializing %s\n", name);
+    error_exit("fornav: InitializeItem: can't allocate memory for buffer");
+  }
+}
+
+static void DeInitializeItem(item *ip)
+{
+  if (very_verbose)
+    fprintf(stderr, "DeInitializing %s\n", ip->name);
+  if (ip->name)
+    free(ip->name);
+  if (ip->data_type_str)
+    free(ip->data_type_str);
+  if (ip->fp)
+    fclose(ip->fp);
+  if (ip->buf)
+    free(ip->buf);
+}
+
 main (int argc, char *argv[])
 {
   char  *option;
   int   chan_count;
-  bool  verbose;
-  bool  very_verbose;
   int   swath_scan_first;
   int   grid_col_start;
   int   grid_row_start;
@@ -148,10 +222,12 @@ main (int argc, char *argv[])
   int   grid_cols;
   int   grid_rows;
 
-  item  *swath_col_item = NULL;
-  item  *swath_row_item = NULL;
-  item  *swath_chan_item = NULL;
-  item  *grid_chan_item = NULL;
+  item  *swath_col_item;
+  item  *swath_row_item;
+  item  *swath_chan_item;
+  item  *grid_chan_io_item;
+  item  *grid_chan_item;
+  item  *grid_weight_item;
   item  *ip;
 
   int   i;
@@ -173,8 +249,9 @@ main (int argc, char *argv[])
   got_weight_sum_min     = FALSE;
 
   /*
-   *  Get channel count and use it to allocate arrays and set default values
+   *  Get channel count and use it to allocate items and set default values
    */
+
   ++argv; --argc;
   if (argc <= 0)
     DisplayUsage();
@@ -187,21 +264,21 @@ main (int argc, char *argv[])
     error_exit("fornav: can't allocate swath_row_item\n");
   if ((swath_chan_item = (item *)calloc(chan_count, sizeof(item))) == NULL)
     error_exit("fornav: can't allocate swath_chan_item\n");
+  if ((grid_chan_io_item = (item *)calloc(chan_count, sizeof(item))) == NULL)
+    error_exit("fornav: can't allocate grid_chan_io_item\n");
   if ((grid_chan_item = (item *)calloc(chan_count, sizeof(item))) == NULL)
     error_exit("fornav: can't allocate grid_chan_item\n");
+  if ((grid_weight_item = (item *)malloc(sizeof(item))) == NULL)
+    error_exit("fornav: can't allocate grid_weight_item\n"); 
 
   for (i = 0; i < chan_count; i++) {
     ip = &swath_chan_item[i];
-    ip->fp = NULL;
     ip->data_type_str = "s2";
     ip->fill = 0.0;
-    ip->buf = NULL;
 
-    ip = &grid_chan_item[i];
-    ip->fp = NULL;
+    ip = &grid_chan_io_item[i];
     ip->data_type_str = "s2";
     ip->fill = 0.0;
-    ip->buf = NULL;
   }
 
   /* 
@@ -265,7 +342,7 @@ main (int argc, char *argv[])
 	      strcmp(*argv, "s4") &&
 	      strcmp(*argv, "f4"))
 	    DisplayInvalidParameter("grid_data_type");
-	  grid_chan_item[i].data_type_str = *argv;
+	  grid_chan_io_item[i].data_type_str = *argv;
 	}
 	break;
       case 'f':
@@ -283,7 +360,7 @@ main (int argc, char *argv[])
 	  ++argv; --argc;
 	  if (argc <= 0)
 	    DisplayInvalidParameter("grid_fill");
-	  if (sscanf(*argv, "%f", &grid_chan_item[i].fill) != 1)
+	  if (sscanf(*argv, "%f", &grid_chan_io_item[i].fill) != 1)
 	    DisplayInvalidParameter("grid_fill");
 	}
 	break;
@@ -324,16 +401,18 @@ main (int argc, char *argv[])
   }
   if (!got_grid_data_type)
     for (i = 0; i < chan_count; i++)
-      grid_chan_item[i].data_type_str = swath_chan_item[i].data_type_str;
+      grid_chan_io_item[i].data_type_str = swath_chan_item[i].data_type_str;
   if (!got_grid_fill)
     for (i = 0; i < chan_count; i++)
-      grid_chan_item[i].fill = swath_chan_item[i].fill;
+      grid_chan_io_item[i].fill = swath_chan_item[i].fill;
   if (!got_weight_sum_min)
     weight_sum_min = weight_min;
 
   /*
    *	Get command line parameters.
    */
+  if (very_verbose)
+    fprintf(stderr, "fornav_c_rcsid: %s\n", fornav_c_rcsid);
   if (argc != 7 + 2 * chan_count)
     DisplayUsage();
   if (sscanf(*argv++, "%d", &swath_cols) != 1)
@@ -351,7 +430,7 @@ main (int argc, char *argv[])
   if (sscanf(*argv++, "%d", &grid_rows) != 1)
     DisplayInvalidParameter("grid_rows");
   for (i = 0; i < chan_count; i++)
-    grid_chan_item[i].file = *argv++;
+    grid_chan_io_item[i].file = *argv++;
 
   if (verbose) {
     fprintf(stderr, "fornav:\n");
@@ -366,8 +445,10 @@ main (int argc, char *argv[])
     fprintf(stderr, "  grid_cols           = %d\n", grid_cols);
     fprintf(stderr, "  grid_rows           = %d\n", grid_rows);
     for (i = 0; i < chan_count; i++)
-      fprintf(stderr, "  grid_chan_file[%d]   = %s\n", i, grid_chan_item[i].file);
+      fprintf(stderr, "  grid_chan_file[%d]   = %s\n", i,
+	      grid_chan_io_item[i].file);
     fprintf(stderr, "\n");
+    fprintf(stderr, "  maximum_weight_mode = %d\n", maximum_weight_mode);
     fprintf(stderr, "  swath_scan_first    = %d\n", swath_scan_first);
     fprintf(stderr, "  grid_col_start      = %d\n", grid_col_start);
     fprintf(stderr, "  grid_row_start      = %d\n", grid_row_start);
@@ -376,56 +457,56 @@ main (int argc, char *argv[])
 	      swath_chan_item[i].data_type_str);
     for (i = 0; i < chan_count; i++)
       fprintf(stderr, "  grid_data_type[%d]   = %s\n", i,
-	      grid_chan_item[i].data_type_str);
+	      grid_chan_io_item[i].data_type_str);
     for (i = 0; i < chan_count; i++)
       fprintf(stderr, "  swath_fill[%d]       = %f\n", i,
 	      swath_chan_item[i].fill);
     for (i = 0; i < chan_count; i++)
       fprintf(stderr, "  grid_fill[%d]        = %f\n", i,
-	      grid_chan_item[i].fill);
+	      grid_chan_io_item[i].fill);
     fprintf(stderr, "\n");
     fprintf(stderr, "  weight_count        = %d\n", weight_count);
     fprintf(stderr, "  weight_min          = %f\n", weight_min);
     fprintf(stderr, "  weight_distance_max = %f\n", weight_distance_max);
     fprintf(stderr, "  weight_sum_min      = %f\n", weight_sum_min);
+    fprintf(stderr, "\n");
   }
 
   /*
-   *  Open input and output files
+   *  Initialize items
    */
-  if ((swath_col_item->fp = fopen(swath_col_item->file, "r")) == NULL) {
-    fprintf(stderr, "fornav: error opening %s for reading\n", swath_col_item->file);
-    perror("fornav");
-    exit(ABORT);
-  }
-  if ((swath_row_item->fp = fopen(swath_row_item->file, "r")) == NULL) {
-    fprintf(stderr, "fornav: error opening %s for reading\n", swath_row_item->file);
-    perror("fornav");
-    exit(ABORT);
-  }
+  InitializeItem("swath_col_item", swath_col_item, "r", "f4",
+		 swath_cols, swath_rows_per_scan);
+
+  InitializeItem("swath_row_item", swath_row_item, "r", "f4",
+		 swath_cols, swath_rows_per_scan);
   for (i = 0; i < chan_count; i++) {
-    if ((swath_chan_item[i].fp = fopen(swath_chan_item[i].file, "r")) == NULL) {
-      fprintf(stderr, "fornav: error opening %s for reading\n",
-	      swath_chan_item[i].file);
-      perror("fornav");
-      exit(ABORT);
-    }
-    if ((grid_chan_item[i].fp = fopen(grid_chan_item[i].file, "w")) == NULL) {
-      fprintf(stderr, "fornav: error opening %s for writing\n",
-	      grid_chan_item[i].file);
-      perror("fornav");
-      exit(ABORT);
-    }
+    char name[100];
+    sprintf(name, "swath_chan_item %d", i); 
+    InitializeItem(name, &swath_chan_item[i], "r",
+		   swath_chan_item[i].data_type_str,
+		   swath_cols, swath_rows_per_scan);
+    sprintf(name, "grid_chan_io_item %d", i); 
+    InitializeItem(name, &grid_chan_io_item[i], "w",
+		   grid_chan_io_item[i].data_type_str,
+		   grid_cols, 1);
+    sprintf(name, "grid_chan_item %d", i); 
+    InitializeItem(name, &grid_chan_item[i], "", "f4",
+		   grid_cols, grid_rows);
   }
 
+  InitializeItem("grid_weight_item", grid_weight_item, "", "f4",
+		 grid_cols, grid_rows);
+
   /*
-   *  Close input and output files
+   *  De-Initialize items
    */
-  fclose(swath_col_item->fp);
-  fclose(swath_row_item->fp);
+  DeInitializeItem(swath_col_item);
+  DeInitializeItem(swath_row_item);
   for (i = 0; i < chan_count; i++) {
-    fclose(swath_chan_item[i].fp);
-    fclose(grid_chan_item[i].fp);
+    DeInitializeItem(&swath_chan_item[i]);
+    DeInitializeItem(&grid_chan_io_item[i]);
+    DeInitializeItem(&grid_chan_item[i]);
   }
 
   /*
@@ -434,5 +515,7 @@ main (int argc, char *argv[])
   free(swath_col_item);
   free(swath_row_item);
   free(swath_chan_item);
+  free(grid_chan_io_item);
   free(grid_chan_item);
+  free(grid_weight_item);
 }
