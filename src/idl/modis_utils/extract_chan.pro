@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.2 2001/01/19 01:16:11 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.3 2001/01/26 17:27:48 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -16,7 +16,7 @@
 ;	Modis.
 ;
 ; CALLING SEQUENCE:
-;       extract_chan, hdf_file, channel, /get_latlon
+;       extract_chan, hdf_file, channel, /get_latlon, conversion=conversion
 ;
 ; ARGUMENTS:         
 ;
@@ -31,23 +31,44 @@
 
 PRO extract_chan, hdf_file, channel, get_latlon=get_latlon
 
-  usage = 'usage: extract_chan, hdf_file, channel [, /get_latlon]'
+  usage = 'usage: extract_chan, hdf_file, channel ' + $
+          '[, /get_latlon]' + $
+          '[, conversion=conversion]'
 
   if n_params() ne 2 then $
     message, usage
-
   if n_elements(get_latlon) eq 0 then $
     get_latlon = 0
+  if n_elements(conversion) eq 0 then $
+    conversion = 'raw'
+
+  raw = 0
+  corrected = 0
+  reflectance = 0
+  temperature = 0
+
+  if conversion eq 'raw' then $
+    raw = 1
+  if conversion eq 'corrected' then $
+    corrected = 1
+  if conversion eq 'reflectance' then $
+    reflectance = 1
+  if conversion eq 'temperature' then $
+    temperature = 1
+
   print, 'extract_chan:'
   print, '  hdf_file:   ', hdf_file
   print, '  channel:    ', channel
   print, '  get_latlon: ', get_latlon
+  print, '  conversion: ', conversion
 
   modis_type = strmid(hdf_file, 0, 5)
   if get_latlon ne 0 then begin
       if modis_type eq 'MOD02' then begin
-          modis_level1b_read, hdf_file, channel, image, /raw, $
-            latitude=lat, longitude=lon
+          modis_level1b_read, hdf_file, channel, image, $
+            latitude=lat, longitude=lon, $
+            raw=raw, corrected=corrected, reflectance=reflectance, $
+            temperature=temperature
       endif else begin
           modis_snow_read, hdf_file, channel, image, $
             latitude=lat, longitude=lon
@@ -70,7 +91,9 @@ PRO extract_chan, hdf_file, channel, get_latlon=get_latlon
       free_lun, lon_lun
   endif else begin
       if modis_type eq 'MOD02' then begin 
-          modis_level1b_read, hdf_file, channel, image, /raw
+          modis_level1b_read, hdf_file, channel, image, $
+            raw=raw, corrected=corrected, reflectance=reflectance, $
+            temperature=temperature
       endif else begin
           modis_snow_read, hdf_file, channel, image
       endelse
