@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.45 2004/11/29 23:15:19 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.46 2004/11/30 19:49:04 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.45 2004/11/29 23:15:19 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.46 2004/11/30 19:49:04 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -1003,11 +1003,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   if count_min_in gt 0 then $
     swath[i_min_in] = min_in
-  if count_max_in gt 0 then begin
-      if data_type_in eq 'u2' then $
-        swath[i_max_in] = 0 $
-      else $
-        swath[i_max_in] = max_in
+  if count_max_in gt 0 then $
+    swath[i_max_in] = 0
   endif
  
   ;  put the swath back into output data type as needed
