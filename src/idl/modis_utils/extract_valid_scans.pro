@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.12 2004/12/04 19:54:38 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.13 2005/03/13 01:59:59 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -187,7 +187,7 @@ FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
                         mirror[k + 1:n - 1]
 
                     message, /informational, $
-                      'WARNING: Scan: ' + string(i, format='i3') + $
+                      'WARNING: Scan: ' + string(i, format='(i3)') + $
                       ' removed from ' + sds_name_img
                 endif
                 invalid_count = invalid_count + 1
