@@ -1,3 +1,7 @@
+; Note that the gpd and mpp files used in this test
+; (except for junk.gpd which is for generating an error)
+; can be found in lib/maps
+
 pro print_grid_class_object_instance, og
     print, '*******************************************'
     print, 'grid_origin:          ', og->get_grid_origin()
@@ -33,7 +37,7 @@ end
 pro test_grid_class, help=help
     og = obj_new('grid_class', 'junk.gpd', help=help)
 
-    og = obj_new('grid_class', 'Gl1250.gpd', help=help)
+    og = obj_new('grid_class', 'Na1.gpd', help=help)
     if obj_valid(og) then begin
         print_grid_class_object_instance, og
         lat = [ 70.0D,   70.0D]
@@ -57,7 +61,7 @@ pro test_grid_class, help=help
         obj_destroy, og, help=help
     endif
 
-    og = obj_new('grid_class', 'wilkins250.gpd', help=help)
+    og = obj_new('grid_class', 'ramp400.gpd', help=help)
     if obj_valid(og) then begin
         print_grid_class_object_instance, og
         obj_destroy, og, help=help
