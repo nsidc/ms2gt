@@ -3,7 +3,7 @@
 ;*
 ;* 23-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /usr/people/haran/photoclin/src/idl/photo2normal.pro,v 1.19 2000/06/19 22:53:45 haran Exp $
+;$Header: /export/data/modis/src/idl/fornav/fornav.pro,v 1.1 2000/10/24 22:53:52 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -396,7 +396,7 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
   swath_scan_first = swath_scan_first + first_scan_with_data
   swath_scans = last_scan_with_data - first_scan_with_data + 1
   print, 'On next call to fornav, set:'
-  print, '  swath_scans:         ', swath_scans
   print, '  swath_scan_first:    ', swath_scan_first
+  print, '  swath_scans:         ', swath_scans
 
 END ; fornav
