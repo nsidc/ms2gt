@@ -5,7 +5,7 @@
 # 27-Feb-2001 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/haran/ms2gth/src/idl/grids/Makefile,v 1.5 2003/06/26 22:45:27 haran Exp haran $
+RCSID = $Header: /data/haran/ms2gth/src/idl/grids/Makefile,v 1.6 2003/07/30 22:58:19 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -136,13 +136,14 @@ tidy :
 	rm -f *.o
 
 clean :
-	rm -f *.o *.so *.sl *.a *.tar.gz
+	rm -f *.o *.so *.sl *.a
 
 tar   : grids.tar.gz
 
 grids.tar.gz:	Makefile gc.pro gch.pro test_grid_class.pro \
 		Gl1250.gpd N200correct.mpp wilkins250.gpd wilkins.mpp lrsa_utm01000.gpd \
-		call_grids.c call_grids.h grid_class__define.pro 
+		call_grids.c call_grids.h grid_class__define.pro
+	rm -f grids.tar.gz
 	tar cvf grids.tar Makefile gc.pro gch.pro test_grid_class.pro \
 		Gl1250.gpd N200correct.mpp wilkins250.gpd wilkins.mpp lrsa_utm01000.gpd \
 		call_grids.c call_grids.h grid_class__define.pro
