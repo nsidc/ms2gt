@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.54 2004/11/25 05:16:27 haran Exp haran $
+# $Id: mod02.pl,v 1.55 2004/11/25 21:43:11 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -918,7 +918,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 	my $command;
 	my $mask_tile = "";
 	if ($maskfile ne "none") {
-	    $mask_tile = sprintf("%s_mask_%s_%05d_%05d.img",
+	    $mask_tile = sprintf("%s_mask%s_%05d_%05d.img",
 				 $tag, $tile_ext,
 				 $tile_grid_cols_this,
 				 $tile_grid_rows_this);
@@ -1054,7 +1054,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 			  "$grid_file");
 		if ($mask_tile) {
 		    my $grid_file_unmasked = $grid_file . ".unmasked";
-		    do_or_die("mv $grid_file $grid_file_unfixed");
+		    do_or_die("mv $grid_file $grid_file_unmasked");
 		    do_or_die("apply_mask -v -d $bytes_per_cell " .
 			      "$tile_grid_cols_this $tile_grid_rows_this " .
 			      "$mask_tile $grid_file_unmasked $grid_file");
@@ -1121,7 +1121,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 			  "$grid_file");
 		if ($mask_tile) {
 		    my $grid_file_unmasked = $grid_file . ".unmasked";
-		    do_or_die("mv $grid_file $grid_file_unfixed");
+		    do_or_die("mv $grid_file $grid_file_unmasked");
 		    do_or_die("apply_mask -v -d $bytes_per_cell " .
 			      "$tile_grid_cols_this $tile_grid_rows_this " .
 			      "$mask_tile $grid_file_unmasked $grid_file");
