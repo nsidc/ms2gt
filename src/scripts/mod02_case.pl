@@ -1,6 +1,4 @@
-#!/usr/bin/perl -w
-
-# $Id: mod02_case.pl,v 1.2 2001/02/19 23:57:02 haran Exp haran $
+# $Id: mod02_case.pl,v 1.3 2001/04/26 20:31:18 haran Exp haran $
 
 #========================================================================
 # mod02_case.pl - determines case for mod02.pl
@@ -8,8 +6,6 @@
 # 25-Oct-2000 T. Haran tharan@colorado.edu 303-492-1847
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-
-$|=1;
 
 sub mod02_case {
     my ($ancil_src, $latlon_src, $filestem) = @_;
