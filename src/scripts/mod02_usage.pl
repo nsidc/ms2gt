@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: pfsetup.pl,v 1.170 2000/12/20 17:55:04 haran Exp $
+# $Id: mod02_usage.pl,v 1.2 2001/02/19 23:56:31 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -11,7 +11,7 @@
 
 $|=1;
 
-$Usage = "\n
+$mod02_usage = "\n
 USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                 [ancilfile [latlon_src [ancil_src [keep [rind]]]]]
        defaults:   none          1          1       0     50
