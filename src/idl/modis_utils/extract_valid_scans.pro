@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.15 2005/03/13 02:46:21 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.16 2005/03/13 02:51:59 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -67,7 +67,7 @@ FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
   nscans_img = npixels_along_img / lines_per_scan_img
   if npixels_along_img mod lines_per_scan_img ne 0 then $
     message, 'Number of lines in image ' + sds_name_img + ': ' + $
-              string(npixels_across_img) + $
+              string(npixels_along_img) + $
               ' is not evenly divisible by ' + $
               string(lines_per_scan_img)
 
@@ -130,7 +130,7 @@ FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
   nscans_lat = npixels_along_lat / lines_per_scan_lat
   if npixels_along_lat mod lines_per_scan_lat ne 0 then $
     message, 'Number of lines in Latitude:' + $
-             string(npixels_across_lat) + $
+             string(npixels_along_lat) + $
              ' is not evenly divisible by ' + $
              string(lines_per_scan_lat)
 
