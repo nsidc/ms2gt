@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
-# $Id: mod02_usage.pl,v 1.3 2001/02/20 00:08:41 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.4 2001/02/28 22:23:08 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message

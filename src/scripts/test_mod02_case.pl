@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 $|=1;
 
 $path_modis_src = $ENV{PATH_MODIS_SRC};
