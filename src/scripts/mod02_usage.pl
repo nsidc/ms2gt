@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.9 2001/05/30 14:52:13 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.10 2001/05/30 16:56:51 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -79,13 +79,13 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                   max - use maximum weighting (default for Land/SeaMask and
                         gflags).
               fill - specifies the output fill value. Default is 0.
-  latlon_src: 1: use 5 km lat-lon data from MOD021KM hdf file (default).
-              3: use 1 km lat-lon data from MOD03 hdf file.
-              H: use 1 km lat-lon data from MOD02HKM hdf file.
-              Q: use 1 km lat-lon data from MOD02QKM hdf file.
+  latlon_src: 1: use 5 km lat-lon data from MOD021KM file (default).
+              3: use 1 km lat-lon data from MOD03 file.
+              H: use 1 km lat-lon data from MOD02HKM file.
+              Q: use 1 km lat-lon data from MOD02QKM file.
   NOTE: if latlon_src is set to 3, then ancil_src is forced to 3.
-  ancil_src: 1: use 5 km ancillary data from MOD021KM hdf file (default).
-             3: use 1 km ancillary data from MOD03 hdf file.
+  ancil_src: 1: use 5 km ancillary data from MOD021KM file (default).
+             3: use 1 km ancillary data from MOD03 file.
   NOTE: if ancil_src is set to 3, then latlon_src is forced to 3.
   keep: 0: delete intermediate chan, lat, lon, col, and row files (default).
         1: do not delete intermediate chan, lat, lon, col, and row files.
