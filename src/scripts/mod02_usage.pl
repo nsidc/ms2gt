@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.17 2004/10/23 17:39:32 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.18 2004/10/31 03:18:53 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -13,9 +13,9 @@ $mod02_usage = "\n
 USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                 [ancilfile [latlon_src [ancil_src [keep [rind
        defaults:    none         1          1       0     50
-                [fix250 [fixcolfile [fixrowfile
-       defaults:    0       none        none
-                [tile_cols [tile_rows [tile_overlap]]]]]]]]]]]
+                [fix250 [fixcolfile1 [fixcolfile2 [fixrowfile1 [fixrowfile2
+       defaults:    0        none         none         none         none
+                [tile_cols [tile_rows [tile_overlap]]]]]]]]]]]]]
                      1          1          60
 
   dirinout: directory containing the input and output files.
@@ -111,17 +111,22 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
           3: apply solar zenith correction only for MOD02QKM or MYD02QKM data.
       NOTE: If fix250 is not 0, then param must be set to soze (Solar Zenith)
       and conversion must be set to scaled (decimal degrees) in ancilfile.
-  fixcolfile: Specifies the name of an input text file containing a set of
+      NOTE: If fix250 is 1 or 2, then only channels 1 and/or 2 may be
+      specified in chanfile.
+  fixcolfileN: Specifies the name of an input text file containing a set of
         intercepts and slopes to be used for performing a de-striping fix for
-        the columns in a set of MOD02QKM or MYD02QKM data.
-  fixrowfile: Specifies the name of an input text file containing a set of
+        the columns for channel N (where N is 1 or 2) in a set of MOD02QKM or
+        MYD02QKM data.
+  fixrowfileN: Specifies the name of an input text file containing a set of
         intercepts and slopes to be used for performing a de-striping fix for
-        the rows in a set of MOD02QKM or MYD02QKM data.
-      NOTE: If fixcolfile or fixrowfile is \"none\" (the default) then the
-      corresponding col or row regressions will be performed and written to an
-      output file. This file may then be specified as fixcolfile or fixrowfile
-      in a subsequent call to mod02.pl.
-      NOTE: If fix250 is not 1 or 2, then fixcolfile and fixrowfile are ignored.
+        the rows for channel N (where N is 1 or 2) in a set of MOD02QKM or
+        MYD02QKM data.
+      NOTE: If fixcolfileN or fixrowfileN is \"none\" (the default) then the
+      corresponding col or row regressions for the corresponding channel will
+      be performed and written to an output file. This file may then be
+      specified as fixcolfileN or fixrowfileN in a subsequent call to mod02.pl.
+      NOTE: If fix250 is not 1 or 2, then fixcolfileN and fixrowfileN are
+      ignored.
   tile_cols: number of segments to use horizontally in breaking the specified
         grid into tiles. Default is 1. Must be greater than 0.
   tile_rows: number of segments to use vertically in breaking the specified
