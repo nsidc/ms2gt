@@ -4,7 +4,7 @@
 ;*
 ;* 7-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.2 2001/02/19 01:04:12 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.3 2002/05/14 22:58:32 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -65,6 +65,10 @@
 ;                   floating-point degrees.
 ;    LONGITUDE      On return, an array containing the longitude data as
 ;                   floating-point degrees.
+;    MIRROR         On return, a one dimensional array containing the
+;                   mirror-side of each scan. If mirror contains the
+;                   single element 2, then the mirror-side is undefined
+;                   for the given hdf file.
 ;    
 ; OUTPUTS:
 ;    IMAGE          A two dimensional array of image data in the requested
@@ -95,11 +99,11 @@
 ;
 ;-
 
-PRO modis_ancillary_read, filename, ancillary, image, $
+PRO modis_ancillary_read, filename, ancillary, image, mirror=mirror, $
                           conversion=conversion, area=area, $
                           latitude=latitude, longitude=longitude
 
-rcs_id = '$Id: modis_ancillary_read.pro,v 1.2 2001/02/19 01:04:12 haran Exp haran $'
+rcs_id = '$Id: modis_ancillary_read.pro,v 1.3 2002/05/14 22:58:32 haran Exp haran $'
 
 ;-----------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -122,6 +126,9 @@ if (n_elements(area) gt 0) then begin
   if (n_elements(area) ne 4) then $
     message, 'AREA must be a 4-element vector of the form [X0,Y0,NX,NY]'
 endif
+
+if (arg_present(mirror) eq 1) then $
+  mirror = -1
 
 ;- Check options
 if (n_elements(conversion) eq 0) then $
@@ -184,16 +191,22 @@ case filetype of
           (ancillary ne 'gflg') then $
           message, 'ancillary value ' + ancillary + $
                    ' is not supported for this MODIS type => ' + filetype
+        if arg_present(mirror) then $
+          mirror = 2
     end
     'MOD02HKM' : begin
         if (ancillary ne 'none') then $
           message, 'ancillary value ' + ancillary + $
                    ' is not supported for this MODIS type => ' + filetype
+        if arg_present(mirror) then $
+          mirror = 2
     end
     'MOD02QKM' : begin
         if (ancillary ne 'none') then $
           message, 'ancillary value ' + ancillary + $
                    ' is not supported for this MODIS type => ' + filetype
+        if arg_present(mirror) then $
+          mirror = 2
     end
     'MOD03' : begin
         if (ancillary ne 'none') and $
@@ -285,11 +298,41 @@ if (ancillary ne 'none') then begin
           image[i] = -999.0
         
     endif
+
 endif
 
 ;- Read latitude and longitude arrays
 if arg_present(latitude) then hdf_sd_varread, sd_id, 'Latitude', latitude
 if arg_present(longitude) then hdf_sd_varread, sd_id, 'Longitude', longitude
+
+;-----------------------------------------------------------------------------
+;- PROCESS MIRROR SIDE DATA
+;-----------------------------------------------------------------------------
+
+if arg_present(mirror) then begin
+
+    if mirror eq -1 then begin
+      ;- Get information about the mirror side array
+        mirror_sds_name = 'Mirror side'
+        varinfo = hdf_sd_varinfo(sd_id, mirror_sds_name)
+        if (varinfo.name eq '') then $
+          message, 'Image array was not found: ' + mirror_sds_name
+        nscans  = varinfo.dims[0]
+
+      ;- Set start and count values
+        start = [0L]
+        count = [nscans]
+        
+      ;- Use AREA keyword if it was supplied
+        if (n_elements(area) eq 4) then begin
+            start[0] = ((long(area[1]) > 0L) / 10) < (nscans  - 1L)
+            count[0] = ((long(area[3]) > 1L) / 10) < (nscans  - start[0])
+        endif
+
+      ;- Read mirror-side data
+        hdf_sd_varread, sd_id, mirror_sds_name, mirror, start=start, count=count 
+    endif
+endif
 
 ;-----------------------------------------------------------------------------
 ;- CLOSE THE FILE IN SDS MODE
