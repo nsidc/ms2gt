@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.40 2004/11/23 20:41:17 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.41 2004/11/23 21:15:15 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.40 2004/11/23 20:41:17 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.41 2004/11/23 21:15:15 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -654,11 +654,19 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               ; perform column regressions using the mean of
               ; the before and after vectors
 
+              ; set initial value of mean to target values
+              mean = swath[[cols_target], det, *]
+
               before = reform(swath[[cols_before], det, *], $
                               1, cells_per_det_target)
               after =  reform(swath[[cols_after],  det, *], $
                               1, cells_per_det_target)
-              mean = (temporary(before) + temporary(after)) / 2
+
+              ; only compute the mean if both the before and after values
+              ; are less than max_in
+              ok = where((before lt max_in) and (after lt max_in), count_ok)
+              if count_ok gt 0 then $
+                mean[ok] = (temporary(before[ok]) + temporary(after[ok])) / 2
               if interp_cols ne 0 then begin
 
                   ; if interpolating columns, then replace the 
