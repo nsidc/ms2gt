@@ -4,7 +4,7 @@
 ;*
 ;* 7-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.5 2004/11/21 02:15:29 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.6 2004/11/21 02:35:57 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -103,7 +103,7 @@ PRO modis_ancillary_read, filename, ancillary, image, mirror=mirror, $
                           conversion=conversion, area=area, $
                           latitude=latitude, longitude=longitude
 
-rcs_id = '$Id: modis_ancillary_read.pro,v 1.5 2004/11/21 02:15:29 haran Exp haran $'
+rcs_id = '$Id: modis_ancillary_read.pro,v 1.6 2004/11/21 02:35:57 haran Exp haran $'
 
 ;-----------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -181,7 +181,7 @@ endcase
 ;- Check ancillary name
 case filetype of
     'MOD021KM' : begin
-        lines_per_scan = 10
+        lines_per_scan = 2
         if (ancillary ne 'none') and $
           (ancillary ne 'hght') and $
           (ancillary ne 'seze') and $
@@ -196,7 +196,7 @@ case filetype of
           mirror = 2
     end
     'MOD02HKM' : begin
-        lines_per_scan = 20
+        lines_per_scan = 10
         if (ancillary ne 'none') then $
           message, 'ancillary value ' + ancillary + $
                    ' is not supported for this MODIS type => ' + filetype
@@ -204,7 +204,7 @@ case filetype of
           mirror = 2
     end
     'MOD02QKM' : begin
-        lines_per_scan = 40
+        lines_per_scan = 10
         if (ancillary ne 'none') then $
           message, 'ancillary value ' + ancillary + $
                    ' is not supported for this MODIS type => ' + filetype
@@ -290,9 +290,11 @@ endif
 
 ;- Read latitude and longitude arrays
 if arg_present(latitude) then $
-      latitude = extract_valid_scans(sd_id, 'Latitude', 10, -1, area=area)
+      latitude = extract_valid_scans(sd_id, 'Latitude', lines_per_scan, $
+                                     -1, area=area)
 if arg_present(longitude) then $
-      longitude = extract_valid_scans(sd_id, 'Longitude', 10, -1, area=area)
+      longitude = extract_valid_scans(sd_id, 'Longitude', lines_per_scan, $
+                                      -1, area=area)
 
 ;-----------------------------------------------------------------------------
 ;- PROCESS MIRROR SIDE DATA
@@ -303,7 +305,8 @@ if arg_present(mirror) then begin
     if mirror eq -1 then begin
 
       ;- Read mirror-side data
-        mirror = extract_valid_scans(sd_id, 'Mirror side', 10, -1, area=area)
+        mirror = extract_valid_scans(sd_id, 'Mirror side', lines_per_scan, $
+                                     -1, area=area)
     endif
 endif
 
