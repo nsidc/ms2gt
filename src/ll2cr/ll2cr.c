@@ -4,7 +4,7 @@
  * 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char ll2cr_c_rcsid[] = "$Header: /export/data/ms2gth/src/ll2cr/ll2cr.c,v 1.9 2001/03/06 23:12:03 haran Exp haran $";
+static const char ll2cr_c_rcsid[] = "$Header: /export/data/ms2gth/src/ll2cr/ll2cr.c,v 1.10 2001/04/30 20:44:41 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -175,7 +175,7 @@ main (int argc, char *argv[])
     fprintf(stderr, "  force         = %d\n", force);
     fprintf(stderr, "  rind          = %d\n", rind);
     fprintf(stderr, "  fill_in       = %f\n", fill_in);
-    fprintf(stderr, "  fill_out      = %f\n", fill_out);
+    fprintf(stderr, "  fill_out      = %e\n", fill_out);
     fprintf(stderr, "  colsin        = %d\n", colsin);
     fprintf(stderr, "  scansin       = %d\n", scansin);
     fprintf(stderr, "  rowsperscan   = %d\n", rowsperscan);
