@@ -3,7 +3,7 @@
 ;*
 ;* 20-Nov-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_regress.pro,v 1.6 2002/11/27 18:02:34 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_regress.pro,v 1.7 2004/10/29 20:05:38 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -49,7 +49,8 @@
 ;         from the second linear regression. That is, after k and m have
 ;         been determined from the first linear regression, the values
 ;         y'(i) = k + m * x(i) are calculated. Then outliers are defined
-;         to be all points x(i) for which abs(y'(i) - y(i)) >= y_tolerance.
+;         to be all points x(i) for which
+;         abs((y'(i) - y(i)) / y(i)) >= y_tolerance.
 ;         Then a second regression is performed on the remaining x(i) after
 ;         the outliers have been removed to determine the final k and m
 ;         values. The default value of y_tolerance is 0.0.
@@ -139,7 +140,7 @@ Pro modis_regress, x, y, slope, intercept, $
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
-  print, 'modis_regress: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_regress.pro,v 1.6 2002/11/27 18:02:34 haran Exp haran $'
+  print, 'modis_regress: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_regress.pro,v 1.7 2004/10/29 20:05:38 haran Exp haran $'
   help, x
   help, y
   if skip_first_regression then begin
@@ -248,7 +249,12 @@ Pro modis_regress, x, y, slope, intercept, $
 
       repeat begin
           slope_old = slope[0]
-          i = where(abs(y - (slope[0] * x + intercept)) lt $
+          y2 = y
+          j = where(abs(y2) lt 1e-8, n2)
+          if n2 gt 0 then $
+            y2[j] = 1
+          j = 0
+          i = where(abs((y - (slope[0] * x + intercept)) / y2) lt $
                     y_tolerance, n2)
           help, n2
           if n2 lt 2 then begin
