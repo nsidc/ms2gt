@@ -135,7 +135,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; MODIFICATION HISTORY:
 ; Liam.Gumley@ssec.wisc.edu
 ; http://cimss.ssec.wisc.edu/~gumley
-; $Id: modis_level1b_read.pro,v 1.14 2000/05/04 21:48:49 gumley Exp $
+; $Id: modis_level1b_read.pro,v 1.1 2000/10/21 00:38:58 haran Exp haran $
 ;
 ; Copyright (C) 1999, 2000 Liam E. Gumley
 ;
@@ -154,7 +154,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ;-
 
-rcs_id = '$Id: modis_level1b_read.pro,v 1.14 2000/05/04 21:48:49 gumley Exp $'
+rcs_id = '$Id: modis_level1b_read.pro,v 1.1 2000/10/21 00:38:58 haran Exp haran $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -429,9 +429,15 @@ hdf_close, hdfid
 ;- CONVERT IMAGE TO REQUESTED OUTPUT UNITS
 ;-------------------------------------------------------------------------------
 
+; I'VE CHANGED THE BEHAVIOR HERE SO THAT THIS CONVERSION IS ONLY PERFORMED
+; IF WE DON'T WANT RAW DATA -- TERRY HARAN 10/20/2000
+
 ;- Convert from unsigned short integer to signed long integer
-image = temporary(image) and 65535L
-valid_range = valid_range and 65535L
+
+if not keyword_set(raw) then begin
+    image = temporary(image) and 65535L
+    valid_range = valid_range and 65535L
+endif
 
 ;- Get valid/invalid indexes and counts
 if arg_present(valid_index) or arg_present(valid_count) or $
