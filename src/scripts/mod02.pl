@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod02.pl,v 1.30 2001/04/19 20:26:58 haran Exp haran $
+# $Id: mod02.pl,v 1.31 2001/04/23 20:35:52 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -777,6 +777,7 @@ for ($i = 0; $i < $chan_count; $i++) {
     my $fill = $chan_fills[$i];
     my $F_option = "-F $fill";
     do_or_die("fornav 1 -v $t_option $f_option $m_option $F_option " .
+	      "-d $weight_distance_max " .
 	      "$swath_cols $swath_scans $swath_rows_per_scan " .
 	      "$cols_file $rows_file $chan_file " .
 	      "$grid_cols $grid_rows $grid_file");
