@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.11 2002/11/24 21:53:26 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.12 2002/11/24 22:56:47 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -266,7 +266,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.11 2002/11/24 21:53:26 haran Exp haran $' 
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.12 2002/11/24 22:56:47 haran Exp haran $' 
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
   print, '  file_in:              ', file_in
@@ -478,7 +478,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               dir = string(row_plot_tag, '_', pass_ctr, $
                            format='(a, a, i1.1)')
               spawn, 'mkdir ' + dir, /sh
-              spawn, 'mv dir*.ps dir', /sh
+              spawn, 'mv ' + dir + '*.ps ' + dir, /sh
           endif
       endfor ; pass_ctr
 
