@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.39 2004/08/27 16:04:42 haran Exp haran $
+# $Id: mod02.pl,v 1.40 2004/10/23 17:40:48 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -349,6 +349,7 @@ my $case;
 my $line;
 my $hdf;
 my $hdf_prefix;
+my $platform;
 my @filestems;
 my @ancil_filestems;
 my $old_case = -1;
@@ -359,7 +360,7 @@ for ($line = 0; $line < @list; $line++) {
     my ($filestem) = ($hdf =~ /(.*)\.hdf/);
     my $old_latlon_src = $latlon_src;
     my $old_ancil_src = $ancil_src;
-    ($ancil_src, $latlon_src, $filestem, $hdf_prefix, $case) =
+    ($ancil_src, $latlon_src, $filestem, $hdf_prefix, $case, $platform) =
 	mod02_case($old_ancil_src, $old_latlon_src, $filestem);
     if ($line > 0 && $case != $old_case) {
 	diemail("$script: FATAL: inconsistent case values");
@@ -863,27 +864,33 @@ for ($i = 0; $i < $chan_count; $i++) {
 	my $nor_rows = "";
 	my $reg_rows = "";
 	my $undo_soze = "";
-	my $file_reg_col_in = "";
-	my $file_reg_col_out = "";
-	my $file_reg_row_in = "";
-	my $file_reg_row_out = "";
+	my $file_reg_cols_in = "";
+	my $file_reg_cols_out = "";
+	my $file_reg_rows_in = "";
+	my $file_reg_rows_out = "";
+	my $reg_row_mirror_side = "";
 	if ($fix250 == 1 || $fix250 == 2) {
 	    $reg_col_offset = "reg_col_offset=" . (($chan == 1) ? "3" : "0");
 	    if ($fixcolfile eq "none") {
-		$reg_cols = "/reg_cols";
-		$file_reg_col_out = "file_reg_col_out=$chan_file" . "colfix";
+		if ($platform eq "terra" && $chan == 2) {
+		    $reg_cols = "/reg_cols";
+		}
+		$file_reg_cols_out = "file_reg_cols_out=\"'$chan_file" . ".colfix'\"";
 	    } else {
-		$file_reg_col_in = "file_reg_col_in=$fixcolfile";
+		$file_reg_cols_in = "file_reg_cols_in=\"'$fixcolfile'\"";
 	    }
 	    if ($fixrowfile eq "none") {
 		$nor_rows = "/nor_rows";
 		$reg_rows = "/reg_rows";
-		$file_reg_row_out = "file_reg_row_out=$chan_file" . "rowfix";
+		$file_reg_rows_out = "file_reg_rows_out=\"'$chan_file" . ".rowfix'\"";
 	    } else {
-		$file_reg_row_in = "file_reg_row_in=$fixrowfile";
+		$file_reg_rows_in = "file_reg_rows_in=\"'$fixrowfile'\"";
 	    }
 	    if ($fix250 == 2) {
 		$undo_soze = "/undo_soze";
+	    }
+	    if ($ancil_mirror != 2) {
+		$reg_row_mirror_side = "reg_row_mirror_side=$ancil_mirror";
 	    }
 	}
 	my $data_type = $chan_conversions[$i] eq "raw" ? "u2" : "f4";
@@ -896,8 +903,9 @@ for ($i = 0; $i < $chan_count; $i++) {
 		      "$reg_cols $reg_col_offset " .
 		      "$nor_rows $reg_rows $undo_soze " .
 		      "$data_type_in $data_type_out " .
-                      "$file_reg_col_in $file_reg_col_out " .
-		      "$file_reg_row_in $file_reg_row_out";
+                      "$file_reg_cols_in $file_reg_cols_out " .
+		      "$file_reg_rows_in $file_reg_rows_out " .
+		      "$reg_row_mirror_side";
 	print_stderr("$command\n");
 	do_or_die($command);
 	if (!$keep) {
