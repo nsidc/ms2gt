@@ -5,4 +5,7 @@ rcp $MS2GT_HOME/doc/tutorial_1.html bipolar:/WEB/Other/PROJECTS/HDFEOS/MS2GT
 rcp $MS2GT_HOME/doc/tutorial_2.html bipolar:/WEB/Other/PROJECTS/HDFEOS/MS2GT
 rcp $MS2GT_HOME/doc/tutorial_3.html bipolar:/WEB/Other/PROJECTS/HDFEOS/MS2GT
 rcp $MS2GT_HOME/doc/tutorial_4.html bipolar:/WEB/Other/PROJECTS/HDFEOS/MS2GT
+rcp $MS2GT_HOME/doc/mod02_usage     bipolar:/WEB/Other/PROJECTS/HDFEOS/MS2GT
+rcp $MS2GT_HOME/doc/mod10_l2_usage  bipolar:/WEB/Other/PROJECTS/HDFEOS/MS2GT
+rcp $MS2GT_HOME/doc/mod29_usage     bipolar:/WEB/Other/PROJECTS/HDFEOS/MS2GT
 rsh bipolar chmod 444 /WEB/Other/PROJECTS/HDFEOS/MS2GT/*
