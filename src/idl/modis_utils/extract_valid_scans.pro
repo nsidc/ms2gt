@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.7 2001/04/19 20:05:57 haran Exp $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.1 2004/11/21 02:14:49 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -108,12 +108,6 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
         ;- scan was all fill
             got_fill_scan = 1
             if i lt nscans - 1 then begin
-                help, i
-                help, nscans
-                help, image
-                help, first
-                help, last
-                help, npixels_per_scan
                 image[first:(nscans - 1) * npixels_per_scan - 1] = $
                   image[first + npixels_per_scan:nscans * npixels_per_scan - 1]
                 if got_mirror then $
