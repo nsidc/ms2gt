@@ -4,7 +4,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
   SCANTIME=SCANTIME, LATITUDE=LATITUDE, LONGITUDE=LONGITUDE, $
   VALID_INDEX=VALID_INDEX, VALID_COUNT=VALID_COUNT, $
   INVALID_INDEX=INVALID_INDEX, INVALID_COUNT=INVALID_COUNT, $
-  RANGE=RANGE, FIX_250=FIX_250
+  RANGE=RANGE
   
 ;+
 ; NAME:
@@ -135,7 +135,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; MODIFICATION HISTORY:
 ; Liam.Gumley@ssec.wisc.edu
 ; http://cimss.ssec.wisc.edu/~gumley
-; $Id: modis_level1b_read.pro,v 1.2 2000/10/21 01:00:14 haran Exp haran $
+; $Id: modis_level1b_read.pro,v 1.3 2001/12/05 20:04:34 haran Exp haran $
 ;
 ; Copyright (C) 1999, 2000 Liam E. Gumley
 ;
@@ -154,7 +154,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ;-
 
-rcs_id = '$Id: modis_level1b_read.pro,v 1.2 2000/10/21 01:00:14 haran Exp haran $'
+rcs_id = '$Id: modis_level1b_read.pro,v 1.3 2001/12/05 20:04:34 haran Exp haran $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -454,12 +454,6 @@ if keyword_set(raw) then begin
   ;- Leave as HDF values
   units = 'Unsigned 16-bit integers'
   parameter = 'Raw HDF Values'
-
-  if (keyword_set(fix_250)) and $
-      (sds_name eq 'EV_250_RefSB') and $
-      (band eq 1) then begin
-      image = fix_modis_250(temporary(image))
-  endif
 
 endif else begin
 
