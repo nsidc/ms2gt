@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.45 2004/11/02 01:01:17 haran Exp haran $
+# $Id: mod02.pl,v 1.46 2004/11/05 02:11:54 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -771,7 +771,9 @@ for ($line = 0; $line < @list; $line++) {
 	$this_ancil_row_first -= $ancil_rows_expected;
     }
 }
+$swath_cols = sprintf("%05d", $swath_cols);
 $swath_rows = sprintf("%05d", $swath_rows);
+$ancil_cols = sprintf("%05d", $ancil_cols);
 $ancil_rows = sprintf("%05d", $ancil_rows);
 
 my @chan_files;
@@ -961,9 +963,10 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		    $tagext .= "m";
 		}
 		$tagext .= $tile_ext;
-		$grid_file =
-		    "$tag\_$tagext\_ch$chan\_" .
-		    "$tile_grid_cols_this\_$tile_grid_rows_this.img";
+		$grid_file = sprintf("%s_%s_ch%s_%05d_%05d.img",
+				     $tag, $tagext, $chan,
+				     $tile_grid_cols_this,
+				     $tile_grid_rows_this);
 		my $t_option;
 		my $f_option;
 		if ($chan_conversions[$i] eq "raw") {
@@ -1007,9 +1010,10 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		    $tagext .= "m";
 		}
 		$tagext .= $tile_ext;
-		$grid_file =
-		    "$tag\_$tagext\_$ancil\_" .
-		    "$tile_grid_cols_this\_$tile_grid_rows_this.img";
+		$grid_file = sprintf("%s_%s_%s_%05d_%05d.img",
+				     $tag, $tagext, $ancil,
+				     $tile_grid_cols_this,
+				     $tile_grid_rows_this);
 		my $data_type = $ancil_data_types[$i];
 		my $t_option = "-t $data_type";
 		my $fill_in;
