@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.33 2004/10/30 22:43:27 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.34 2004/10/31 23:48:25 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -34,6 +34,7 @@
 ;               [, data_type_out=data_type_out]
 ;               [, file_soze=file_soze]
 ;               [, /undo_soze]
+;               [, /interp_cols]
 ;               [, /reg_cols]
 ;               [, file_reg_cols_in=file_reg_cols_in]
 ;               [, file_reg_cols_out=file_reg_cols_out]
@@ -91,7 +92,10 @@
 ;         of the corresponding solar zenith value after regressions are
 ;         performed. If file_soze is a null string, then undo_soze is
 ;         ignored.
+;       interp_cols: If set then column interpolations are performed.
 ;       reg_cols: If set then column regressions are computed.
+;       NOTE: interp_cols and reg_cols may not both be set, i.e. they
+;             are mutually exclusive.
 ;       file_reg_col_in: Specifies the name of an input text file
 ;         containing an initial set of intercepts and slopes that are
 ;         applied to the data before any column regressions (if any) are
@@ -102,17 +106,21 @@
 ;           01            0.00000000E+00    1.00000000E+00
 ;           .                   .                 .
 ;           39            0.00000000E+00    1.00000000E+00
+;       NOTE: interp_cols and file_reg_col_in may not both be set, i.e.
+;             they are mutually exclusive.
 ;       file_reg_col_out: Specifies the name of an output text file
 ;         containing the final set of intercepts and slopes for column
 ;         regressions. The file has the same format as for file_reg_col_out.
 ;       reg_col_detectors: Array of zero-based detector numbers to use for
-;         column regressions. The default value of reg_col_detectors
-;         is [27,28,29].
+;         column regressions and/or interpolations. The default value of
+;         reg_col_detectors is [27,28,29].
 ;       reg_col_stride: the stride value to use for performing column
-;         regressions. The default value of reg_col_stride is 4.
+;         regressions and/or interpolations. The default value of
+;         reg_col_stride is 4.
 ;         NOTE: reg_col_stride must divide evenly into cols.
 ;       reg_col_offset: the offset value to use for performing column
-;         regressions. The default value of reg_col_offset is 0.
+;         regressions and/or interpolations. The default value of
+;         reg_col_offset is 0.
 ;         NOTE: reg_col_offset must be less than reg_col_stride.
 ;       nor_rows: If set then row normalization is performed.
 ;       reg_rows: If set then row regressions are computed.
@@ -237,6 +245,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                   data_type_out=data_type_out, $
                   file_soze=file_soze, $
                   undo_soze=undo_soze, $
+                  interp_cols=interp_cols, $
                   reg_cols=reg_cols, $
                   file_reg_cols_in=file_reg_cols_in, $
                   file_reg_cols_out=file_reg_cols_out, $
@@ -272,6 +281,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                 '[, data_type_out=data_type_out] ' +   lf + $
                 '[, file_soze=file_soze] ' + lf + $
                 '[, /undo_soze] ' + lf + $
+                '[, /interp_cols] ' + lf + $
                 '[, /reg_cols] ' + lf + $
                 '[, file_reg_cols_in=file_reg_cols_in] ' + lf + $
                 '[, file_reg_cols_out=file_reg_cols_out] ' + lf + $
@@ -309,6 +319,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     file_soze = ''
   if n_elements(undo_soze) eq 0 then $
     undo_soze = 0
+  if n_elements(interp_cols) eq 0 then $
+    interp_cols = 0
   if n_elements(reg_cols) eq 0 then $
     reg_cols = 0
   if n_elements(file_reg_cols_in) eq 0 then $
@@ -366,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.33 2004/10/30 22:43:27 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.34 2004/10/31 23:48:25 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -377,6 +389,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   print, '  data_type_out:        ', data_type_out
   print, '  file_soze:            ', file_soze
   print, '  undo_soze:            ', undo_soze
+  print, '  interp_cols:          ', interp_cols
   print, '  reg_cols:             ', reg_cols
   print, '  file_reg_cols_in:     ', file_reg_cols_in
   print, '  file_reg_cols_out:    ', file_reg_cols_out
@@ -434,6 +447,12 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   if (reg_row_mirror_side ne 0) and (reg_row_mirror_side ne 1) then $
     message, 'reg_row_mirror_side must be 0 or 1'
+
+  if (interp_cols ne 0) and (reg_cols ne 0) then $
+    message, 'interp_cols and reg_cols may not both be set'
+
+  if (interp_cols ne 0) and (file_reg_cols_in ne '') then $
+    message, 'interp_cols and file_reg_cols_in may not both be specified'
 
   ; calculate the number of cells in the entire swath
 
@@ -562,7 +581,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   reg_slope = make_array(rows_per_scan, /float, value=1.0)
   reg_intcp = make_array(rows_per_scan, /float, value=0.0)
 
-  if (file_reg_cols_in ne '') or (reg_cols ne 0) then begin
+  if (file_reg_cols_in ne '') or $
+     (interp_cols ne 0) or (reg_cols ne 0) then begin
 
   ; perform correction for the "fourth pixel" artifact
 
@@ -583,7 +603,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       if cols_per_target eq 0 then $
         message, 'No cells targeted for column regressions'
 
-      if reg_cols ne 0 then begin
+      if (interp_cols ne 0) or (reg_cols ne 0) then begin
 
           ; "before" are the pixels to the left of the target
           ; "after" are the pixels to the right of the target
@@ -627,7 +647,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               endelse
           endif
           det_target = reg_col_detectors[det_ctr]
-          if (reg_cols ne 0) and (det_target eq det) then begin
+          if ((interp_cols ne 0) or (reg_cols ne 0)) and $
+             (det_target eq det) then begin
 
               ; perform column regressions using the mean of
               ; the before and after vectors
@@ -637,40 +658,52 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               after =  reform(swath[[cols_after],  det, *], $
                               1, cells_per_det_target)
               mean = (temporary(before) + temporary(after)) / 2
-              plot_tag = col_plot_tag
-              if plot_tag ne '' then $
-                plot_tag = string(plot_tag + '_', det, $
-                                  format='(a, i2.2)')
-              xtitle=string('mean before and after' + $
-                            '  stride: ', reg_col_stride, $
-                            '  offset: ', reg_col_offset, $
-                            format='(a, i2, a, i2)')
-              ytitle=string('det: ', det, $
-                            format='(a, i2.2)')
-              modis_regress, mean, target, $
-                             slope, intcp, $
-                             y_tolerance=col_y_tolerance, $
-                             slope_delta_max=col_slope_delta_max, $
-                             regression_max=col_regression_max, $
-                             density_bin_width=col_density_bin_width, $
-                             plot_tag=plot_tag, $
-                             plot_max=col_plot_max, $
-                            plot_titles=[xtitle,ytitle]
+              if interp_cols ne 0 then begin
 
-              ; use the calculated slope and intercept to correct the
-              ; target vector
+                  ; if interpolating columns, then replace the 
+                  ; target with the mean of the before and after vectors
 
-              if abs(slope) ge epsilon then $
-                swath[[cols_target], det, *] = (target - intcp) / slope
+                  swath[[cols_target], det, *] = mean
+              endif else begin
 
-              ; accumulate the calculated slope and intercept into the
-              ; previous values
+                  ; perform the regression
+                  
+                  plot_tag = col_plot_tag
+                  if plot_tag ne '' then $
+                    plot_tag = string(plot_tag + '_', det, $
+                                      format='(a, i2.2)')
+                  xtitle=string('mean before and after' + $
+                                '  stride: ', reg_col_stride, $
+                                '  offset: ', reg_col_offset, $
+                                format='(a, i2, a, i2)')
+                  ytitle=string('det: ', det, $
+                                format='(a, i2.2)')
+                  modis_regress, mean, target, $
+                    slope, intcp, $
+                    y_tolerance=col_y_tolerance, $
+                    slope_delta_max=col_slope_delta_max, $
+                    regression_max=col_regression_max, $
+                    density_bin_width=col_density_bin_width, $
+                    plot_tag=plot_tag, $
+                    plot_max=col_plot_max, $
+                    plot_titles=[xtitle,ytitle]
 
-              reg_slope[det] = slope * reg_slope[det]
-              reg_intcp[det] = slope * reg_intcp[det] + intcp
+                  ; use the calculated slope and intercept to correct the
+                  ; target vector
+
+                  if abs(slope) ge epsilon then $
+                    swath[[cols_target], det, *] = (target - intcp) / slope
+
+                  ; accumulate the calculated slope and intercept into the
+                  ; previous values
+
+                  reg_slope[det] = slope * reg_slope[det]
+                  reg_intcp[det] = slope * reg_intcp[det] + intcp
+              endelse
               if det_ctr lt det_count - 1 then $
                 det_ctr = det_ctr + 1
-          endif else begin      ; if (reg_cols ne 0) and (det_target eq det)
+          endif else begin   ;if ((interp_cols ne 0) or (reg_cols ne 0)) and $
+                             ;(det_target eq det)
               swath[[cols_target], det, *] = target
           endelse
       endfor                    ; det
@@ -679,7 +712,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
       swath = reform(swath, cells_per_swath, /overwrite)
 
-  endif ; if reg_cols ne 0
+  endif ;if (file_reg_cols_in ne '') or $
+        ;   (interp_cols ne 0) or (reg_cols ne 0) then begin
 
   if file_reg_cols_out ne '' then begin
 
