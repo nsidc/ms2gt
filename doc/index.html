@@ -1,0 +1,226 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (X11; U; IRIX 6.5 IP32) [Netscape]">
+   <title>AVHRR Pathfinder Product Team Home Page</title>
+</head>
+<body background="back167.jpg">
+
+<center>
+<h1>
+MS2GT: The MODIS Swath-to-Grid Toolbox</h1></center>
+
+<ul>
+<li>
+<a href="#overview">Overview</a></li>
+
+<li>
+&nbsp;<a href="#requirements">Requirements</a></li>
+
+<li>
+<a href="#datasets">Supported Data Sets</a></li>
+
+<li>
+<a href="#obtaining">Obtaining the Software</a></li>
+
+<li>
+<a href="#building">Building the Executables</a></li>
+
+<li>
+<a href="#environment">Setting up the Environment</a></li>
+
+<li>
+<a href="#running">Running the Software</a></li>
+
+<li>
+<a href="tutorials.html">Tutorials</a></li>
+</ul>
+
+<h2>
+<a NAME="overview"></a>Overview</h2>
+The MODIS Swath-to-Grid Toolbox (MS2GT) is a set of software tools that
+can be used to read HDF-EOS files containing MODIS swath data and produce
+flat binary files containing gridded data in a variety of map projections.
+Multiple input files corresponding to successively acquired 5 minute MODIS
+"scenes" can be processed together to produce a seamless output grid.
+<p>MS2GT consists of three perl programs that make calls to several standalone
+IDL and C programs. The three perl programs read MOD02 Level 1b files (mod02.pl),
+MOD10_L2 snow cover files (mod10_l2.pl), and MOD29 sea ice files (mod29.pl).&nbsp;
+All three Perl programs can optionally read MOD03 files for geolocation
+and/or ancillary data. User-specified swath data arrays are read out of
+HDF-EOS files using a suite of IDL programs written by Liam Gumley of SSEC
+at the University of Washington. During this step, radiance data can be
+left as raw integer counts or converted to floating-point corrected counts,
+radiances, or reflectances; similarly, thermal data can be left as raw
+counts or converted to temperatures. These swath data arrays, including
+latitude and longitude arrays, are saved as temporary data files. The latitude
+and longitude files are then converted to files containing column and row
+numbers of the target grid by a C program called ll2cr which uses the mapx
+C library written by Ken Knowles of NSIDC. The mapx library requires the
+use of a user-supplied Grid Parameters Definition (.gpd) text file that
+specifies the desired grid and associated map projection.&nbsp; The column
+and row files and any ancillary data files are then interpolated to the
+resolution of the primary data files (1 km for MOD021KM and MOD29, 500
+m for MOD02HKM and MOD10_L2, or 250 m for MOD02QKM) as necessary using
+two IDL programs (iterp_colrow.pro and interp_swath.pro). Finally, the
+interpolated column and row files, together with the primary data files
+and any interpolated ancillary data files are run through a C program called
+fornav that performs forward navigation to produce gridded flat binary
+files. The user can specify that either elliptical weighted averaging or
+elliptical maximum weight sampling be used during forward navigation.
+<h2>
+<a NAME="requirements"></a>Requirements</h2>
+In its current form, MS2GT runs on a Unix workstation with a standard C
+compiler. It also requires Perl 5.0 or higher and IDL 5.0 or higher.
+<p>MS2GT has been developed and tested on an SGI O2 workstation having
+192 Mbytes of memory and running IRIX 6.5, perl 5.004_04, and IDL 5.4.
+Care has been taken to minimize memory requirements at the expense of increased
+temporary disk storage requirements and slightly slower speed. However,
+in its current form, MS2GT does require that the two times the entire grid's
+worth of data for one channel fit into virtual memory. The result is that
+fairly large gridded images can be created on a machine with a modest amount
+of memory in a fairly short time. For example, the creation of two 1316x1384
+250 m grids containing MODIS channels 1 and 2 reflectance data derived
+from a single MOD02QKM file takes about three minutes on the above machine.
+<br>&nbsp;
+<h2>
+<a NAME="datasets"></a>Supported Data Sets</h2>
+
+<table BORDER WIDTH="100%" NOSAVE >
+<tr>
+<td>Short Name</td>
+
+<td>Long Name</td>
+
+<td>DAAC</td>
+
+<td>Data</td>
+
+<td>Geoloc</td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>MOD021KM</td>
+
+<td>MODIS/TERRA CALIBRATED RADIANCES 5-MIN L1B SWATH 1KM</td>
+
+<td>GSFC</td>
+
+<td>1 km</td>
+
+<td>5 km</td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>MOD02HKM</td>
+
+<td>MODIS/TERRA CALIBRATED RADIANCES 5-MIN L1B SWATH 500M</td>
+
+<td>GSFC</td>
+
+<td>500 m</td>
+
+<td>1 km</td>
+</tr>
+
+<tr>
+<td>MOD02QKM</td>
+
+<td>MODIS/TERRA CALIBRATED RADIANCES 5-MIN L1B SWATH 250M</td>
+
+<td>GSFC</td>
+
+<td>250 m</td>
+
+<td>1 km</td>
+</tr>
+
+<tr>
+<td>MOD03</td>
+
+<td>MODIS/TERRA GEOLOCATION FIELDS 5-MIN L1A SWATH 1KM</td>
+
+<td>GSFC</td>
+
+<td>1 km</td>
+
+<td>1 km</td>
+</tr>
+
+<tr>
+<td>MOD10_L2</td>
+
+<td>MODIS/TERRA SNOW COVER 5-MIN L2 SWATH 500M</td>
+
+<td>NSIDC</td>
+
+<td>500 m</td>
+
+<td>5 km</td>
+</tr>
+
+<tr>
+<td>MOD29</td>
+
+<td>MOD29 L2 SEA ICE COVER GRANULE</td>
+
+<td>NSIDC</td>
+
+<td>1 km</td>
+
+<td>5 km</td>
+</tr>
+</table>
+
+<h2>
+<a NAME="obtaining"></a>Obtaining the Software</h2>
+The software and associated documentation can be downloaded from <a href="ftp://baikal.colorado.edu/pub/NSIDC/ms2gt.tar.gz">ftp://baikal.colorado.edu/pub/NSIDC/ms2gt00.00.tar.gz</a>.
+Where 00.00 is the current version and release. Save this file in some
+directory and type:
+<p><tt>gunzip ms2gt00.00.tar.gz</tt>
+<br><tt>tar xvf ms2gt00.00.tar</tt>
+<p>This will create a directory in the current directory called ms2gt which
+will contain several subdirectories. Further instructions on the installation
+and use of MS2GT can be then found in html files in the ms2gt/doc subdirectory.
+Point your browser to ms2gt/doc/index.html (this document).
+<h2>
+<a NAME="building"></a>Building the Executables</h2>
+Change the current working directory to the ms2gt directory and type:
+<p><tt>make all</tt>
+<p>This will build and install the MS2GT executables under the ms2gt directory.
+The only write privileges required are the ability to write into the ms2gt
+directory and its subdirectories.
+<h2>
+<a NAME="environment"></a>Setting up the Environment</h2>
+Edit your .cshrc file and insert the following two lines:
+<p><tt>setenv MS2GT_HOME $HOME/ms2gt</tt>
+<br><tt>source $MS2GT_HOME/ms2gt_env.csh</tt>
+<p>If you installed ms2gt into some directory other than $HOME, then change
+the first line accordingly. If your .cshrc includes lines such as:
+<p><tt>setenv IDL_DIR /usr/local/rsi/idl</tt>
+<br><tt>source $IDL_DIR/bin/idl_setup</tt>
+<br><tt>setenv IDL_PATH ...</tt>
+<p>then the two MS2GT lines above should be placed after these IDL lines
+in your .cshrc file. Once your .cshrc file has been editted, then logout
+and login again, or else type the following two lines:
+<p><tt>source ~/.cshrc</tt>
+<br><tt>rehash</tt>
+<h2>
+<a NAME="running"></a>Running the Software</h2>
+Try typing in the following three commands to get the syntax of each of
+the three perl scripts:
+<p><tt>mod02.pl</tt>
+<br><tt>mod10_l2.pl</tt>
+<br><tt>mod29.pl</tt><tt></tt>
+<p>
+<hr><font size=-1>Last updated: April 13, 2001 by</font>
+<br><font size=-1>Terry Haran</font>
+<br><font size=-1>NSIDC-CIRES</font>
+<br><font size=-1>449 UCB</font>
+<br><font size=-1>University of Colorado</font>
+<br><font size=-1>Boulder, CO 80309-0449</font>
+<br><font size=-1>303-492-1847</font>
+<br><font size=-1><a href="mailto:tharan@colorado.edu">tharan@colorado.edu</a></font>
+</body>
+</html>
