@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.37 2004/11/23 20:07:50 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.38 2004/11/23 20:18:47 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.37 2004/11/23 20:07:50 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.38 2004/11/23 20:18:47 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -553,7 +553,6 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       
       soze = cos(temporary(soze) * !dtor)
 
-      ;  compute 1/cos(soze)
       ;  don't divide by small cosines
       ;  and set swath to min value for small cosines
 
@@ -562,14 +561,11 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
           soze[i] = 1.0
           swath[i] = min_in
       endif
-      i = where(abs(soze) ge epsilon, count)
-      if count gt 0 then $
-        soze[i] = 1.0 / temporary(soze[i])
       i = 0
 
-      ;  multiply swath data by 1/cos(soze)
+      ;  divide swath data by cos(soze)
 
-      swath = temporary(swath) * soze
+      swath = temporary(swath) / soze
   endif
 
 
@@ -990,7 +986,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   ;  undo solar zenith normalization if required
 
   if (file_soze ne '') and (undo_soze ne 0) then begin
-      swath = temporary(swath) / soze
+      swath = temporary(swath) * soze
       soze = 0
   endif
 
