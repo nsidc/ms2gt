@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.8 2002/11/24 00:37:28 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.9 2002/11/24 01:01:14 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -423,77 +423,41 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
       swath = reform(swath, cols, rows_per_ds_scan, ds_scans, /overwrite)
 
-      ; initialize slope and intercept arrays
-
-      slope = make_array(rows_per_ds_scan, /float, value=1.0)
-      intcp = make_array(rows_per_ds_scan, /float, value=0.0)
-
-      reg_count = rows_per_ds_scan
       case rows_per_scan of
-          40: pass_count = 5
-          20: pass_count = 4
-          10: pass_count = 3
+          40: pass_count = 6
+          20: pass_count = 5
+          10: pass_count = 4
       endcase
+      mean_count = rows_per_ds_scan
       for pass_ctr = 0, pass_count - 1 do begin
-          mean_count = reg_count / 2
-          reg_count_mod_2 = reg_count mod 2
-          if reg_count_mod_2 eq 1 then $
+          mean_count = mean_count / 2
+          if (mean_count mod 2) eq 1 then $
             mean_count = mean_count - 1
-          reg_ctr = 0
-          help, pass_ctr
+          vectors_per_mean = rows_per_ds_scan / mean_count
+          ds_det = 0
           for mean_ctr = 0, mean_count - 1 do begin
-              vectors_per_mean = 2
-              if (reg_count_mod_2 eq 1) and $
-                 ((mean_ctr mod 2) eq 0) then $
-                vectors_per_mean = 3
-              if pass_ctr eq 0 then begin
-                  if mean_ctr eq 0 then begin
-                      idx_first = reg_ctr
-                      idx_last  = reg_ctr + vectors_per_mean - 1
-                  endif else begin
-                      idx_first = [idx_first, reg_ctr]
-                      idx_last  = [idx_last,  reg_ctr + vectors_per_mean - 1]
-                  endelse
-              endif else begin
-                  if mean_ctr eq 0 then begin
-                      idx_first = idx_first_old[reg_ctr]
-                      idx_last  = idx_last_old[reg_ctr + vectors_per_mean - 1]
-                  endif else begin
-                      idx_first = [idx_first, $
-                                   idx_first_old[reg_ctr]]
-                      idx_last  = [idx_last, $
-                                   idx_last_old[reg_ctr + vectors_per_mean - 1]]
-                  endelse
-              endelse
               weight_per_vector = 1.0 / vectors_per_mean
-              mean_this = 0
+              mean = 0
               vectors = fltarr(cells_per_ds_det, vectors_per_mean)
-              help, mean_ctr
               for vec_ctr = 0, vectors_per_mean - 1 do begin
-                  help, reg_ctr
-                  help, vec_ctr
-                  if pass_ctr eq 0 then $
-                    mean_old_this = reform(swath[*, reg_ctr + vec_ctr, *], $
-                                           1, cells_per_ds_det) $
-                  else $
-                    mean_old_this = reform(mean_old[*, reg_ctr + vec_ctr, *], $
-                                           1, cells_per_ds_det)
-                  mean_this = mean_old_this * weight_per_vector + mean_this
-                  vectors[*, vec_ctr] = reform(mean_old_this, /overwrite)
+                  vector = reform(swath[*, ds_det + vec_ctr, *], $
+                                       1, cells_per_ds_det)
+                  mean = vector * weight_per_vector + mean
+                  vectors[*, vec_ctr] = temporary(vector)
               endfor ; vec_ctr
               for vec_ctr = 0, vectors_per_mean - 1 do begin
-                  mean_old_this = reform(vectors[*, vec_ctr])
+                  vector = reform(vectors[*, vec_ctr])
                   plot_tag = row_plot_tag
                   if plot_tag ne '' then $
-                    plot_tag = string(plot_tag + '_', pass_ctr, '_', reg_ctr, $
+                    plot_tag = string(plot_tag + '_', pass_ctr, '_', ds_det, $
                                       format='(a, i1.1, a, i2.2)')
                   xtitle=string('pass_ctr: ', pass_ctr, $
                                 '  mean_ctr: ', mean_ctr, $
                                 format='(a, i1, a, i2.2)')
-                  ytitle=string('reg_ctr: ', reg_ctr, $
+                  ytitle=string('ds_det: ', ds_det, $
                                 format='(a, i2.2)')
-                  modis_regress, mean_this, mean_old_this, $
-                                 slope_this, intcp_this, $
+                  modis_regress, mean, vector, $
+                                 slope, intcp, $
                                  y_tolerance=row_y_tolerance, $
                                  slope_delta_max=row_slope_delta_max, $
                                  regression_max=row_regression_max, $
@@ -501,54 +465,15 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                                  plot_tag=plot_tag, $
                                  plot_max=row_plot_max, $
                                  plot_titles=[xtitle,ytitle]
-
-                  ; accumulate the new slope and intercept values
-                  ; into what we have so far for each ds detector
-                  ; that contributed to this mean
-
-                  if pass_ctr eq 0 then begin
-                      slope[reg_ctr] = slope_this
-                      intcp[reg_ctr] = intcp_this
-                  endif else begin
-                      for idx = idx_first_old[mean_ctr], $
-                                idx_last_old[mean_ctr] do begin
-                          slope[idx] = slope[idx] * slope_this
-                          intcp[idx] = intcp[idx] * slope_this + intcp_this
-                      endfor
-                  endelse
-                  reg_ctr = reg_ctr + 1
+                  if abs(slope) ge epsilon then $
+                    swath[*, ds_det, *] = (vector - intcp) / slope
+                  ds_det = ds_det + 1
               endfor ; vec_ctr
               vectors = 0
-              mean_old_this = 0
-              if mean_ctr eq 0 then begin
-                  mean = temporary(mean_this)
-              endif else begin
-                  mean = [mean, temporary(mean_this)]
-              endelse
+              vector = 0
+              mean = 0
           endfor ; mean_ctr
-          mean_old = reform(mean, cols, mean_count, ds_scans, /overwrite)
-          idx_first_old = temporary(idx_first)
-          idx_last_old  = temporary(idx_last)
-          reg_count = mean_count
       endfor ; pass_ctr
-      mean = 0
-      mean_old = 0
-
-      ; apply slope and intercept corrections for each ds detector
-
-      for ds_det = 0, rows_per_ds_scan - 1 do begin
-          slope_this = slope[ds_det]
-          intcp_this = intcp[ds_det]
-          print, 'ds_det: ', ds_det, $
-                 '  intcp: ', intcp_this, $
-                 '  slope: ', slope_this, $
-                 format='(a, i2.2, a, e12.5, a, f8.5)'
-          if abs(slope_this) ge epsilon then begin
-              y = reform(swath[*, ds_det, *])
-              swath[*, ds_det, *] = $
-                (y - intcp_this) / slope_this
-          endif
-      endfor ; ds_det_ctr
 
       ; reform the swath array back into its original structure
 
