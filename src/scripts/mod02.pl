@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.62 2005/01/11 22:38:14 haran Exp haran $
+# $Id: mod02.pl,v 1.63 2005/01/21 00:28:20 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -1169,7 +1169,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		    }
 		}
 	    }
-	    if ($ancil_deletes[$i] && !$keep &&
+	    if (!$keep &&
 		$tile_col == $tile_cols - 1 &&
 		$tile_row == $tile_rows - 1) {
 		do_or_die("rm -f $ancil_file");
