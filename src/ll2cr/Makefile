@@ -4,7 +4,7 @@
 # 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /export/data/modis/src/ll2cr/Makefile,v 1.5 2001/01/11 15:34:06 haran Exp haran $
+RCSID = $Header: /data/haran/ms2gth/src/ll2cr/Makefile,v 1.6 2001/02/20 17:43:44 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -43,7 +43,7 @@ LOCAL_CFLAGS =
 #
 #	libraries
 #
-LOCAL_LIBS = -lmaps
+LOCAL_LIBS = -lmapx
 SYSTEM_LIBS = -lm 
 
 #
