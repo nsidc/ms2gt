@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
-# $Id: setup.pl,v 1.2 2001/04/19 16:30:33 haran Exp haran $
+# $Id: setup.pl,v 1.3 2001/04/23 20:35:37 haran Exp haran $
 
 #========================================================================
 # setup.pl - sets up some global variables for mod02.pl, mod10_l2.pl and
