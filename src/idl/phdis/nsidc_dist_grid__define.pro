@@ -9,7 +9,10 @@
 
 ; Initialization.
 ;
-; $Log$
+; $Log: nsidc_dist_grid__define.pro,v $
+; Revision 1.5  2001/03/13 18:52:59  haran
+; added log
+;
 ;----------------------------
 ;revision 1.4	locked by: haran;
 ;date: 2001/03/13 17:40:55;  author: haran;  state: Exp;  lines: +5 -5
@@ -1157,7 +1160,7 @@ PRO NSIDC_DIST_GRID::EVENT, event
          WRITE_TIFF, tiff_file, TEMPORARY(img)
       END
       'file_meta_bttn': BEGIN ; Display HDF file meta data.
-          temp_file = 'c:\windows\temp\nsidc_dist_temp.txt'
+          temp_file = 'nsidc_dist_temp.txt'
           self.file_obj -> GET_HDF_FILE, hdf_file
           HDF_INFO, hdf_file, OUTFILE=temp_file
           XDISPLAYFILE, temp_file, FONT='courier*8', GROUP=self.file_base, $
