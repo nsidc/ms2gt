@@ -135,7 +135,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; MODIFICATION HISTORY:
 ; Liam.Gumley@ssec.wisc.edu
 ; http://cimss.ssec.wisc.edu/~gumley
-; $Id: modis_level1b_read.pro,v 1.4 2004/11/19 23:59:44 haran Exp haran $
+; $Id: modis_level1b_read.pro,v 1.5 2004/11/21 02:16:10 haran Exp haran $
 ;
 ; Copyright (C) 1999, 2000 Liam E. Gumley
 ;
@@ -154,7 +154,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ;-
 
-rcs_id = '$Id: modis_level1b_read.pro,v 1.4 2004/11/19 23:59:44 haran Exp haran $'
+rcs_id = '$Id: modis_level1b_read.pro,v 1.5 2004/11/21 02:16:10 haran Exp haran $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -241,6 +241,7 @@ case filetype of
 
   ;- 1 km resolution data
   'MOD021KM' : begin
+      lines_per_scan = 10
     case 1 of
       (band ge  1 and band le  2) : sds_name = 'EV_250_Aggr1km_RefSB'
       (band ge  3 and band le  7) : sds_name = 'EV_500_Aggr1km_RefSB'
@@ -252,6 +253,7 @@ case filetype of
   
   ;- 500 m resolution data
   'MOD02HKM' : begin
+      lines_per_scan = 20
     case 1 of
       (band ge  1 and band le  2) : sds_name = 'EV_250_Aggr500_RefSB'
       (band ge  3 and band le  7) : sds_name = 'EV_500_RefSB'
@@ -259,7 +261,10 @@ case filetype of
   end
   
   ;- 250 m resolution data
-  'MOD02QKM' : sds_name = 'EV_250_RefSB'
+  'MOD02QKM' : begin
+      lines_per_scan = 40
+      sds_name = 'EV_250_RefSB'
+  end
 
 endcase
 
