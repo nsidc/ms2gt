@@ -682,16 +682,21 @@ if ($ancil_interp_factor > 1) {
 	my $ancil_file = $ancil_files[$i];
 	my $ancil = $ancils[$i];
 	my $conversion = $ancil_conversions[$i];
+	my $weight_type = $ancil_weight_types[$i];
 	my $data_type = $ancil_data_types[$i];
 	my $conv = substr($conversion, 0, 3);
-	my $filestem_ancil_conv = "$tag\_$ancil\_$conv";
+	my $weight = substr($weight_type, 0, 1);
+	my $nearest_neighbor = ($weight_type eq "max") ?
+	    "/nearest_neighbor" : "";
+	my $filestem_ancil_conv = "$tag\_$ancil\_$conv$weight";
 	system("rm -f $filestem_ancil_conv*");
 	do_or_die("idl_sh.pl interp_swath " .
 		  "$ancil_interp_factor $ancil_cols $ancil_scans " .
 		  "$ancil_rows_per_scan \"'$ancil_file'\" " .
 		  "$swath_cols \"'$filestem_ancil_conv'\" " .
 		  "data_type=\"'$data_type'\" " .
-		  "col_offset=$ancil_offset row_offset=$ancil_offset");
+		  "col_offset=$ancil_offset row_offset=$ancil_offset " .
+		  "$nearest_neighbor");
 
 	my @ancil_glob = glob("$filestem_ancil_conv*");
 	if (@ancil_glob == 0) {
