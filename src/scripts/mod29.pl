@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: mod29.pl,v 1.9 2001/04/26 20:29:30 haran Exp haran $
+# $Id: mod29.pl,v 1.10 2001/04/27 22:55:46 haran Exp haran $
 
 #========================================================================
 # mod29.pl - grids MOD29 data
@@ -403,7 +403,7 @@ for ($i = 0; $i < $chan_count; $i++) {
     my $f_option;
     my $tagext = "rawm";
     my $grid_file = "$tag\_$tagext\_$chan_name\_$grid_cols\_$grid_rows.img";
-    if ($chan != 3) {
+    if ($chan_name ne "temp") {
 	$t_option = "-t u1";
 	$f_option = "-f 255";
     } else {
