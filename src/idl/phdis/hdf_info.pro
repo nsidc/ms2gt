@@ -1,5 +1,7 @@
 ; HDF_info procedure - from IDL's "examples/data_access/sdf" folder.
 ;
+; $Log$
+;
 pro HDF_info,filename,OUTFILE=outfile,check_dfan=check_dfan,check_dfr8=check_dfr8,check_df24=check_df24,check_RIG=check_RIG,$
 	check_AN=check_AN,check_GR=check_GR
 if not keyword_set(check_dfan) then check_dfan=0
@@ -182,7 +184,7 @@ endif
 ; Check for HDF-GR images
 ;
 if check_GR then begin
-GR_0='("	  --- ",A," ",A)
+GR_0='("	  --- ",A," ",A)'
 GR_1='("	 	 ",A," = ",A)'
 GR_2='("		",A," = [",8(I5,:,","),$)'
         printf,uid,FORMAT=F80E
@@ -247,7 +249,7 @@ HDF_SD_FILEINFO,sd_id,nmfsds,nglobatts
          printf,uid,FORMAT=F80
 	 printf,uid,"    NAME   IDL_Type   HDF_Type      Rank   Dimensions"
          printf,uid,"---------  -------- ----------      ----  ------------"
-         printf,uid,"           ------------- Atrribute Info -------------"
+         printf,uid,"           ------------- Attribute Info -------------"
          printf,uid
          FSD='(A10,"  ",A8,"  ",I4,"  ",I4)'
 	 for i=0,nmfsds-1 do begin
