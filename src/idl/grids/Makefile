@@ -5,7 +5,7 @@
 # 27-Feb-2001 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /export/data/modis/src/maps/Makefile,v 1.2 2001/02/20 17:41:05 haran Exp $
+RCSID = $Header: /export/data/ms2gth/src/idl/grids/Makefile,v 1.1 2001/03/20 21:55:40 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -121,6 +121,9 @@ all :
        esac
 
 libs : $(SHL_LIBS)
+	@echo ''
+	@echo 'Make sure that LD_LIBRARY_PATH includes the directory'
+	@echo 'that contains '$(SHL_LIBS)
 
 # C Only libs
 
@@ -135,10 +138,14 @@ tidy :
 clean :
 	rm -f *.o *.so *.sl *.a *.tar
 
-grids.tar:	README Makefile \
+tar   : grids.tar
+
+grids.tar:	Makefile test_grid_class.pro \
+		Gl1250.gpd N200correct.mpp wilkins250.gpd wilkins.mpp \
+		call_grids.c grid_class__define.pro 
+	tar cvf grids.tar Makefile test_grid_class.pro \
+		Gl1250.gpd N200correct.mpp wilkins250.gpd wilkins.mpp \
 		call_grids.c grid_class__define.pro
-	tar cvf grids.tar README Makefile \
-		call_grids.c grid_class_define.pro
 
 #  Rules for building the object files.
 
