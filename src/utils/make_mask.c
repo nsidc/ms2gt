@@ -5,7 +5,7 @@
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *======================================================================*/
 
-static const char make_mask_c_rcsid[] = "$Header: /usr/people/haran/navdir/src/utils/make_mask.c,v 1.5 2002/04/25 23:59:08 haran Exp $";
+static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/make_mask.c,v 1.1 2004/11/24 21:01:29 haran Exp haran $";
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -177,27 +177,34 @@ int main(int argc, char *argv[])
 	++argv; --argc;
 	if (argc <= 0)
 	  DisplayInvalidParameter("factor");
-	if (sscanf(*argv++, "%d", &factor) != 1)
+	if (sscanf(*argv, "%d", &factor) != 1)
 	  DisplayInvalidParameter("factor");
 	break;
       case 'i':
 	++argv; --argc;
 	if (argc <= 0)
 	  DisplayInvalidParameter("mask_file_in");
-	mask_file_in = *argv++;
+	mask_file_in = *argv;
+	break;
+      case 'm':
+	++argv; --argc;
+	if (argc <= 0)
+	  DisplayInvalidParameter("mask_value_in");
+	if (sscanf(*argv, "%lf", &mask_value_in) != 1)
+	  DisplayInvalidParameter("mask_value_in");
 	break;
       case 'M':
 	++argv; --argc;
 	if (argc <= 0)
 	  DisplayInvalidParameter("mask_value_out");
-	if (sscanf(*argv++, "%d", &mask_value_out) != 1)
+	if (sscanf(*argv, "%d", &mask_value_out) != 1)
 	  DisplayInvalidParameter("mask_value_out");
 	break;
       case 'U':
 	++argv; --argc;
 	if (argc <= 0)
 	  DisplayInvalidParameter("unmask_value_out");
-	if (sscanf(*argv++, "%d", &mask_value_out) != 1)
+	if (sscanf(*argv, "%d", &mask_value_out) != 1)
 	  DisplayInvalidParameter("unmask_value_out");
 	break;
       default:
@@ -210,8 +217,12 @@ int main(int argc, char *argv[])
   /*
    *     get command line args
    */
-  if (argc != 9)
+  if (argc == 0)
     DisplayUsage();
+  if (argc != 9) {
+    fprintf(stderr, "mask_test: incorrect number of parameters.\n");
+    DisplayUsage();
+  }
   if (sscanf(*argv++, "%d", &bytes_per_cell) != 1)
     DisplayInvalidParameter("bytes_per_cell");
   if (sscanf(*argv++, "%d", &cols_in) != 1)
@@ -414,6 +425,9 @@ int main(int argc, char *argv[])
     /*
      *     seek to row containing input region in input file
      */
+    if (very_very_verbose)
+      fprintf(stderr, "row_start_in: %d  bytes_per_row_in: %d\n",
+	      row_start_in, bytes_per_row_in);
     if (lseek(fd_in,
 	      row_start_in * bytes_per_row_in,
 	      SEEK_SET) == -1) {
@@ -448,7 +462,7 @@ int main(int argc, char *argv[])
      */
     for (row = row_start_in; row <= last_row_in_region; row++) {
 
-      if (very_verbose)
+      if (very_very_verbose)
 	fprintf(stderr, "reading row from %s\n", file_in);
 
       /*
@@ -466,7 +480,9 @@ int main(int argc, char *argv[])
 	/*
 	 *  read a row from the input mask file.
 	 */
-	if (read(fd_in, buf_mask_in,
+	if (very_very_verbose)
+	  fprintf(stderr, "reading row from %s\n", mask_file_in);
+	if (read(fd_mask_in, buf_mask_in,
 		 bytes_per_mask_row_in) != bytes_per_mask_row_in) {
 	  fprintf(stderr, "error reading %s\n", mask_file_in);
 	  perror("make_mask");
@@ -494,12 +510,12 @@ int main(int argc, char *argv[])
 	    t4 = ((t4 >> 24) & 0xff) | ((t4 >> 8) & 0xff00) |
 	         ((t4 << 8) & 0xff0000) | (t4 << 24);
 	    *p4 = t4;
+	  } else {
+	    p2 = (byte2 *)bufp_in;
+	    t2 = *p2;
+	    t2 = ((t2 >> 8) & 0xff) | (t2 << 8);
+	    *p2 = t2;
 	  }
-	} else {
-	  p2 = (byte2 *)bufp_in;
-	  t2 = *p2;
-	  t2 = ((t2 >> 8) & 0xff) | (t2 << 8);
-	  *p2++ = t2;
 	}
 	
 	/*
@@ -532,6 +548,9 @@ int main(int argc, char *argv[])
 	  break;
 	}
 	bufp_in += bytes_per_cell;
+	if (very_very_verbose)
+	  fprintf(stderr,
+		 "row:%d   col:%d   mask_test:%lf\n", row, col, mask_test);
 	mask = (byte1)((mask_test == mask_value_in) ?
 		       mask_value_out : unmask_value_out);
 
@@ -552,13 +571,16 @@ int main(int argc, char *argv[])
 	    buf_mask_out[i][j] = mask;
 	  }
 	}
+	col_out += factor;
       }
-      col_out += factor;
 
       /*
        *     write the output buffer
        */
-      if (write(fd_mask_out, buf_mask_out,
+      if (very_very_verbose)
+	fprintf(stderr, "writing buffer to %s\n", mask_file_out);
+
+      if (write(fd_mask_out, buf_mask_out[0],
 		bytes_per_mask_buf_out) != bytes_per_mask_buf_out) {
 	fprintf(stderr, "error writing %s\n", mask_file_out);
 	perror("make_mask");
