@@ -213,7 +213,7 @@ FUNCTION NSIDC_DIST_GRID::INIT, main_obj, file_obj, grid_id, grid_name, field_na
 
    row_base = WIDGET_BASE(self.grid_base, /ROW, XPAD=1, YPAD=1, SPACE=1)
    wid = WIDGET_LABEL(row_base, VALUE='Lon,Lat,Img:')
-   pt = STRING(0.0) + ', ' + STRING(0.0) + ', ' + STRING(0L)
+   pt = STRING(0.0,format='(f10.5)') + ', ' + STRING(0.0,format='(f9.5)') + ', ' + STRING(0L)
    self.pos_text = WIDGET_TEXT(row_base, VALUE=pt, XSIZE=32)
    IF (self.n_fields GT 1) THEN BEGIN
       self.field_drop = WIDGET_DROPLIST(row_base, VALUE=(*self.field_names_ptr), $
@@ -1662,7 +1662,7 @@ PRO NSIDC_DIST_GRID::EVENT, event
 
          ll = (CONVERT_COORD(xy_norm[0], xy_norm[1], /NORMAL, /TO_DATA))[0:1]
          IF (SIZE(data_pt, /TYPE) EQ 1L) THEN data_pt = FIX(data_pt) ; Convert byte to int.
-         pt = STRING(ll[0]) + ', ' + STRING(ll[1]) + ', ' + STRING(data_pt)
+         pt = STRING(ll[0],format='(f10.5)') + ', ' + STRING(ll[1],format='(f9.5)') + ', ' + STRING(data_pt)
          WIDGET_CONTROL, self.pos_text, SET_VALUE=pt
 
          IF (self.button_down EQ 0B) THEN RETURN ; No button down, so done.
