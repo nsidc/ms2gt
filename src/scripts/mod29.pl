@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Id: mod29.pl,v 1.4 2001/03/06 15:02:05 haran Exp haran $
+# $Id: mod29.pl,v 1.5 2001/04/13 20:32:58 haran Exp haran $
 
 #========================================================================
 # mod29.pl - grids MOD29 data
@@ -396,4 +396,4 @@ if (!$keep) {
     do_or_die("rm -f $rows_file");
 }
 
-print_stderr("$script: MESSAGE: done\n");
+warnmail("$script: MESSAGE: done\n");
