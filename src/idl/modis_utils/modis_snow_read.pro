@@ -20,7 +20,8 @@ PRO MODIS_SNOW_READ, FILENAME, BAND, IMAGE, $
 ;
 ; INPUTS:
 ;    FILENAME       Name of MODIS Level 1B HDF file
-;    BAND           Band number to be read: 1 (snow cover) or 2 (qa)
+;    BAND           Band number to be read: 1 (snow cover), 2 (qa),
+;                                           3 (snow cover reduced cloud)
 ;
 ; OPTIONAL INPUTS:
 ;    None.
@@ -62,7 +63,7 @@ PRO MODIS_SNOW_READ, FILENAME, BAND, IMAGE, $
 ;    Based on modis_level1b_read from Liam Gumley.
 ;-
 
-rcs_id = '$Id: modis_snow_read.pro,v 1.1 2001/01/28 22:13:53 haran Exp haran $'
+rcs_id = '$Id: modis_snow_read.pro,v 1.2 2002/05/14 16:44:07 haran Exp haran $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -116,16 +117,18 @@ if (count_snow ne 1) or (count_qa ne 1) then $
 ;- Check band number
 
 filetype = 'MOD10_L2'
-if (band lt 1) or (band gt 2) then $
-    message, 'BAND range is 1-2 for this MODIS type => ' + filetype
+if (band lt 1) or (band gt 3) then $
+    message, 'BAND range is 1-3 for this MODIS type => ' + filetype
 
 ;-------------------------------------------------------------------------------
 ;- SET VARIABLE NAME FOR IMAGE DATA
 ;-------------------------------------------------------------------------------
 if band eq 1 then $
   sds_name = 'Snow Cover' $
+else if band eq 2 then $
+  sds_name = 'Snow Cover PixelQA' $
 else $
-  sds_name = 'Snow Cover PixelQA'
+  sds_name = 'Snow Cover Reduced Cloud'
 
 ;-------------------------------------------------------------------------------
 ;- OPEN THE FILE IN SDS MODE
