@@ -1,18 +1,29 @@
 pro do3c, cols_in, rows_in, file_in, file_out, $
-          shrink_factor=shrink_factor, min_in=min_in, max_in=max_in
+          shrink_factor=shrink_factor, min_in=min_in, max_in=max_in, $
+          bytes_per_cell=bytes_per_cell, color_table=color_table
 
 !order = 1
 if n_params() ne 4 then $
   message, "syntax: do3c, cols_in, rows_in, file_in, file_out, " + $
                          "shrink_factor=shrink_factor, " + $
-                         "min_in=min_in, max_in=max_in"
+                         "min_in=min_in, max_in=max_in, " + $
+                         "bytes_per_cell=bytes_per_cell, " + $
+                         "color_table=color_table"
 
 if n_elements(shrink_factor) eq 0 then $
   shrink_factor = 1
+if n_elements(bytes_per_cell) eq 0 then $
+  bytes_per_cell = 2
+if n_elements(color_table) eq 0 then $
+  color_table = 0
+loadct, color_table
 cols_out = cols_in / shrink_factor
 rows_out = rows_in / shrink_factor
 if n_elements(file_in) eq 1 then begin
-    img_in = intarr(cols_in, rows_in)
+    if bytes_per_cell eq 2 then $
+      img_in = intarr(cols_in, rows_in) $
+    else $
+      img_in = bytarr(cols_in, rows_in)
     openr, lun, file_in, /get_lun
     readu, lun, img_in
     free_lun, lun
@@ -22,7 +33,7 @@ if n_elements(file_in) eq 1 then begin
     if n_elements(max_in) eq 0 then $
       max_in = max(img_in)
     img_in = reverse(bytscl(img_in, min=min_in, max=max_in), 2)
-    write_jpeg, file_out, img_in, quality=100
+    write_gif, file_out, img_in
 endif else begin
     img_out = bytarr(3, cols_out, rows_out)
     for i = 0, 2 do begin
