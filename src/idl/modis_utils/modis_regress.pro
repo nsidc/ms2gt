@@ -3,7 +3,7 @@
 ;*
 ;* 20-Nov-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_regress.pro,v 1.11 2004/10/30 21:21:26 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_regress.pro,v 1.12 2004/10/30 21:58:24 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -50,7 +50,7 @@
 ;         been determined from the first linear regression, the values
 ;         y'(i) = k + m * x(i) are calculated. Then outliers are defined
 ;         to be all points x(i) for which
-;         abs((y'(i) - y(i)) / y(i)) >= y_tolerance.
+;         abs((y'(i) - y(i)) / (ymax - ymin)) >= y_tolerance.
 ;         Then a second regression is performed on the remaining x(i) after
 ;         the outliers have been removed to determine the final k and m
 ;         values. The default value of y_tolerance is 0.0.
@@ -140,7 +140,7 @@ Pro modis_regress, x, y, slope, intercept, $
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
-  print, 'modis_regress: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_regress.pro,v 1.11 2004/10/30 21:21:26 haran Exp haran $'
+  print, 'modis_regress: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_regress.pro,v 1.12 2004/10/30 21:58:24 haran Exp haran $'
   if skip_first_regression then begin
       print, '  slope:                 ', slope[0]
       print, '  intercept:             ', intercept
@@ -188,18 +188,20 @@ Pro modis_regress, x, y, slope, intercept, $
 
   ;  if using weights, then compute y density parameters
 
+  y_max = max(y, min=y_min)
+  y_range = y_min - y_max
   if density_bin_width gt 0 then begin
       x_max = max(x, min=x_min)
       x_bin_count = floor((x_max - x_min) / density_bin_width) + 1L
       x_factor = x_bin_count / (x_max - x_min)
-      y_max = max(y, min=y_min)
       y_bin_count = floor((y_max - y_min) / density_bin_width) + 1L
-      y_factor = y_bin_count / (y_max - y_min)
+      y_factor = y_bin_count / y_range
       h = long((x - x_min) * x_factor) * y_bin_count + $
           long((y - y_min) * y_factor)
       h = histogram(h, reverse_indices=r)
+      n = n_elements(h)
       weight = fltarr(n)
-      for i = 0L, n_elements(h) - 1 do begin
+      for i = 0L, n - 1 do begin
           if (r[i] ne r[i+1]) then begin
               weight[r[r[i] : r[i+1] - 1]] = h[i]
           endif
@@ -247,15 +249,7 @@ Pro modis_regress, x, y, slope, intercept, $
 
       repeat begin
           slope_old = slope[0]
-          y2 = y
-          j = where(abs(y2) lt epsilon, n2)
-          if n2 gt 0 then begin
-              y2[j] = 1
-              y[j] = 0
-              x[j] = 0
-          endif
-          j = 0
-          i = where(abs((y - (slope[0] * x + intercept)) / y2) lt $
+          i = where(abs((y - (slope[0] * x + intercept)) / y_range) lt $
                     y_tolerance, n2)
           if n2 lt 2 then begin
               slope = 1.0
