@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.14 2002/11/25 18:33:25 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.15 2002/11/25 18:50:40 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -31,16 +31,17 @@
 ;               [, data_type=data_type]
 ;               [, file_soze=file_soze]
 ;               [, /undo_soze]
+;               [, /reg_cols]
 ;               [, reg_col_detectors=reg_col_detectors]
 ;               [, reg_col_stride=reg_col_stride]
 ;               [, reg_col_offset=reg_col_offset]
-;               [, /reg_rows]
 ;               [, col_y_tolerance=col_y_tolerance]
 ;               [, col_slope_delta_max=col_slope_delta_max]
 ;               [, col_regression_max=col_regression_max]
 ;               [, col_density_bin_width=col_density_bin_width]
 ;               [, col_plot_tag=col_plot_tag]
 ;               [, col_plot_max=col_plot_max]
+;               [, /reg_rows]
 ;               [, row_y_tolerance=row_y_tolerance]
 ;               [, row_slope_delta_max=row_slope_delta_max]
 ;               [, row_regression_max=row_regression_max]
@@ -81,13 +82,16 @@
 ;         of the corresponding solar zenith value after regressions are
 ;         performed. If file_soze is a null string, then undo_soze is
 ;         ignored.
+;       reg_cols: If set then column regressions are computed.
 ;       reg_col_detectors: Array of zero-based detector numbers to use for
-;         column regressions. If reg_col_detectors is -1 or is not
-;         specified, then no column regressions are performed.
+;         column regressions. The default value of reg_col_detectors
+;         is [28,29].
 ;       reg_col_stride: the stride value to use for performing column
 ;         regressions. The default value of reg_col_stride is 4.
+;         NOTE: reg_col_stride must divide evenly into cols.
 ;       reg_col_offset: the offset value to use for performing column
 ;         regressions. The default value of reg_col_offset is 0.
+;         NOTE: reg_col_offset must be less than reg_col_stride.
 ;       reg_rows: If set then row regressions are computed.
 ;       NOTE: The keywords below are preceded by either col_ or row_
 ;         indicating to which set of regressions they refer.
@@ -135,13 +139,13 @@
 ;         5416, 51, $
 ;         'modis_inst_2001341_ref_ch01_5416_02040_nor.img', $
 ;         'modis_inst_2001341_ref_ch01_5416_02040_adj.img', $
-;         reg_col_detectors=[28,29], $
+;         /reg_cols, $
 ;         reg_col_offset=3, $
-;         /reg_rows, $
 ;         col_y_tolerance=0.1, $
 ;         col_density_bin_width=0.01, $
 ;         col_plot_tag='modis_inst_2001341_ch01_col', $
 ;         col_plot_max=1.5, $
+;         /reg_rows, $
 ;         row_y_tolerance=0.1, $
 ;         row_density_bin_width=0.01, $
 ;         row_plot_tag='modis_inst_2001341_ch01_row', $
@@ -158,13 +162,13 @@
 ;         5416, 51, $
 ;         'modis_inst_2001341_ref_ch02_5416_02040_nor.img', $
 ;         'modis_inst_2001341_ref_ch02_5416_02040_adj.img', $
-;         reg_col_detectors=[28,29], $
+;         /reg_cols, $
 ;         reg_col_offset=0, $
-;         /reg_rows, $
 ;         col_y_tolerance=0.1, $
 ;         col_density_bin_width=0.01, $
 ;         col_plot_tag='modis_inst_2001341_ch02_col', $
 ;         col_plot_max=1.5, $
+;         /reg_rows, $
 ;         row_y_tolerance=0.1, $
 ;         row_density_bin_width=0.01, $
 ;         row_plot_tag='modis_inst_2001341_ch02_row', $
@@ -181,16 +185,17 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                   data_type_out=data_type_out, $
                   file_soze=file_soze, $
                   undo_soze=undo_soze, $
+                  reg_cols=reg_cols, $
                   reg_col_detectors=reg_col_detectors, $
                   reg_col_stride=reg_col_stride, $
                   reg_col_offset=reg_col_offset, $
-                  reg_rows=reg_rows, $
                   col_y_tolerance=col_y_tolerance, $
                   col_slope_delta_max=col_slope_delta_max, $
                   col_regression_max=col_regression_max, $
                   col_density_bin_width=col_density_bin_width, $
                   col_plot_tag=col_plot_tag, $
                   col_plot_max=col_plot_max, $
+                  reg_rows=reg_rows, $
                   row_y_tolerance=row_y_tolerance, $
                   row_slope_delta_max=row_slope_delta_max, $
                   row_regression_max=row_regression_max, $
@@ -209,16 +214,17 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                 '[, data_type_out=data_type_out] ' +   lf + $
                 '[, file_soze=file_soze] ' + lf + $
                 '[, /undo_soze] ' + lf + $
+                '[, /reg_cols] ' + lf + $
                 '[, reg_col_detectors=reg_col_detectors] ' + lf + $
                 '[, reg_col_stride=reg_col_stride] ' + lf + $
                 '[, reg_col_offset=reg_col_offset] ' + lf + $
-                '[, /reg_rows] ' + lf + $
                 '[, col_y_tolerance=col_y_tolerance] ' + lf + $
                 '[, col_slope_delta_max=col_slope_delta_max] ' + lf + $
                 '[, col_regression_max=col_regression_max] ' + lf + $
                 '[, col_density_bin_width=col_density_bin_width] ' + lf + $
                 '[, col_plot_tag=col_plot_tag] ' + lf + $
                 '[, col_plot_max=col_plot_max] ' + lf + $
+                '[, /reg_rows] ' + lf + $
                 '[, row_y_tolerance=row_y_tolerance] ' + lf + $
                 '[, row_slope_delta_max=row_slope_delta_max] ' + lf + $
                 '[, row_regression_max=row_regression_max] ' + lf + $
@@ -239,14 +245,14 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     file_soze = ''
   if n_elements(undo_soze) eq 0 then $
     undo_soze = 0
+  if n_elements(reg_cols) eq 0 then $
+    reg_cols = 0
   if n_elements(reg_col_detectors) eq 0 then $
-    reg_col_detectors = -1
+    reg_col_detectors = [28,29]
   if n_elements(reg_col_stride) eq 0 then $
     reg_col_stride = 4
   if n_elements(reg_col_offset) eq 0 then $
     reg_col_offset = 0
-  if n_elements(reg_rows) eq 0 then $
-    reg_rows = 0
   if n_elements(col_y_tolerance) eq 0 then $
     col_y_tolerance = 0.0
   if n_elements(col_slope_delta_max) eq 0 then $
@@ -259,6 +265,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     col_plot_tag = ''
   if n_elements(col_plot_max) eq 0 then $
     col_plot_max = 0
+  if n_elements(reg_rows) eq 0 then $
+    reg_rows = 0
   if n_elements(row_y_tolerance) eq 0 then $
     row_y_tolerance = 0.0
   if n_elements(row_slope_delta_max) eq 0 then $
@@ -276,7 +284,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds) 
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.14 2002/11/25 18:33:25 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.15 2002/11/25 18:50:40 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -287,19 +295,20 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   print, '  data_type_out:        ', data_type_out
   print, '  file_soze:            ', file_soze
   print, '  undo_soze:            ', undo_soze
+  print, '  reg_cols:             ', reg_cols
   for i = 0, reg_col_detectors_count - 1 do begin
       s = string(i, format='(i1)')
       print, '  reg_col_detectors[' + s + ']: ', reg_col_detectors[i]
   endfor
   print, '  reg_col_stride:       ', reg_col_stride
   print, '  reg_col_offset:       ', reg_col_offset
-  print, '  reg_rows:             ', reg_rows
   print, '  col_y_tolerance:      ', col_y_tolerance
   print, '  col_slope_delta_max:  ', col_slope_delta_max
   print, '  col_regression_max:   ', col_regression_max
   print, '  col_density_bin_width:', col_density_bin_width
   print, '  col_plot_tag:         ', col_plot_tag
   print, '  col_plot_max:         ', col_plot_max
+  print, '  reg_rows:             ', reg_rows
   print, '  row_y_tolerance:      ', row_y_tolerance
   print, '  row_slope_delta_max:  ', row_slope_delta_max
   print, '  row_regression_max:   ', row_regression_max
@@ -309,23 +318,28 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   ; check for valid input
 
+  if scans lt 2 then $
+    message, 'scans must be 2 or greater'
+
   if (rows_per_scan ne 40) and $
      (rows_per_scan ne 20) and $
      (rows_per_scan ne 10) then $
     message, 'rows_per_scan must be 40, 20, or 10'
 
   for i = 0, reg_col_detectors_count - 1 do begin
+      if reg_col_detectors[i] lt 0 then $
+        message, 'Each element of reg_col_detector ' + $
+                 'must be greater than or equal to 0'
       if reg_col_detectors[i] ge rows_per_scan then $
         message, 'Each element of reg_col_detector ' + $
-                 'must be less than rows_per_scan' + $
-                 usage
+                 'must be less than rows_per_scan'
   endfor
 
-  if scans lt 2 then $
-    message, 'scans must be 2 or greater'
+  if (cols mod reg_col_stride) ne 0 then $
+    message, 'reg_col_stride must divide evenly into cols'
 
-  if (rows_per_scan mod 2) ne 0 then $
-    message, 'rows_per_scan must be even'
+  if reg_col_offset gt reg_col_stride then $
+    message, 'reg_col_offset must be less than reg_col_stride'
 
   rows = scans * rows_per_scan
   cells_per_scan = long(cols) * rows_per_scan
@@ -380,7 +394,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   if file_soze ne '' then $
     soze = fltarr(cells_per_swath)
 
-  ; convert swath to floating-point
+  ; convert swath to floating-point as needed
 
   if data_type_in ne 'f4' then $
     swath = float(temporary(swath))
@@ -414,6 +428,65 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
       swath = temporary(swath) * soze
   endif
+
+  if reg_cols ne 0 then begin
+
+  ; perform column regressions
+
+      swath = reform(swath, cols, rows_per_scan, scans, /overwrite)
+
+      cells_per_det_target = long(cols) * scans / reg_col_stride
+
+      i = indgen(cols)
+      cols_target = where((i mod reg_col_stride) eq reg_col_offset, $
+                          cols_per_target)
+      if cols_per_target eq 0 then $
+        message, 'No cells targeted for column regressions'
+
+      cols_before = cols_target - 1
+      if cols_before[0] lt 0 then $
+        cols_before[0] = i[1]
+
+      cols_after = cols_target + 1
+      if cols_after[cols_per_target - 1] ge cols then $
+        cols_after[cols_per_target - 1] = cols - 2
+
+      det_count = n_elements(reg_col_detectors)
+      for det_ctr = 0, det_count - 1 do begin
+          det = reg_col_detectors[det_ctr]
+          target = reform(swath[[cols_target], det, *], $
+                          cells_per_det_target)
+          before = reform(swath[[cols_before], det, *], $
+                          1, cells_per_det_target)
+          after =  reform(swath[[cols_after],  det, *], $
+                          1, cells_per_det_target)
+          mean = (temporary(before) + temporary(after)) / 2
+          plot_tag = col_plot_tag
+          if plot_tag ne '' then $
+            plot_tag = string(plot_tag + '_', det, $
+                              format='(a, i2.2)')
+          xtitle=string('mean before and after' + $
+                        '  stride: ', reg_col_stride, $
+                        '  offset: ', reg_col_offset, $
+                        format='(a, i2, a, i2)')
+          ytitle=string('det: ', det, $
+                        format='(a, i2.2)')
+          modis_regress, mean, target, $
+                         slope, intcp, $
+                         y_tolerance=col_y_tolerance, $
+                         slope_delta_max=col_slope_delta_max, $
+                         regression_max=col_regression_max, $
+                         density_bin_width=col_density_bin_width, $
+                         plot_tag=plot_tag, $
+                         plot_max=col_plot_max, $
+                         plot_titles=[xtitle,ytitle]
+          if abs(slope) ge epsilon then $
+            swath[[cols_target], det, *] = (target - intcp) / slope
+      endfor                    ; det_ctr
+
+      swath = reform(swath, cells_per_swath, /overwrite)
+
+  endif ; if reg_cols ne 0
 
   if reg_rows ne 0 then begin
 
@@ -522,7 +595,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       soze = 0
   endif
 
-  ;  put the swath back into original data type
+  ;  put the swath back into output data type as needed
 
   if data_type_out ne 'f4' then begin
       i = where(swath lt min_out, count)
@@ -543,7 +616,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   time_end = systime(/seconds)
   elapsed_seconds = time_end - time_start
   elapsed_minutes = fix(elapsed_seconds / 60)
-  elapsed_seconds = elapsed_seconds - 60 * elapsed_minuts
+  elapsed_seconds = elapsed_seconds - 60 * elapsed_minutes
   print, 'modis_adjust:'
   print, '  completed:            ', systime(0, time_start)
   print, '  elapsed time:         ', elapsed_minutes, ' min  ', $
