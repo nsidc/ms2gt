@@ -59,10 +59,10 @@ PRO MODIS_SNOW_READ, FILENAME, BAND, IMAGE, $
 ; EXAMPLES:
 ;
 ; REFERENCE:
-;    Based on modis_level1b_read from 
+;    Based on modis_level1b_read from Liam Gumley.
 ;-
 
-rcs_id = '$Id: modis_snow_read.pro,v 1.2 2000/10/21 01:00:14 haran Exp $'
+rcs_id = '$Id: modis_snow_read.pro,v 1.1 2001/01/28 22:13:53 haran Exp haran $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -115,6 +115,7 @@ if (count_snow ne 1) or (count_qa ne 1) then $
 
 ;- Check band number
 
+filetype = 'MOD10_L2'
 if (band lt 1) or (band gt 2) then $
     message, 'BAND range is 1-2 for this MODIS type => ' + filetype
 
