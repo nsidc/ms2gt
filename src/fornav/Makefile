@@ -4,7 +4,7 @@
 # 27-Dec-2000 T.Haran 303-492-1847  tharan@kryos.colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /export/data/modis/src/fornav/Makefile,v 1.1 2000/12/28 23:31:29 haran Exp haran $
+RCSID = $Header: /export/data/modis/src/fornav/Makefile,v 1.2 2001/01/17 00:51:03 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -63,7 +63,8 @@ HDRS =
 all : fornav
 
 fornav: fornav.o
-	$(CC) $(CFLAGS) -o $(BINDIR)/fornav fornav.o $(LIBS)
+	$(CC) $(CFLAGS) -o fornav fornav.o $(LIBS)
+	$(CP) fornav $(BINDIR)
 
 clean:
 	- $(RM) $(OBJS) fornav
