@@ -17,7 +17,9 @@ USAGE: mod10_l2.pl dirinout tag listfile gpdfile
   listfile: text file containing a list of MOD10_L2 files to be gridded.
   gpdfile: .gpd file that defines desired output grid.
   chanlist: string specifying channel numbers to be gridded. The default
-            is 1, i.e. grid channel 1 only.
+            is 1, i.e. grid channel 1 only. The channel numbers are:
+              1: Snow Cover - 8-bit unsigned
+              2: Snow Cover PixelQA - 8-bit unsigned
   latlonlistfile: text file containing a list of MOD02 files whose latitude
             and longitude data should be used in place of the latlon data
             in the corresponding MOD10_L2 file in listfile. The default is
