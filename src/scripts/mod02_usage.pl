@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.12 2001/12/05 20:04:46 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.13 2003/03/18 16:57:01 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -93,9 +93,17 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
         1: do not delete intermediate chan, lat, lon, col, and row files.
   rind: number of pixels to add around intermediate grid to eliminate
         holes in final grid. Default is 50.
-  fix250: 0: do not apply fix for MOD02QKM or MYD02QKM channel 1 data
+      NOTE: If rind is 0, then no check for min/max columns and rows is
+      performed. For direct broadcast data which may contain missing lines,
+      you should set rind to 0.
+  fix250: 0: do not apply de-striping fix for MOD02QKM or MYD02QKM data
              (default).
-          1: apply fix for MOD02QKM or MYD02QKM channel 1 data.\n\n";
+          1: apply de-striping fix for MOD02QKM or MYD02QKM data and
+             keep solar zenith correction.
+          2: apply de-striping fix for MOD02QKM or MYD02QKM data and
+             undo solar zenith correction.
+      NOTE: If fix250 is 1 or 2, then conversion must be set to reflectance in
+      chanfile, and param must be set to soze (Solar Zenith) in ancilfile.\n\n";
 
 # this makes the routine work properly using require in other programs
 1;
