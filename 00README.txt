@@ -17,7 +17,7 @@ files (mod02.pl), MOD10_L2 snow cover files (mod10_l2.pl), and MOD29 sea
 ice files (mod29.pl).  All three Perl programs can optionally read MOD03
 files for geolocation and/or ancillary data. User-specified swath data
 arrays are read out of HDF-EOS files using a suite of IDL programs written
-by Liam Gumley of SSEC at the University of Washington. During this step,
+by Liam Gumley of SSEC at the University of Wisconsin. During this step,
 radiance data can be left as raw integer counts or converted to
 floating-point corrected counts, radiances, or reflectances; similarly,
 thermal data can be left as raw counts or converted to temperatures. These
