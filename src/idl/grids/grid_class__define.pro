@@ -3,7 +3,7 @@
 ;*
 ;* 28-Feb-2001  Terry Haran  tharan@kryos.colorado.edu  303-492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/grids/grid_class__define.pro,v 1.5 2001/03/22 23:51:40 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/grids/grid_class__define.pro,v 1.6 2001/03/24 00:13:09 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -231,6 +231,38 @@ end
 function grid_class::get_grid_coordinates
     return, {lat0:self.gcs.lat0, lon0:self.gcs.lon0, $
              lat1:self.gcs.lat1, lon1:self.gcs.lon1}
+end
+
+
+;+
+; NAME:
+;	grid_class::get_grid_rotation
+;
+; PURPOSE:
+;       Return grid rotation grid_class object instance.
+;
+; CATEGORY:
+;	nsidc modis tools package.
+;
+; CALLING SEQUENCE:
+;       Result = grid_class_object_instance->get_grid_rotation()
+;
+; ARGUMENTS:
+;       None.
+;
+; KEYWORDS:
+;       None.
+;
+; RESULT:
+;       A float representing the grid rotation.
+;
+; EXAMPLE:
+;       og = obj_new('grid_class', 'Gl1250.gpd')
+;       grid_rotation = og->get_grid_rotation()
+;-
+
+function grid_class::get_grid_rotation
+    return, self.gcs.rotation
 end
 
 
