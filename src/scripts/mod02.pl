@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod02.pl,v 1.23 2001/02/28 22:24:48 haran Exp haran $
+# $Id: mod02.pl,v 1.24 2001/03/05 19:21:37 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -808,3 +808,5 @@ if (!$keep) {
     do_or_die("rm -f $cols_file");
     do_or_die("rm -f $rows_file");
 }
+
+print_stderr("$script: MESSAGE: done\n");
