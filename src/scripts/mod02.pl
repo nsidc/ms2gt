@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.37 2004/04/05 23:42:34 haran Exp haran $
+# $Id: mod02.pl,v 1.38 2004/08/27 00:41:05 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -186,14 +186,15 @@ my @ancils;
 my @ancil_conversions;
 my @ancil_weight_types;
 my @ancil_fills;
+my @ancil_deletes;
 my @ancil_data_types;
 if ($ancilfile ne "none") {
     open_or_die("ANCILFILE", "$ancilfile");
     print_stderr("contents of ancilfile (data_type):\n");
     my $line = 0;
     while (<ANCILFILE>) {
-	my ($ancil, $conversion, $weight_type, $fill) =
-	    /(\S+)\s*(\S*)\s*(\S*)\s*(\S*)/;
+	my ($ancil, $conversion, $weight_type, $fill, $delete) =
+	    /(\S+)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)/;
 	if (!defined($ancil)) {
 	    $ancil = "";
 	}
@@ -206,6 +207,9 @@ if ($ancilfile ne "none") {
 	}
 	if (!defined($fill) || $fill eq "") {
 	    $fill = 0;
+	}
+	if (!defined($delete) || $delete eq "") {
+	    $delete = 0;
 	}
 	my $data_type = "f4";
 	if ($conversion eq "raw") {
@@ -221,8 +225,9 @@ if ($ancilfile ne "none") {
 	push(@ancil_conversions, $conversion);
 	push(@ancil_weight_types, $weight_type);
 	push(@ancil_fills, $fill);
+	push(@ancil_deletes, $delete);
 	push(@ancil_data_types, $data_type);
-	print "$ancil $conversion $weight_type $fill ($data_type)\n";
+	print "$ancil $conversion $weight_type $fill $delete ($data_type)\n";
 	$line++;
 	if ($ancil ne "hght" &&
 	    $ancil ne "seze" &&
@@ -854,38 +859,40 @@ for ($i = 0; $i < $chan_count; $i++) {
 
 for ($i = 0; $i < $ancil_count; $i++) {
     my $ancil_file = $ancil_files[$i];
-    my $ancil = $ancils[$i];
-    my $tagext = substr($ancil_conversions[$i], 0, 3);
-    my $m_option;
-    if ($ancil_weight_types[$i] eq "avg") {
-	$m_option = "";
-	$tagext .= "a";
-    } else {
-	$m_option = "-m";
-	$tagext .= "m";
+    if (!$ancil_deletes[$i]) {
+	my $ancil = $ancils[$i];
+	my $tagext = substr($ancil_conversions[$i], 0, 3);
+	my $m_option;
+	if ($ancil_weight_types[$i] eq "avg") {
+	    $m_option = "";
+	    $tagext .= "a";
+	} else {
+	    $m_option = "-m";
+	    $tagext .= "m";
+	}
+	my $grid_file = "$tag\_$tagext\_$ancil\_$grid_cols\_$grid_rows.img";
+	my $data_type = $ancil_data_types[$i];
+	my $t_option = "-t $data_type";
+	my $fill_in;
+	if ($data_type eq "u1") {
+	    $fill_in = 255;
+	} elsif ($data_type eq "u2") {
+	    $fill_in = 0;
+	} elsif ($data_type eq "s2") {
+	    $fill_in = -32767;
+	} else {
+	    $fill_in = -999.0;
+	}
+	my $f_option = "-f $fill_in";
+	my $fill_out = $ancil_fills[$i];
+	my $F_option = "-F $fill_out";
+	do_or_die("fornav 1 -v $t_option $f_option $m_option $F_option " .
+		  "-d $weight_distance_max " .
+		  "$swath_cols $swath_scans $swath_rows_per_scan " .
+		  "$cols_file $rows_file $ancil_file " .
+		  "$grid_cols $grid_rows $grid_file");
     }
-    my $grid_file = "$tag\_$tagext\_$ancil\_$grid_cols\_$grid_rows.img";
-    my $data_type = $ancil_data_types[$i];
-    my $t_option = "-t $data_type";
-    my $fill_in;
-    if ($data_type eq "u1") {
-	$fill_in = 255;
-    } elsif ($data_type eq "u2") {
-	$fill_in = 0;
-    } elsif ($data_type eq "s2") {
-	$fill_in = -32767;
-    } else {
-	$fill_in = -999.0;
-    }
-    my $f_option = "-f $fill_in";
-    my $fill_out = $ancil_fills[$i];
-    my $F_option = "-F $fill_out";
-    do_or_die("fornav 1 -v $t_option $f_option $m_option $F_option " .
-	      "-d $weight_distance_max " .
-	      "$swath_cols $swath_scans $swath_rows_per_scan " .
-	      "$cols_file $rows_file $ancil_file " .
-	      "$grid_cols $grid_rows $grid_file");
-    if (!$keep) {
+    if ($ancil_deletes[$i] || !$keep) {
 	do_or_die("rm -f $ancil_file");
     }
 }
