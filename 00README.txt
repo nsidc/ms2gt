@@ -19,7 +19,7 @@ files. All four Perl programs can optionally read MOD03 files for
 geolocation and/or ancillary data.
 
 The software and associated documentation can be downloaded
-from ftp://sidads.colorado.edu/pub/incoming/tharan/ms2gt/ms2gt0.8.tar.gz.
+from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.8.tar.gz.
 Save this file in some directory and type:
 
 gunzip ms2gt0.8.tar.gz
