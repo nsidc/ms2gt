@@ -4,7 +4,7 @@
  * 26-Nov-2001 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char lle2cre_c_rcsid[] = "$Header: /usr/people/haran/photoclin/src/lle2cre/lle2cre.c,v 1.3 2001/12/02 21:25:42 haran Exp $";
+static const char lle2cre_c_rcsid[] = "$Header: /home/haran/photoclin/src/lle2cre/lle2cre.c,v 1.4 2003/06/24 16:53:34 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -16,7 +16,7 @@ static const char lle2cre_c_rcsid[] = "$Header: /usr/people/haran/photoclin/src/
 #include "matrix.h"
 
 #define USAGE \
-"usage: lle2cre [-v] [-g gpdfile]\n"\
+"usage: lle2cre [-v] [-g gpdfile] [-t]\n"\
 "       default:         Sa0.gpd\n"\
 "               [-c col_start row_start cols rows corfile]\n"\
 "               <filein >fileout\n"\
@@ -51,6 +51,9 @@ static const char lle2cre_c_rcsid[] = "$Header: /usr/people/haran/photoclin/src/
 "             from corfile. The correction value is then added to elevation\n"\
 "             before it is written to stdout. If the column-row pair falls\n"\
 "             outside the sub-region, then the point is not written.\n"\
+"         t - the third field on each input line is treated as a temperature\n"\
+"             and is written as a fourth field on each output line. The\n"\
+"             elevation on each input line is set to 0.\n"\
 "\n"
 
 static void DisplayUsage(void)
@@ -67,6 +70,7 @@ static void DisplayInvalidParameter(char *param)
 main (int argc, char *argv[])
 {
   bool verbose;
+  bool temp_mode;
   char *option;
   char *gpdfile;
   int col_start;
@@ -81,6 +85,7 @@ main (int argc, char *argv[])
   double col;
   double row;
   double elev;
+  double temperature;
   float lat;
   float lon;
   grid_class *grid_def;
@@ -142,6 +147,9 @@ main (int argc, char *argv[])
 	  DisplayInvalidParameter("corfile");
 	corfile = *argv;
 	break;
+      case 't':
+	temp_mode = TRUE;
+	break;
     default:
 	fprintf(stderr,"invalid option %c\n", *option);
 	DisplayUsage();
@@ -165,6 +173,7 @@ main (int argc, char *argv[])
       fprintf(stderr, "  rows      = %d\n", rows);
       fprintf(stderr, "  corfile   = %s\n", corfile);
     }
+    fprintf(stderr, "  temp_mode  = %d\n", temp_mode);
   }
 
   /*
@@ -219,6 +228,11 @@ main (int argc, char *argv[])
       fprintf(stderr, "error parsing input line %d:\n%s\n", count_input, line);
     } else {
 
+      if (temp_mode) {
+	temperature = elev;
+	elev = 0.0;
+      }
+
       /*
        *  convert lat-lon pair to col-row pair
        */
@@ -251,7 +265,10 @@ main (int argc, char *argv[])
        */
       
       if (in_region) {
-	printf("%11.5lf %11.5lf %11.6lf\n", col, row, elev);
+	if (temp_mode)
+	  printf("%11.5lf %11.5lf %11.6lf %11.5lf\n", col, row, elev, temperature);
+	else
+	  printf("%11.5lf %11.5lf %11.6lf\n", col, row, elev);
 	count_output++;
       }
     }
