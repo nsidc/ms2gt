@@ -42,7 +42,7 @@ Suppose we want to put some MODIS 1 km Level 1b swath data covering all
 of Greenland into a region of the same grid used by the <a href="http://nsidc.org/NSIDC/CATALOG/ENTRIES/nsi-0065.html">AVHRR
 Polar Pathfinder Twice-Daily 1.25 km&nbsp; EASE-Grid Composites</a>. We
 want to grid reflective channels 1 and 2, thermal channels 31 and 32, and
-ancillary data channels solar zenith and sensor zenith. We could simply
+ancillary data channels sensor zenith and solar zenith. We could simply
 order MOD021KM data; however, as we can see in <a href="index.html#datasets">Supported
 Data Sets</a>, both the ancillary data and the latlon data are stored at
 only 5 km resolution in MOD021KM granules. We could have <a href="index.html#mod02_usage">mod02.pl</a>
@@ -71,7 +71,7 @@ values for performing the search using the <a href="http://redhook.gsfc.nasa.gov
 <p><tt>MOD021KM.A2000153.1445.002.2000156075718.hdf</tt>
 <br><tt>MOD021KM.A2000153.1450.002.2000156075717.hdf</tt>
 <br><tt>MOD03.A2000153.1445.002.2000156061125.hdf</tt>
-<br><tt>MOD03.A2000153.1450.002.2000156062025.hdf</tt><tt></tt>
+<br><tt>MOD03.A2000153.1450.002.2000156062025.hdf</tt>
 <p>Note that June 1, 2000 is day-of-year 153.
 <h2>
 <a NAME="order"></a>Ordering and Downloading the Data</h2>
@@ -99,22 +99,22 @@ gridded data created by mod02.pl will begin with the string "gl1_2000153_1445".<
 
 <li>
 listfile is "listfile.txt" containing a list of the MOD02 files to be processed
-(see Creating the Listfile).</li>
+(see <a href="#listfile">Creating the listfile</a>).</li>
 
 <li>
 gpdfile is "Gl1250.txt" containing a specification of the grid and its
-associated map projection to use in gridding the data (see Creating the
-*.gpd and *.mpp files).</li>
+associated map projection to use in gridding the data (see <a href="#gpdfile">Creating
+the *.gpd and *.mpp files</a>).</li>
 
 <li>
 chanfile is "chanfile.txt" containing a list of the channels to be gridded
-as well as specifying how each channel should be processed (see Creating
-the chanfile).</li>
+as well as specifying how each channel should be processed (see <a href="#chanfile">Creating
+the chanfile</a>).</li>
 
 <li>
 ancilfile is "ancilfile.txt" containing a list of the ancillary parameters
 to be gridded as well as how each ancillary parameter should be processed
-(see Creating the ancilfile).</li>
+(see <a href="#ancilfile">Creating the ancilfile</a>).</li>
 
 <li>
 latlon_src is "3" indicating that for each MOD021KM file specified in the
@@ -144,7 +144,7 @@ Make gl1_2000153_1445.csh executable by typing:
 Create a text file called listfile.txt in the tutorial_1 directory containing
 the following two lines:
 <p><tt>MOD021KM.A2000153.1445.002.2000156075718.hdf</tt>
-<br><tt>MOD021KM.A2000153.1450.002.2000156075717.hdf</tt><tt></tt>
+<br><tt>MOD021KM.A2000153.1450.002.2000156075717.hdf</tt>
 <p>Note that we list only the MOD021KM files to be gridded, not the MOD03
 files since we are gridding channel data as well as ancillary data. If
 we were only gridding 1 km ancillary data, then we would list the MOD03
@@ -152,7 +152,92 @@ files in listfile since there would be no need for reading the MOD021KM
 files.
 <h2>
 <a NAME="gpdfile"></a>Creating the *.gpd and *.mpp files</h2>
-
+See <a href="http://nsidc.org/NASA/GUIDE/docs/reference_documents/ppgc.html#parameters">Points,
+Pixels, Grids, and Cells</a> for a description of the *.gpd and *.mpp file
+formats used by the mapx library in defining a grid and its associated
+map projection. See <a href="http://nsidc.org/NASA/GUIDE/EASE/polarpf_grids.html#grid">Summary
+of NOAA/NASA Polar Pathfinder Grid Relationships</a> for a description
+of the AVHRR Polar Pathfinder 1.25 km Northern Hemisphere EASE-Grid whose
+grid parameter definitions file is <a href="http://nsidc.org/NASA/GUIDE/EASE/Na1.gpd">Na1.gpd</a>
+which in turn refers to <a href="http://nsidc.org/NASA/GUIDE/EASE/N200correct.mpp">N200correct.mpp</a>
+which defines the associated map projection. Both of these files are included
+in the ms2gt/grids directory. Note that <a href="http://nsidc.org/NASA/GUIDE/EASE/Na1.gpd">Na1.gpd</a>
+defines a 7220 column x 7220 row grid. We wish to create a *.gpd file that
+we'll call Gl1250.gpd that defines a region within this grid that contains
+Greenland. By consulting a map of Greenland oriented in the same way as
+shown in <a href="http://nsidc.org/NASA/GUIDE/EASE/polarpf_grids.html#grid">Summary
+of NOAA/NASA Polar Pathfinder Grid Relationships</a>, we determine that
+the upper left corner of our grid should be at about 67.70 N, 82.68 W and
+the lower right corner should be at about 67.41 N and 2.60 W. We would
+like to know what column and row numbers in <a href="http://nsidc.org/NASA/GUIDE/EASE/Na1.gpd">Na1.gpd</a>
+have these coordinates. To do this we can use a interactive program called
+gtest that was <a href="index.html#building">built</a> during the MS2GT
+installation. This program can perform forward (lat-lon to col-row) and
+inverse (col-row to lat-lon) calculations given a *.gpd file. Here is a
+transcript of a gtest session that does what we want (what we type is shown
+in <b>bold</b>:
+<p><b><tt>gtest</tt></b>
+<p><tt>enter .gpd file name: <b>Na1.gpd</b></tt>
+<br><tt>> assuming old style fixed format file</tt>
+<p><tt>gpd: /export/data/ms2gt/grids/Na1.gpd</tt>
+<br><tt>mpp:/export/data/ms2gt/grids/N200correct.mpp</tt>
+<p><tt>forward_grid:</tt>
+<br><tt>enter lat lon: <b>67.70 -82.68</b></tt>
+<br><tt>col,row = 1659.541626 3859.987305&nbsp;&nbsp;&nbsp; status = 1</tt>
+<br><tt>lat,lon = 67.699997 -82.680000&nbsp;&nbsp;&nbsp; status = 1</tt>
+<br><tt>enter lat lon: <b>67.41 -2.60</b></tt>
+<br><tt>col,row = 3519.172363 5598.667480&nbsp;&nbsp;&nbsp; status = 1</tt>
+<br><tt>lat,lon = 67.410004 -2.600002&nbsp;&nbsp;&nbsp; status = 1</tt>
+<br><tt>enter lat lon:</tt>
+<p><tt>inverse_grid:</tt>
+<br><tt>enter r s:</tt>
+<p><tt>enter .gpd file name:</tt>
+<p>Rounding off these column and row values, we see that the upper left
+corner our region is at column 1660, row 3860, and the lower right corner
+is at column 3519, row 5599. The dimensions of our region are 3519 - 1660
++ 1 = 1860 columns and 5599 - 3860 + 1 = 1740 rows. Note that the origin
+(in this case the north pole) of <a href="http://nsidc.org/NASA/GUIDE/EASE/Na1.gpd">Na1.gpd</a>
+is at column 3609.5 and row 3609.5. Thus the origin of our region will
+be at 3609.5 - 1660 = column 1949.5 and 3609.5 - 3860 = row -250.5. We
+now have all the information we need to create Gl1250.gpd in the ms2gt/grids
+directory:
+<p><tt>N200correct.mpp map projection parameters&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# EASE-Grid</tt>
+<br><tt>1860 1740&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; columns rows&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# Greenland</tt>
+<br><tt>160&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+grid cells per map unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# 1.25 km</tt>
+<br><tt>1949.5&nbsp; -250.5&nbsp; map origin column,row&nbsp;&nbsp; # UL
+outer: 67.7002335N 82.6942368W</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# UL center:67.7052002N 82.6779327W</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# = Na1.gpd col 1660 row 3860</tt>
+<p>Note that <a href="http://nsidc.org/NASA/GUIDE/EASE/N200correct.mpp">N200correct.mpp</a>
+is used to define the same map projection in Gl1250.gpd as in <a href="http://nsidc.org/NASA/GUIDE/EASE/Na1.gpd">Na1.gpd</a>,
+and that the resolution (200.5402 km/pixel from <a href="http://nsidc.org/NASA/GUIDE/EASE/N200correct.mpp">N200correct.mpp</a>
+divided by 160 grid cells per map unit =~ 1.25 km) is also the same. Once
+Gl1250.gpd has been created in the ms2gt/grids directory, we can use gtest
+again to check that the latitude and longitude values of the upper left
+and lower right corners are what we expect:
+<p><b><tt>gtest</tt></b><tt></tt>
+<p><tt>enter .gpd file name: <b>Gl1250.gpd</b></tt>
+<br><tt>> assuming old style fixed format file</tt><tt></tt>
+<p><tt>gpd: /export/data/ms2gth/grids/Gl1250.gpd</tt>
+<br><tt>mpp:/export/data/ms2gth/grids/N200correct.mpp</tt><tt></tt>
+<p><tt>forward_grid:</tt>
+<br><tt>enter lat lon:</tt><tt></tt>
+<p><tt>inverse_grid:</tt>
+<br><tt>enter r s: <b>0 0</b></tt>
+<br><tt>lat,lon = 67.705200 -82.677933&nbsp;&nbsp;&nbsp; status = 1</tt>
+<br><tt>col,row = 0.000000 -0.000092&nbsp;&nbsp;&nbsp; status = 1</tt>
+<br><tt>enter r s: <b>1859 1739</b></tt>
+<br><tt>lat,lon = 67.406090 -2.604522&nbsp;&nbsp;&nbsp; status = 1</tt>
+<br><tt>col,row = 1859.000000 1739.000244&nbsp;&nbsp;&nbsp; status = 1</tt>
+<br><tt>enter r s:</tt><tt></tt>
+<p><tt>enter .gpd file name:</tt>
+<br>&nbsp;
 <h2>
 <a NAME="chanfile"></a>Creating the chanfile</h2>
 Create a text file in the tutorial_1 directory called chanfile.txt containing
@@ -161,14 +246,32 @@ the following four lines:
 <br><tt>2 reflectance</tt>
 <br><tt>31 temperature</tt>
 <br><tt>32 temperature</tt>
+<p>Here we specify that we want four output grids to be created containing
+channel 1 reflectance, channel 2 reflectance, channel 31 temperature, and
+channel 32 temperature, respectively. Each file will consist of an array
+of binary floating-point numbers. Since we didn't specify weight type or
+fill, they are set to their default values, namely "avg" and "0". The weight
+type parameter refers to the kind of subsampling that will be employed.
+For data parameters that have continuous values, weighted average subsampling
+is best. For data parameters that have discreet values (i.e. coded data),
+maximum weighting should be used since this will not introduce any intermediate
+values that may not be valid codes. The fill value refers to the output
+value to which input data having a value of "fill" will be mapped. Input
+fill values are specified in the input hdf files.
 <h2>
 <a NAME="ancilfile"></a>Creating the ancilfile</h2>
 Create a text file in the tutorial_1 directory called ancilfile.txt containing
 the following two lines:
-<p><tt>soze scaled</tt>
-<br><tt>seze scaled</tt>
+<p><tt>seze scaled</tt>
+<br><tt>soze scaled</tt>
+<p>Here we specify that we want two more output grids (in addition to the
+four grids we specified in the chanfile) to be created containing sensor
+zenith and solar zenith, respectively. Each file will consist of an array
+of binary floating-point numbers in degrees. Since we didn't specify weight
+type or fill, they are set to their default values, namely "avg" and "0,"
+just as they were in chanfile.
 <br>
-<hr><font size=-1>Last updated: April 16, 2001 by</font>
+<hr><font size=-1>Last updated: April 17, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>
