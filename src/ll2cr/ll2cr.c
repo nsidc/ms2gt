@@ -4,7 +4,7 @@
  * 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char ll2xy_c_rcsid[] = "$Header: /usr/local/src/maps/gridloc.c,v 1.3 1996/05/28 17:43:41 knowles Exp $";
+static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.1 2000/10/23 17:42:39 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -19,9 +19,9 @@ static const char ll2xy_c_rcsid[] = "$Header: /usr/local/src/maps/gridloc.c,v 1.
 "\n"\
 " input : colsin  - number of columns in each input file\n"\
 "         rowsin  - number of rows in each input file\n"\
-"         gpdfile - grid parameters definition file\n"\
 "         latfile - grid of 4 byte floating-point latitudes\n"\
 "         lonfile - grid of 4 byte floating-point longitudes\n"\
+"         gpdfile - grid parameters definition file\n"\
 "\n"\
 " output: colfile - grid of 4 byte floating-point column numbers\n"\
 "         rowfile - grid of 4 byte floating-point row numbers\n"\
@@ -33,9 +33,9 @@ main (int argc, char *argv[])
 {
   int colsin;
   int rowsin;
-  char *gpdfile;
   char *latfile;
   char *lonfile;
+  char *gpdfile;
   char *colfile;
   char *rowfile;
   char *option;
