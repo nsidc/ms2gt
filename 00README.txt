@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.5 --  31 May 2001
+Readme for MODIS Swath-to-Grid Toolbox 0.6 --  11 August 2003
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -11,20 +11,23 @@ projections. Multiple input files corresponding to successively acquired 5
 minute MODIS "scenes" can be processed together to produce a seamless
 output grid.
 
-MS2GT consists of three perl programs that make calls to several
+MS2GT consists of four perl programs that make calls to several
 standalone IDL and C programs: mod02.pl which reads MOD02 Level 1b files,
-mod10_l2.pl which reads MOD10_L2 snow cover files, and mod29.pl which
-reads MOD29 sea ice files.  All three Perl programs can optionally read
-MOD03 files for geolocation and/or ancillary data.
+mod10_l2.pl which reads MOD10_L2 snow cover files, mod29.pl which
+reads MOD29 sea ice files, and mod35_l2 which reads MOD35_L2 cloud mask
+files. All four Perl programs can optionally read MOD03 files for
+geolocation and/or ancillary data.
 
 The software and associated documentation can be downloaded
-from ftp://baikal.colorado.edu/pub/NSIDC/ms2gt0.5.tar.gz. Save this file in
-some directory and type:
+from ftp://sidads.colorado.edu/pub/incoming/tharan/ms2gt/ms2gt0.6.tar.gz.
+Save this file in some directory and type:
 
-gunzip ms2gt0.5.tar.gz
-tar xvf ms2gt0.5.tar 
+gunzip ms2gt0.6.tar.gz
+tar xvf ms2gt0.6.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
 installation and use of MS2GT can be then found in html files in the
-ms2gt/doc subdirectory. Point your browser to ms2gt/doc/index.html.
+ms2gt/doc subdirectory. Point your browser to ms2gt/doc/index.html. Note
+that the html documentation is for 0.5 and has not yet been updated of
+0.6.
