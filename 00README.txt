@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.10 --  27 December 2004
+Readme for MODIS Swath-to-Grid Toolbox 0.11 --  7 January 2005
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -58,3 +58,6 @@ As of 0.10, several modifications to mod02.pl were made in support of the
 MODIS Mosaic of Antarctica (MOA) project. In support of these changes,
 several programs were also added including extract_valid_scans.pro,
 extract_region.c, insert_region.c, make_mask.c, and apply_mask.c.
+
+As of 0.11, several modifications were made to mod02.pl and
+modis_adjust.pro in support MOA version 11 and higher.
