@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.7 2001/01/04 18:04:09 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.8 2001/01/05 23:23:57 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -142,6 +142,7 @@ typedef struct {
   float *swath_chan_buf;
   float *swath_fill_buf;
   float **grid_chan_buf;
+  float *grid_fill_buf;
 } ewa_weight;
 
 static int verbose;
@@ -251,7 +252,7 @@ static void DeInitializeImage(image *ip)
 static void ReadImage(image *ip)
 {
   if (very_verbose)
-    fprintf(stderr, "Reading %s\n", ip->name);
+    fprintf(stderr, "Reading %s\n", ip->file);
   if (fread(ip->buf[0], ip->bytes_per_row, ip->rows, ip->fp) != ip->rows) {
     fprintf(stderr, "fornav: ReadImage: error reading %s\n", ip->file);
     perror("fornav");
@@ -289,6 +290,10 @@ static void InitializeWeight(int chan_count,
   ewaw->grid_chan_buf = (float **)calloc(chan_count, sizeof(float *));
   if (ewaw->grid_chan_buf == NULL)
     error_exit("fornav: InitializeWeight: can't allocate memory for grid_chan_buf");
+
+  ewaw->grid_fill_buf = (float *)calloc(chan_count, sizeof(float));
+  if (ewaw->grid_fill_buf == NULL)
+    error_exit("fornav: InitializeWeight: can't allocate memory for grid_fill_buf");
 
   if (weight_count < 2)
     error_exit("fornav: InitializeWeight: weight_count must be at least 2");
@@ -449,9 +454,11 @@ static void ComputeEwa(image *uimg, image *vimg,
   float *swath_chanp;
   float *swath_fillp;
   float **grid_chanpp;
+  float *grid_fillp;
   float *this_swath_chanp;
   float *this_swath_fillp;
   float **this_grid_chanpp;
+  float *this_grid_fillp;
   void  *this_buf;
   bool   got_fill;
   double u0;
@@ -499,14 +506,17 @@ static void ComputeEwa(image *uimg, image *vimg,
   swath_chanp = ewaw->swath_chan_buf;
   swath_fillp = ewaw->swath_fill_buf;
   grid_chanpp = ewaw->grid_chan_buf;
+  grid_fillp  = ewaw->grid_fill_buf;
   weightp = grid_weight_image->buf[0];
   this_swath = swath_chan_image;
   this_grid = grid_chan_image;
   this_swath_fillp = swath_fillp;
   this_grid_chanpp = grid_chanpp;
+  this_grid_fillp  = grid_fillp;
   for (chan = 0; chan < chan_count; chan++) {
     *swath_fillp++ = (this_swath++)->fill;
-    *this_grid_chanpp++ = (float *)((this_grid++)->buf[0]);
+    *this_grid_chanpp++ = (float *)((this_grid)->buf[0]);
+    *grid_fillp++ = (this_grid++)->fill;
   }
   for (row = 0; row < rows; row++) {
     u0p = (float *)(uimg->buf[row]);
@@ -576,7 +586,7 @@ static void ComputeEwa(image *uimg, image *vimg,
 	      grid_offset = iu + iv * grid_cols;
 	      this_weightp = weightp + grid_offset;
 	      this_swath_chanp = swath_chanp;
-	      this_swath_fillp = swath_fillp;
+	      this_grid_fillp  = grid_fillp;
 	      this_grid_chanpp = grid_chanpp;
 	      if (maximum_weight_mode) {
 		if (weight > *this_weightp) {
@@ -584,7 +594,7 @@ static void ComputeEwa(image *uimg, image *vimg,
 		  if (got_fill) {
 		    for (chan = 0; chan < chan_count; chan++)
 		      *((*this_grid_chanpp++) + grid_offset) =
-			*this_swath_fillp++;
+			*this_grid_fillp++;
 		  } else {
 		    for (chan = 0; chan < chan_count; chan++) {
 		      *((*this_grid_chanpp++) + grid_offset) =
@@ -609,6 +619,108 @@ static void ComputeEwa(image *uimg, image *vimg,
   } /* for (row = 0; row < rows; row++) */
 }
 
+void WriteGridImage(image *ip, image *wp,
+		    bool maximum_weight_mode, float weight_sum_min,
+		    image *iop)
+{
+  float **chanpp;
+  float *this_chanp;
+  float **weightpp;
+  float *this_weightp;
+  float fill;
+  float chanf;
+  void  *chanp_out;
+  byte1 *this_chanp_out;
+  int   rows;
+  int   row;
+  int   cols;
+  int   col;
+  int   bytes_per_cell;
+  int   bytes_per_row;
+  int   rows_out;
+  int   data_type;
+  FILE  *fp;
+
+  if (very_verbose)
+    fprintf(stderr, "Writing %s\n", iop->file);
+  chanpp = (float **)(ip->buf);
+  weightpp = (float **)(wp->buf);
+  chanp_out = iop->buf[0];
+  bytes_per_cell = iop->bytes_per_cell;
+  bytes_per_row = iop->bytes_per_row;
+  rows_out = iop->rows;
+  fp = iop->fp;
+  rows = ip->rows;
+  cols = ip->cols;
+  fill = ip->fill;
+  data_type = iop->data_type;
+  if (weight_sum_min <= 0.0)
+    weight_sum_min = EPSILON;
+  for (row = 0; row < rows; row++) {
+    this_chanp = *chanpp++;
+    this_weightp = *weightpp++;
+    this_chanp_out = (byte1 *)chanp_out;
+    for (col = 0;
+	 col < cols;
+	 col++,
+	   this_chanp++, this_weightp++, this_chanp_out += bytes_per_cell) {
+      if (*this_weightp < weight_sum_min)
+	chanf = fill;
+      else if (maximum_weight_mode)
+	chanf = *this_chanp;
+      else if (*this_chanp >= 0.0)
+	chanf = *this_chanp / *this_weightp + 0.5;
+      else
+	chanf = *this_chanp / *this_weightp - 0.5;
+      switch (data_type) {
+      case TYPE_BYTE:
+	if (chanf < 0.0)
+	  chanf = 0.0;
+	if (chanf > 255.0)
+	  chanf = 255.0;
+	*((byte1 *)this_chanp_out) = (byte1)chanf;
+	break;
+      case TYPE_UINT2:
+	if (chanf < 0.0)
+	  chanf = 0.0;
+	if (chanf > 65535.0)
+	  chanf = 65535.0;
+	*((byte2 *)this_chanp_out) = (byte2)chanf;
+	break;
+      case TYPE_SINT2:
+	if (chanf < -32768.0)
+	  chanf = -32768.0;
+	if (chanf > 32767.0)
+	  chanf = 32767.0;
+	*((int2 *)this_chanp_out) = (int2)chanf;
+	break;
+      case TYPE_UINT4:
+	if (chanf < 0.0)
+	  chanf = 0.0;
+	if (chanf > 4294967295.0)
+	  chanf = 4294967295.0;
+	*((byte4 *)this_chanp_out) = (byte4)chanf;
+	break;
+      case TYPE_SINT4:
+	if (chanf < -2147483648.0)
+	  chanf = -2147483648.0;
+	if (chanf > 2147483647.0)
+	  chanf = 2147483647.0;
+	*((int4 *)this_chanp_out) = (int4)chanf;
+	break;
+      case TYPE_FLOAT:
+	*((float *)this_chanp_out) = chanf;;
+	break;
+      }
+    } /* for (col = 0; col < cols; col++) */
+
+    if (fwrite(chanp_out, bytes_per_row, rows_out, fp) != rows_out) {
+      fprintf(stderr, "fornav: WriteGridImage: error writing %s\n", iop->file);
+      perror("fornav");
+      exit(ABORT);
+    }
+  } /* for (row = 0; row < rows; row++) */
+}
 
 main (int argc, char *argv[])
 {
@@ -962,6 +1074,14 @@ main (int argc, char *argv[])
 	       grid_chan_image, grid_weight_image);
 
   } /* for (scan = swath_scan_first; scan <= swath_scan_last; scan++) */
+
+  /*
+   *  Write out gridded channel data for each channel
+   */
+  for (i = 0; i < chan_count; i++)
+    WriteGridImage(&grid_chan_image[i], grid_weight_image,
+		   maximum_weight_mode, weight_sum_min,
+		   &grid_chan_io_image[i]);
 
   /*
    *  De-Initialize images
