@@ -4,7 +4,7 @@
  * 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.5 2001/01/12 16:08:21 haran Exp haran $";
+static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.6 2001/01/19 18:41:10 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -343,7 +343,12 @@ main (int argc, char *argv[])
     char colfile_new[FILENAME_MAX];
     char rowfile_new[FILENAME_MAX];
 
-    scansout = scanlast - scanfirst + 1;
+    if (scanfirst < 0) {
+      scansout = 0;
+      scanfirst = 0;
+    } else {
+      scansout = scanlast - scanfirst + 1;
+    }
     sprintf(colfile_new, "%s_cols_%05d_%05d_%05d_%02d.img",
 	    tag, colsin, scansout, scanfirst, rowsperscan);
     sprintf(rowfile_new, "%s_rows_%05d_%05d_%05d_%02d.img",
