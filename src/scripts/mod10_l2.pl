@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod10_l2.pl,v 1.7 2001/02/20 16:27:01 haran Exp haran $
+# $Id: mod10_l2.pl,v 1.8 2001/03/06 15:00:52 haran Exp haran $
 
 #========================================================================
 # mod10_l2.pl - grids MOD10_L2 data
@@ -11,11 +11,11 @@
 
 $|=1;
 
-$path_modis_src = $ENV{PATH_MODIS_SRC};
-$source_modis = "$path_modis_src/scripts";
+$path_ms2gt_src = $ENV{PATH_MS2GT_SRC};
+$source_ms2gt = "$path_ms2gt_src/scripts";
 
-require("$source_modis/setup.pl");
-require("$source_modis/error_mail.pl");
+require("$source_ms2gt/setup.pl");
+require("$source_ms2gt/error_mail.pl");
 
 my $Usage = "\n
 USAGE: mod10_l2.pl dirinout tag listfile gpdfile

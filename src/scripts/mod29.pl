@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Id: mod29.pl,v 1.3 2001/02/20 17:22:10 haran Exp haran $
+# $Id: mod29.pl,v 1.4 2001/03/06 15:02:05 haran Exp haran $
 
 #========================================================================
 # mod29.pl - grids MOD29 data
@@ -10,11 +10,11 @@
 
 $|=1;
 
-$path_modis_src = $ENV{PATH_MODIS_SRC};
-$source_modis = "$path_modis_src/scripts";
+$path_ms2gt_src = $ENV{PATH_MS2GT_SRC};
+$source_ms2gt = "$path_ms2gt_src/scripts";
 
-require("$source_modis/setup.pl");
-require("$source_modis/error_mail.pl");
+require("$source_ms2gt/setup.pl");
+require("$source_ms2gt/error_mail.pl");
 
 my $Usage = "\n
 USAGE: mod29.pl dirinout tag listfile gpdfile

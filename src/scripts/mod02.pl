@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod02.pl,v 1.26 2001/03/06 23:47:45 haran Exp haran $
+# $Id: mod02.pl,v 1.27 2001/03/08 23:07:16 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -11,13 +11,13 @@
 
 $|=1;
 
-$path_modis_src = $ENV{PATH_MODIS_SRC};
-$source_modis = "$path_modis_src/scripts";
+$path_ms2gt_src = $ENV{PATH_MS2GT_SRC};
+$source_ms2gt = "$path_ms2gt_src/scripts";
 
-require("$source_modis/mod02_usage.pl");
-require("$source_modis/mod02_case.pl");
-require("$source_modis/setup.pl");
-require("$source_modis/error_mail.pl");
+require("$source_ms2gt/mod02_usage.pl");
+require("$source_ms2gt/mod02_case.pl");
+require("$source_ms2gt/setup.pl");
+require("$source_ms2gt/error_mail.pl");
 
 # define a global used by do_or_die and invoke_or_die
 
