@@ -60,5 +60,7 @@ several programs were also added including extract_valid_scans.pro,
 extract_region.c, insert_region.c, make_mask.c, and apply_mask.c.
 
 As of 0.11, several modifications were made to mod02.pl and
-modis_adjust.pro in support MOA version 11 and higher including keeping
-the mask file.
+modis_adjust.pro in support of MOA version 11 and higher including keeping
+the mask file and using 16-bit solar zenith values for solar zenith
+normalization.
+
