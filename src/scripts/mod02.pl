@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.44 2004/11/01 00:35:00 haran Exp haran $
+# $Id: mod02.pl,v 1.45 2004/11/02 01:01:17 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -896,6 +896,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		my $chan_file_unfixed = $chan_file . ".unfixed";
 		do_or_die("mv $chan_file $chan_file_unfixed");
 		my $reg_col_offset = "";
+		my $interp_cols = "";
 		my $reg_cols = "";
 		my $nor_rows = "";
 		my $reg_rows = "";
@@ -908,11 +909,11 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		if ($fix250 == 1 || $fix250 == 2) {
 		    $reg_col_offset = "reg_col_offset=" . (($chan == 1) ? "3" : "0");
 		    if ($fixcolfile eq "none") {
-			if ($platform eq "terra" && $chan == 2) {
-			    $reg_cols = "/reg_cols";
+			if ($platform eq "terra") {
+			    $interp_cols = "/interp_cols";
 			}
 			$file_reg_cols_out = "file_reg_cols_out=\"'$chan_file" . ".colfix'\"";
-		    } elsif ($platform eq "terra" && $chan == 2) {
+		    } elsif ($platform eq "terra") {
 			$file_reg_cols_in =
 			    "file_reg_cols_in=\"'$fixcolfile'\"";
 		    }
@@ -937,7 +938,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		my $command = "idl_sh.pl modis_adjust $swath_cols $swath_scans " .
 		    "\"'$chan_file_unfixed'\" \"'$chan_file'\" " .
 		    "file_soze=\"'$soze_file'\" " .
-		    "$reg_cols $reg_col_offset " .
+		    "$interp_cols $reg_cols $reg_col_offset " .
 		    "$nor_rows $reg_rows $undo_soze " .
 		    "$data_type_in $data_type_out " .
 		    "$file_reg_cols_in $file_reg_cols_out " .
@@ -1034,7 +1035,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 			  "$tile_grid_cols_this $tile_grid_rows_this " .
 			  "$grid_file");
 	    }
-	    if (($ancil_deletes[$i] || !$keep) &&
+	    if ($ancil_deletes[$i] && !$keep &&
 		$tile_col == $tile_cols - 1 &&
 		$tile_row == $tile_rows - 1) {
 		do_or_die("rm -f $ancil_file");
