@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.56 2004/11/25 23:27:54 haran Exp haran $
+# $Id: mod02.pl,v 1.57 2004/11/25 23:34:40 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -1061,7 +1061,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 			      "$tile_grid_cols_this $tile_grid_rows_this " .
 			      "$mask_tile $grid_file_unmasked $grid_file");
 		    if (!$keep) {
-			system("rm -f $grid_file_unfixed");
+			system("rm -f $grid_file_unmasked");
 		    }
 		}
 	    }
@@ -1130,7 +1130,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 			      "$tile_grid_cols_this $tile_grid_rows_this " .
 			      "$mask_tile $grid_file_unmasked $grid_file");
 		    if (!$keep) {
-			system("rm -f $grid_file_unfixed");
+			system("rm -f $grid_file_unmasked");
 		    }
 		}
 	    }
