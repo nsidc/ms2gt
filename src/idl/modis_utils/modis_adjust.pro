@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.24 2002/12/01 19:28:34 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.25 2002/12/02 15:07:40 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -43,6 +43,7 @@
 ;               [, col_density_bin_width=col_density_bin_width]
 ;               [, col_plot_tag=col_plot_tag]
 ;               [, col_plot_max=col_plot_max]
+;               [, /nor_rows]
 ;               [, /reg_rows]
 ;               [, file_reg_rows_in=file_reg_rows_in]
 ;               [, file_reg_rows_out=file_reg_rows_out]
@@ -110,11 +111,13 @@
 ;       reg_col_offset: the offset value to use for performing column
 ;         regressions. The default value of reg_col_offset is 0.
 ;         NOTE: reg_col_offset must be less than reg_col_stride.
+;       nor_rows: If set then row normalization is performed.
 ;       reg_rows: If set then row regressions are computed.
 ;       file_reg_row_in: Specifies the name of an input text file
 ;         containing an initial set of intercepts and slopes that are
-;         applied to the data before any row regressions (if any) are
-;         computed. The file must have 2 * rows_per_scan + 1 lines.
+;         applied to the data before any row normalization or row
+;         regressions (if any) are computed.
+;         The file must have 2 * rows_per_scan + 1 lines.
 ;         The file has the following format:
 ;           DS_Detector  Row_Intercept     Row_Slope
 ;           00            0.00000000E+00    1.00000000E+00
@@ -234,6 +237,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                   col_density_bin_width=col_density_bin_width, $
                   col_plot_tag=col_plot_tag, $
                   col_plot_max=col_plot_max, $
+                  nor_rows=nor_rows, $
                   reg_rows=reg_rows, $
                   file_reg_rows_in=file_reg_rows_in, $
                   file_reg_rows_out=file_reg_rows_out, $
@@ -268,6 +272,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                 '[, col_density_bin_width=col_density_bin_width] ' + lf + $
                 '[, col_plot_tag=col_plot_tag] ' + lf + $
                 '[, col_plot_max=col_plot_max] ' + lf + $
+                '[, /nor_rows] ' + lf + $
                 '[, /reg_rows] ' + lf + $
                 '[, file_reg_rows_in=file_reg_rows_in] ' + lf + $
                 '[, file_reg_rows_out=file_reg_rows_out] ' + lf + $
@@ -316,6 +321,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
     col_plot_tag = ''
   if n_elements(col_plot_max) eq 0 then $
     col_plot_max = 1.5
+  if n_elements(nor_rows) eq 0 then $
+    nor_rows = 0
   if n_elements(reg_rows) eq 0 then $
     reg_rows = 0
   if n_elements(file_reg_rows_in) eq 0 then $
@@ -347,7 +354,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.24 2002/12/01 19:28:34 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.25 2002/12/02 15:07:40 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -373,6 +380,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   print, '  col_density_bin_width:', col_density_bin_width
   print, '  col_plot_tag:         ', col_plot_tag
   print, '  col_plot_max:         ', col_plot_max
+  print, '  nor_rows:             ', nor_rows
   print, '  reg_rows:             ', reg_rows
   print, '  file_reg_rows_in:     ', file_reg_rows_in
   print, '  file_reg_rows_out:    ', file_reg_rows_out
@@ -628,9 +636,11 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   reg_slope = make_array(rows_per_ds_scan, /float, value=1.0)
   reg_intcp = make_array(rows_per_ds_scan, /float, value=0.0)
 
-  if (file_reg_rows_in ne '') or (reg_rows ne 0) then begin
+  if (file_reg_rows_in ne '') or $
+     (nor_rows ne 0) or $
+     (reg_rows ne 0) then begin
 
-      ;  perform row regressions
+      ;  perform row computations
 
       ;  if scans is odd, then increment the number of double scans,
       ;  duplicate the penultimate scan, and concatenate it onto the end
@@ -669,7 +679,37 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
           line = ''
           openr, lun, file_reg_rows_in, /get_lun
           readf, lun, line
-      endif
+          for ds_det = 0, rows_per_ds_scan - 1 do begin
+              vector = reform(swath[*, ds_det, *], cells_per_ds_det)
+              ds_det_test = 0L
+              slope = 1.0
+              intcp = 0.0
+              readf, lun, ds_det_test, intcp, slope
+              if ds_det_test eq ds_det + vec_ctr then begin
+                  if abs(slope) ge epsilon then $
+                    swath[*, ds_det, *] = (temporary(vector) - intcp) / slope
+                  reg_slope[ds_det] = slope
+                  reg_intcp[ds_det] = intcp
+              endif else begin
+                  message, 'Entry for DS_Detector ' + $
+                    string(det, format='(i2)') + $
+                    ' missing from ' + file_reg_rows_in
+              endelse
+          endfor
+          free_lun, lun
+      endif                     ; if file_reg_rows_in ne ''
+
+      if nor_rows ne 0 then begin
+          mean_total = total(swath, /double) / $
+                       (cells_per_ds_det * rows_per_ds_scan)
+          for ds_det = 0, rows_per_ds_scan - 1 do begin
+              vector = reform(swath[*, ds_det, *], cells_per_ds_det)
+              slope = float((total(vector, /double) / cells_per_ds_det) $
+                            / mean_total)
+              swath[*, ds_det, *] = temporary(vector) / slope
+              reg_slope[ds_det] = reg_slope[ds_det] * slope
+          endfor
+      endif                     ; if nor_rows ne 0
 
       if reg_rows ne 0 then begin
           case rows_per_scan of
@@ -678,7 +718,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               10: pass_count = 4
           endcase
       endif else begin
-          pass_count = 1
+          pass_count = 0
       endelse
       mean_count = rows_per_ds_scan
       y_tol_ctr = 0
@@ -696,55 +736,35 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               for vec_ctr = 0, vectors_per_mean - 1 do begin
                   vector = reform(swath[*, ds_det + vec_ctr, *], $
                                        1, cells_per_ds_det)
-                  if (file_reg_rows_in ne '') and (pass_ctr eq 0) then begin
-                      ds_det_test = 0L
-                      slope = 1.0
-                      intcp = 0.0
-                      readf, lun, ds_det_test, intcp, slope
-                      if ds_det_test eq ds_det + vec_ctr then begin
-                          if abs(slope) ge epsilon then $
-                            vector = (temporary(vector) - intcp) / slope
-                          reg_slope[ds_det + vec_ctr] = slope
-                          reg_intcp[ds_det + vec_ctr] = intcp
-                      endif else begin
-                          message, 'Entry for DS_Detector ' + $
-                                   string(det, format='(i2)') + $
-                                   ' missing from ' + file_reg_rows_in
-                      endelse
-                  endif         ; if file_reg_rows ne '' and pass_ctr eq 0
                   if reg_rows ne 0 then $
                     mean = vector * weight_per_vector + mean
                   vectors[*, vec_ctr] = temporary(vector)
               endfor ; vec_ctr
               for vec_ctr = 0, vectors_per_mean - 1 do begin
                   vector = reform(vectors[*, vec_ctr])
-                  if reg_rows ne 0 then begin
-                      plot_tag = row_plot_tag
-                      if plot_tag ne '' then $
-                        plot_tag = string(plot_tag + '_', pass_ctr, $
-                                          '_', ds_det, $
-                                          format='(a, i1.1, a, i2.2)')
-                      xtitle=string('pass_ctr: ', pass_ctr, $
-                                    '  mean_ctr: ', mean_ctr, $
-                                    format='(a, i1, a, i2.2)')
-                      ytitle=string('ds_det: ', ds_det, $
-                                    format='(a, i2.2)')
-                      modis_regress, mean, vector, $
-                                     slope, intcp, $
-                                     y_tolerance=row_y_tolerance[y_tol_ctr], $
-                                     slope_delta_max=row_slope_delta_max, $
-                                     regression_max=row_regression_max, $
-                                     density_bin_width=row_density_bin_width, $
-                                     plot_tag=plot_tag, $
-                                     plot_max=row_plot_max, $
-                                     plot_titles=[xtitle,ytitle]
-                      if abs(slope) ge epsilon then $
-                        swath[*, ds_det, *] = (vector - intcp) / slope
-                      reg_slope[ds_det] = slope * reg_slope[ds_det]
-                      reg_intcp[ds_det] = slope * reg_intcp[ds_det] + intcp
-                  endif else begin
-                      swath[*, ds_det, *] = vector
-                  endelse
+                  plot_tag = row_plot_tag
+                  if plot_tag ne '' then $
+                    plot_tag = string(plot_tag + '_', pass_ctr, $
+                                      '_', ds_det, $
+                                      format='(a, i1.1, a, i2.2)')
+                  xtitle=string('pass_ctr: ', pass_ctr, $
+                                '  mean_ctr: ', mean_ctr, $
+                                format='(a, i1, a, i2.2)')
+                  ytitle=string('ds_det: ', ds_det, $
+                                format='(a, i2.2)')
+                  modis_regress, mean, vector, $
+                                 slope, intcp, $
+                                 y_tolerance=row_y_tolerance[y_tol_ctr], $
+                                 slope_delta_max=row_slope_delta_max, $
+                                 regression_max=row_regression_max, $
+                                 density_bin_width=row_density_bin_width, $
+                                 plot_tag=plot_tag, $
+                                 plot_max=row_plot_max, $
+                                 plot_titles=[xtitle,ytitle]
+                  if abs(slope) ge epsilon then $
+                    swath[*, ds_det, *] = (temporary(vector) - intcp) / slope
+                  reg_slope[ds_det] = slope * reg_slope[ds_det]
+                  reg_intcp[ds_det] = slope * reg_intcp[ds_det] + intcp
                   ds_det = ds_det + 1
               endfor ; vec_ctr
               vectors = 0
@@ -757,8 +777,6 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               spawn, 'mkdir ' + dir, /sh
               spawn, 'mv ' + dir + '*.ps ' + dir, /sh
           endif
-          if (file_reg_rows_in ne '') and (pass_ctr eq 0) then $
-            free_lun, lun
           if y_tol_ctr lt row_y_tolerance_count - 1 then $
             y_tol_ctr = y_tol_ctr + 1
       endfor ; pass_ctr
@@ -796,7 +814,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   endif
 
   if (file_reg_rows_in ne '') or (file_reg_rows_out ne '') or $
-     (reg_rows ne 0) then begin
+     (nor_rows ne 0) or (reg_rows ne 0) then begin
       print, 'DS_Detector  Row_Intercept    Row_Slope'
       for ds_det = 0, rows_per_ds_scan - 1 do $
         print, ds_det, reg_intcp[ds_det], reg_slope[ds_det], $
