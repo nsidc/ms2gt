@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.1 2000/12/28 23:31:13 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.2 2001/01/02 23:20:28 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -106,6 +106,7 @@ typedef struct {
   char  *name;
   char  *file;
   FILE  *fp;
+  char  *open_type_str;
   char  *data_type_str;
   int   data_type;
   int   bytes_per_cell;
@@ -130,14 +131,16 @@ static void DisplayInvalidParameter(char *param)
   DisplayUsage();
 }
 
-static void InitializeItem(char *name, item *ip, char *open_type_str,
-			   char *data_type_str, int cols, int rows)
+static void InitializeItem(item *ip, char *name, char *open_type_str,
+			   char *data_type_str, int cols, int rows,
+			   int swath_scan_first)
 {
   if (very_verbose)
     fprintf(stderr, "Initializing %s\n", name);
   ip->name = strdup(name);
-  if (strlen(open_type_str)) {
-    if ((ip->fp = fopen(ip->file, open_type_str)) == NULL) {
+  ip->open_type_str = strdup(open_type_str);
+  if (strlen(ip->open_type_str)) {
+    if ((ip->fp = fopen(ip->file, ip->open_type_str)) == NULL) {
       fprintf(stderr, "fornav: InitializeItem: error opening %s\n", ip->file);
       perror("fornav");
       exit(ABORT);
@@ -179,11 +182,25 @@ static void InitializeItem(char *name, item *ip, char *open_type_str,
     break;
   }
 
+  ip->cols = cols;
+  ip->rows = rows;
   ip->bytes_per_row = ip->bytes_per_cell * cols;
   ip->buf = matrix(ip->rows, ip->cols, ip->bytes_per_cell, 0);
   if (ip->buf == NULL) {
     fprintf(stderr, "Error initializing %s\n", name);
     error_exit("fornav: InitializeItem: can't allocate memory for buffer");
+  }
+  if (!strcmp(ip->open_type_str, "r")) {
+    int offset;
+    offset = ip->bytes_per_row * ip->rows * swath_scan_first;
+    if (very_verbose)
+      fprintf(stderr, "seeking to byte %d in %s\n", offset, ip->file);
+    if (fseek(ip->fp, offset, 0) != 0) {
+      fprintf(stderr, "fornav: InitializeItem: error seeking to byte %d in %s\n",
+	      offset, ip->file);
+      perror("fornav");
+      exit(ABORT);
+    }
   }
 }
 
@@ -193,12 +210,25 @@ static void DeInitializeItem(item *ip)
     fprintf(stderr, "DeInitializing %s\n", ip->name);
   if (ip->name)
     free(ip->name);
+  if (ip->open_type_str)
+    free(ip->open_type_str);
   if (ip->data_type_str)
     free(ip->data_type_str);
   if (ip->fp)
     fclose(ip->fp);
   if (ip->buf)
     free(ip->buf);
+}
+
+static void ReadItem(item *ip)
+{
+  if (very_verbose)
+    fprintf(stderr, "Reading %s\n", ip->name);
+  if (fread(ip->buf[0], ip->bytes_per_row, ip->rows, ip->fp) != ip->rows) {
+    fprintf(stderr, "fornav: ReadItem: error reading %s\n", ip->file);
+    perror("fornav");
+    exit(ABORT);
+  }
 }
 
 main (int argc, char *argv[])
@@ -231,6 +261,8 @@ main (int argc, char *argv[])
   item  *ip;
 
   int   i;
+  int   swath_scan_last;
+  int   scan;
   
   /*
    *	set defaults
@@ -475,28 +507,45 @@ main (int argc, char *argv[])
   /*
    *  Initialize items
    */
-  InitializeItem("swath_col_item", swath_col_item, "r", "f4",
-		 swath_cols, swath_rows_per_scan);
+  InitializeItem(swath_col_item, "swath_col_item", "r", "f4",
+		 swath_cols, swath_rows_per_scan, swath_scan_first);
 
-  InitializeItem("swath_row_item", swath_row_item, "r", "f4",
-		 swath_cols, swath_rows_per_scan);
+  InitializeItem(swath_row_item, "swath_row_item", "r", "f4",
+		 swath_cols, swath_rows_per_scan, swath_scan_first);
   for (i = 0; i < chan_count; i++) {
     char name[100];
     sprintf(name, "swath_chan_item %d", i); 
-    InitializeItem(name, &swath_chan_item[i], "r",
+    InitializeItem(&swath_chan_item[i], name, "r",
 		   swath_chan_item[i].data_type_str,
-		   swath_cols, swath_rows_per_scan);
+		   swath_cols, swath_rows_per_scan, swath_scan_first);
     sprintf(name, "grid_chan_io_item %d", i); 
-    InitializeItem(name, &grid_chan_io_item[i], "w",
+    InitializeItem(&grid_chan_io_item[i], name, "w",
 		   grid_chan_io_item[i].data_type_str,
-		   grid_cols, 1);
+		   grid_cols, 1, 0);
     sprintf(name, "grid_chan_item %d", i); 
-    InitializeItem(name, &grid_chan_item[i], "", "f4",
-		   grid_cols, grid_rows);
+    InitializeItem(&grid_chan_item[i], name, "", "f4",
+		   grid_cols, grid_rows, 0);
   }
 
-  InitializeItem("grid_weight_item", grid_weight_item, "", "f4",
-		 grid_cols, grid_rows);
+  InitializeItem(grid_weight_item, "grid_weight_item", "", "f4",
+		 grid_cols, grid_rows, 0);
+
+  /*
+   *  Process each scan
+   */
+  swath_scan_last = swath_scan_first + swath_scans - 1;
+  for (scan = swath_scan_first; scan <= swath_scan_last; scan++) {
+    if (very_verbose)
+      fprintf(stderr, "Processing scan %d\n", scan);
+
+    /*
+     *  Read a scan from each swath file
+     */
+    ReadItem(swath_col_item);
+    ReadItem(swath_row_item);
+    for (i = 0; i < chan_count; i++)
+      ReadItem(&swath_chan_item[i]);
+  }
 
   /*
    *  De-Initialize items
