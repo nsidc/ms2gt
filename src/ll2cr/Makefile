@@ -4,7 +4,7 @@
 # 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /usr/local/src/gswath/makefile,v 1.2 2000/09/20 17:29:39 knowles Exp $
+RCSID = $Header: /export/data/modis/src/ll2cr/Makefile,v 1.1 2000/10/23 17:43:08 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -69,8 +69,8 @@ clean:
 	- $(RM) $(OBJS) ll2cr
 
 tar:
-	- $(CO) makefile $(SRCS) $(HDRS)
-	$(TAR) cvf $(TARFILE) makefile $(SRCS) $(HDRS)
+	- $(CO) Makefile $(SRCS) $(HDRS)
+	$(TAR) cvf $(TARFILE) Makefile $(SRCS) $(HDRS)
 	$(COMPRESS) $(TARFILE)
 
 depend:
