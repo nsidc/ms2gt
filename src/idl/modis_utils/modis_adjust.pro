@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.38 2004/11/23 20:18:47 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.39 2004/11/23 20:24:54 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.38 2004/11/23 20:18:47 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.39 2004/11/23 20:24:54 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -554,12 +554,12 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       soze = cos(temporary(soze) * !dtor)
 
       ;  don't divide by small cosines
-      ;  and set swath to min value for small cosines
+      ;  and set swath to max value for small cosines
 
       i = where(abs(soze) lt epsilon, count)
       if count gt 0 then begin
           soze[i] = 1.0
-          swath[i] = min_in
+          swath[i] = max_in
       endif
       i = 0
 
