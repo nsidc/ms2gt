@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.9 --  2 September 2004
+Readme for MODIS Swath-to-Grid Toolbox 0.10 --  30 November 2004
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -53,3 +53,8 @@ of MOD02QKM and MOD03 data. Finally, the lle2cre utility has been added to
 the distribution to facilitate the conversion of ASCII latitude,
 longitude, elevation files to column, row, elevation files for a
 particular gpd file. Type lle2cre -h for the syntax.
+
+As of 0.10, several modifications to mod02.pl were made in support of the
+MODIS Mosaic of Antarctica (MOA) project. In support of these changes,
+several programs were also added including extract_valid_scans.pro,
+extract_region.c, insert_region.c, make_mask.c, and apply_mask.c.
