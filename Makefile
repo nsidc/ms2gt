@@ -4,7 +4,7 @@
 # 12-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /export/data/ms2gth/Makefile,v 1.2 2001/04/13 18:35:48 haran Exp haran $
+RCSID = $Header: /export/data/ms2gth/Makefile,v 1.3 2001/04/13 20:42:23 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -25,6 +25,7 @@ GRDDIR = $(TOPDIR)/grids
 INCDIR = $(TOPDIR)/include
 LIBDIR = $(TOPDIR)/lib
 SRCDIR = $(TOPDIR)/src
+TU1DIR = $(TOPDIR)/tutorial_1
 
 NAVDIR = $(SRCDIR)/fornav
 GSZDIR = $(SRCDIR)/gridsize
@@ -46,6 +47,7 @@ TGRDDIR = $(TARDIR)/grids
 TINCDIR = $(TARDIR)/include
 TLIBDIR = $(TARDIR)/lib
 TSRCDIR = $(TARDIR)/src
+TTU1DIR = $(TARDIR)/tutorial_1
 
 TNAVDIR = $(TSRCDIR)/fornav
 TGSZDIR = $(TSRCDIR)/gridsize
@@ -91,18 +93,20 @@ CONFIG_CFLAGS = -O
 #CONFIG_CFLAGS = -DDEBUG -g
 
 #
-#	makefiles
-#
-SRCMAKE	= $(SRCDIR)/Makefile
-
-#
 # end configuration section
 #------------------------------------------------------------------------
 
+#
+#	makefiles
+#
+SRCMAKE	= $(SRCDIR)/Makefile
 NAVMAKE = $(NAVDIR)/Makefile
 GSZMAKE = $(GSZDIR)/Makefile
 LL2MAKE = $(LL2DIR)/Makefile
 MAPMAKE = $(MAPDIR)/Makefile
+
+GPDSRCS = $(GRDDIR)/Na1.gpd
+MPPSRCS = $(GRDDIR)/N200correct.mpp
 
 L1BSRCS = $(L1BDIR)/*.pro *.txt
 UTLSRCS = $(UTLDIR)/*.pro
@@ -117,7 +121,9 @@ SCTSRCS = $(SCTDIR)/*.pl
 TOPS = $(TOPDIR)/Makefile $(TOPDIR)/ms2gt_env.csh
 DOCS = $(DOCDIR)/*.html
 HDRS = $(INCDIR)/*.h
+GRDS = $(GPDSRCS) $(MPPSRCS)
 SRCS = $(SRCMAKE) $(NAVSRCS) $(IDLSRCS) $(LL2SRCS) $(MAPSRCS) $(SCTSRCS)
+TU1S = $(TU1DIR)/*.txt $(TU1DIR)/*.gpd $(TU1DIR)/*.csh
 
 all:	srcs
 
@@ -129,16 +135,18 @@ clean:
 	$(RM) $(LIBDIR)/libmaps.a
 
 tar:
-	- $(CO) $(TOPS) $(DOCS) $(HDRS) $(SRCS)
+	- $(CO) $(TOPS) $(DOCS) $(HDRS) $(SRCS) $(TU1S)
 	- $(RMDIR) $(TARDIR)
 	$(MKDIR) $(TARDIR)
 	$(MKDIR) $(TBINDIR) $(TDOCDIR) $(TGRDDIR) $(TINCDIR) $(TLIBDIR)
 	$(MKDIR) $(TSRCDIR)
 	$(MKDIR) $(TNAVDIR) $(TGSZDIR) $(TLL2DIR) $(TMAPDIR) $(TSCTDIR)
 	$(MKDIR) $(TIDLDIR) $(TL1BDIR) $(TUTLDIR)
+	$(MKDIR) $(TTU1DIR)
 	$(CP) $(TOPS) $(TARDIR)
 	$(CP) $(DOCS) $(TDOCDIR)
 	$(CP) $(HDRS) $(TINCDIR)
+	$(CP) $(GRDS) $(TGRDDIR)
 	$(CP) $(SRCMAKE) $(TSRCDIR)
 	$(CP) $(NAVSRCS) $(TNAVDIR)
 	$(CP) $(GSZSRCS) $(TGSZDIR)
@@ -147,6 +155,7 @@ tar:
 	$(CP) $(LL2SRCS) $(TLL2DIR)
 	$(CP) $(MAPSRCS) $(TMAPDIR)
 	$(CP) $(SCTSRCS) $(TSCTDIR)
+	$(CP) $(TU1S) $(TTU1DIR)
 	$(TAR) cvf $(TARFILE) $(TARDIR)
 	$(RM) $(TARFILE).gz
 	$(COMPRESS) $(TARFILE)
