@@ -4,7 +4,7 @@
  * 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.1 2000/10/23 17:42:39 haran Exp haran $";
+static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.2 2000/10/25 21:25:37 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -15,32 +15,48 @@ static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr
 #include "grids.h"
 
 #define usage \
-"usage: ll2cr [-v] colsin rowsin latfile lonfile gpdfile colfile rowfile\n"\
+"usage: ll2cr [-v] [-f]\n"\
+"             colsin scansin rowsperscan latfile lonfile gpdfile tag\n"\
 "\n"\
 " input : colsin  - number of columns in each input file\n"\
-"         rowsin  - number of rows in each input file\n"\
+"         scansin  - number of scans in each input file\n"\
+"         rowsperscan - number of rows in each scan\n"\
 "         latfile - grid of 4 byte floating-point latitudes\n"\
 "         lonfile - grid of 4 byte floating-point longitudes\n"\
 "         gpdfile - grid parameters definition file\n"\
 "\n"\
-" output: colfile - grid of 4 byte floating-point column numbers\n"\
-"         rowfile - grid of 4 byte floating-point row numbers\n"\
+" output: tag - string used to construct output filenames:\n"\
+"           colfile = tag_cols_colsin_scansout_scanfirst_rowsperscan.img\n"\
+"           rowfile = tag_rows_colsin_scansout_scanfirst_rowsperscan.img\n"\
+"             where\n"\
+"               scansout - number of scans written to each output file\n"\
+"               scanfirst - scan number of first scan written\n"\
+"           colfile - grid of 4 byte floating-point column numbers\n"\
+"           rowfile - grid of 4 byte floating-point row numbers\n"\
 "\n"\
 " options:v - verbose\n"\
+"         f - force scansout = scansin and scanfirst = 0. If -f is not set,\n"\
+"             then scansout is set to the number of scans which contain at\n"\
+"             least one point which is contained within the grid, and\n"\
+"             scanfirst is set to the number of the first scan containing\n"\
+"             such a point.\n"\
 "\n"
 
 main (int argc, char *argv[])
 {
   int colsin;
-  int rowsin;
+  int scansin;
+  int rowsperscan;
   char *latfile;
   char *lonfile;
   char *gpdfile;
-  char *colfile;
-  char *rowfile;
+  char *tag;
   char *option;
   bool verbose;
+  bool force;
 
+  char colfile[MAX_STRING];
+  char rowfile[MAX_STRING];
   FILE *fp_lat;
   FILE *fp_lon;
   FILE *fp_col;
@@ -50,6 +66,11 @@ main (int argc, char *argv[])
   float *col_data;
   float *row_data;
   int bytes_per_row;
+  int bytes_per_scan;
+  int scansout;
+  int scanfirst;
+  int scanlast;
+  int scan;
   int row;
   int col;
   int status;
@@ -59,6 +80,7 @@ main (int argc, char *argv[])
  *	set defaults
  */
   verbose = FALSE;
+  force = FALSE;
 
 /* 
  *	get command line options
@@ -68,6 +90,9 @@ main (int argc, char *argv[])
     { switch (*option)
       { case 'v':
 	  verbose = TRUE;
+	  break;
+        case 'f':
+	  force = TRUE;
 	  break;
 	default:
 	  fprintf(stderr,"invalid option %c\n", *option);
@@ -83,22 +108,24 @@ main (int argc, char *argv[])
     error_exit(usage);
 
   colsin = atoi(*argv++);
-  rowsin = atoi(*argv++);
+  scansin = atoi(*argv++);
+  rowsperscan = atoi(*argv++);
   latfile = *argv++;
   lonfile = *argv++;
   gpdfile = *argv++;
-  colfile = *argv++;
-  rowfile = *argv++;
+  tag     = *argv++;
 
   if (verbose) {
     fprintf(stderr, "ll2cr:\n");
-    fprintf(stderr, "  colsin  = %d\n", colsin);
-    fprintf(stderr, "  rowsin  = %d\n", rowsin);
-    fprintf(stderr, "  latfile = %s\n", latfile);
-    fprintf(stderr, "  lonfile = %s\n", lonfile);
-    fprintf(stderr, "  gpdfile = %s\n", gpdfile);
-    fprintf(stderr, "  colfile = %s\n", colfile);
-    fprintf(stderr, "  rowfile = %s\n", rowfile);
+    fprintf(stderr, "  force         = %d\n", force);
+    fprintf(stderr, "  colsin        = %d\n", colsin);
+    fprintf(stderr, "  scansin       = %d\n", scansin);
+    fprintf(stderr, "  rowsperscan   = %d\n", rowsperscan);
+    fprintf(stderr, "  latfile       = %s\n", latfile);
+    fprintf(stderr, "  lonfile       = %s\n", lonfile);
+    fprintf(stderr, "  gpdfile       = %s\n", gpdfile);
+    fprintf(stderr, "  tag           = %s\n", tag);
+    fprintf(stderr, "  ll2xy_c_rcsid = %s\n", ll2xy_c_rcsid);
   }
   
   /*
@@ -125,6 +152,20 @@ main (int argc, char *argv[])
     exit(ABORT);
 
   /*
+   *  Create preliminary names of output files as if force is TRUE.
+   *  If force is TRUE, then these will be the final names.
+   *  If force is FALSE, then we will rename the output files once
+   *  we're done and we know the final values of scansout and scanfirst.
+   */
+
+  scansout = scansin;
+  scanfirst = 0;
+  sprintf(colfile, "%s_cols_%05d_%05d_%05d_%d.img",
+	  tag, colsin, scansout, scanfirst, rowsperscan);
+  sprintf(rowfile, "%s_rows_%05d_%05d_%05d_%d.img",
+	  tag, colsin, scansout, scanfirst, rowsperscan);
+
+  /*
    *  open output files
    */
 
@@ -143,71 +184,123 @@ main (int argc, char *argv[])
  *	allocate storage for data grids
  */
   bytes_per_row = colsin * sizeof(float);
+  bytes_per_scan = bytes_per_row * rowsperscan;
 
-  lat_data = (float *)malloc(bytes_per_row);
+  lat_data = (float *)malloc(bytes_per_scan);
   if (NULL == lat_data) {
     fprintf(stderr, "ll2cr: can't allocate memory for lat_data\n"); 
     perror("ll2cr");
     exit(ABORT);
   }
-  lon_data = (float *)malloc(bytes_per_row);
+  lon_data = (float *)malloc(bytes_per_scan);
   if (NULL == lon_data) {
     fprintf(stderr, "ll2cr: can't allocate memory for lon_data\n"); 
     perror("ll2cr");
     exit(ABORT);
   }
-  col_data = (float *)malloc(bytes_per_row);
+  col_data = (float *)malloc(bytes_per_scan);
   if (NULL == col_data) {
     fprintf(stderr, "ll2cr: can't allocate memory for col_data\n"); 
     perror("ll2cr");
     exit(ABORT);
   }
-  row_data = (float *)malloc(bytes_per_row);
+  row_data = (float *)malloc(bytes_per_scan);
   if (NULL == row_data) {
     fprintf(stderr, "ll2cr: can't allocate memory for row_data\n"); 
     perror("ll2cr");
     exit(ABORT);
   }
 
-/*
- *  for each row in the input files 
- */
-  for (row = 0; row < rowsin; row++) {
+  /*
+   *  set scanfirst to -1 to indicate we haven't found a point within
+   *  the grid yet.
+   */
+  scanfirst = -1;
+  for (scan = 0; scan < scansin; scan++) {
 
     /*
-     *  read a row of latitudes and longitudes
+     *  read a scan's worth of latitudes and longitudes
      */
-    if (fread(lat_data, bytes_per_row, 1, fp_lat) != 1) {
+    if (fread(lat_data, bytes_per_row, rowsperscan, fp_lat) !=
+	rowsperscan) {
       fprintf(stderr, "ll2rc: premature end of file on %s\n", latfile);
       exit(ABORT);
     }
-    if (fread(lon_data, bytes_per_row, 1, fp_lon) != 1) {
+    if (fread(lon_data, bytes_per_row, rowsperscan, fp_lon) !=
+	rowsperscan) {
       fprintf(stderr, "ll2rc: premature end of file on %s\n", lonfile);
       exit(ABORT);
     }
 
-    /*
-     *  for each column of latitude-longitude pair
-     */
-    for (col = 0; col < colsin; col++) {
-      
+    for (row = 0; row < rowsperscan; row++) {
+
       /*
-       *  convert latitude-longitude pair to column-row pair
+       *  for each column of latitude-longitude pair
        */
-      status = forward_grid(grid_def, lat_data[col], lon_data[col],
-			    &col_data[col], &row_data[col]);
+      for (col = 0; col < colsin; col++) {
+      
+	/*
+	 *  convert latitude-longitude pair to column-row pair
+	 */
+	status = forward_grid(grid_def, lat_data[col], lon_data[col],
+			      &col_data[col], &row_data[col]);
+	if (status) {
+	  if (scanfirst < 0)
+	    scanfirst = scan;
+	  scanlast = scan;
+	}
+      }
     }
 
-    /*
-     *  write a row of column and row numbers
-     */
-    if (fwrite(col_data, bytes_per_row, 1, fp_col) != 1) {
-      fprintf(stderr, "ll2rc: error writing to %s\n", colfile);
-      exit(ABORT);
+    if (!force && (scanfirst >= 0) && (scanlast != scan))
+      break;
+
+    if (force || (scanfirst >= 0)) {
+      /*
+       *  write a scan's worth of column and row numbers
+       */
+      if (fwrite(col_data, bytes_per_row, rowsperscan, fp_col) !=
+	  rowsperscan) {
+	fprintf(stderr, "ll2rc: error writing to %s\n", colfile);
+	exit(ABORT);
+      }
+      if (fwrite(row_data, bytes_per_row, rowsperscan, fp_row) !=
+	  rowsperscan) {
+	fprintf(stderr, "ll2rc: error writing to %s\n", rowfile);
+	exit(ABORT);
+      }
     }
-    if (fwrite(row_data, bytes_per_row, 1, fp_row) != 1) {
-      fprintf(stderr, "ll2rc: error writing to %s\n", rowfile);
-      exit(ABORT);
-    }
+  }
+
+  /*
+   *  close files
+   */
+  fclose(fp_lat);
+  fclose(fp_lon);
+  fclose(fp_col);
+  fclose(fp_row);
+
+  /*
+   *  deallocate storage
+   */
+  free(lat_data);
+  free(lon_data);
+  free(col_data);
+  free(row_data);
+
+  /*
+   *  rename the output files if force is FALSE
+   */
+  if (!force) {
+    char colfile_new[MAX_STRING];
+    char rowfile_new[MAX_STRING];
+
+    scansout = scanlast - scanfirst + 1;
+    sprintf(colfile_new, "%s_cols_%05d_%05d_%05d_%d.img",
+	    tag, colsin, scansout, scanfirst, rowsperscan);
+    sprintf(rowfile_new, "%s_rows_%05d_%05d_%05d_%d.img",
+	    tag, colsin, scansout, scanfirst, rowsperscan);
+    rename(colfile, colfile_new);
+    rename(rowfile, rowfile_new);
   }
 }
