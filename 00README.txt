@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox -- 7 Mar 2001
+Readme for MODIS Swath-to-Grid Toolbox 00.00 --  19 April 2001
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -49,11 +49,11 @@ data derived from a single MOD02QKM file takes about three minutes on the
 above machine.
 
 The software and associated documentation can be downloaded
-from ftp://baikal.colorado.edu/pub/NSIDC/ms2gt.tar.gz. Save this file in
+from ftp://baikal.colorado.edu/pub/NSIDC/ms2gt00.00.tar.gz. Save this file in
 some directory and type:
 
-gunzip ms2gt.tar.gz
-tar xvf ms2gt.tar 
+gunzip ms2gt00.00.tar.gz
+tar xvf ms2gt00.00.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
