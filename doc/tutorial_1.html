@@ -34,6 +34,12 @@ Tutorial 1: Gridding MODIS 1 km Level 1b Data over Greenland Using mod02.pl</h1>
 
 <li>
 <a href="#ancilfile">Creating the ancilfile</a></li>
+
+<li>
+<a href="#running">Running the mod02.pl Command File</a></li>
+
+<li>
+<a href="#results">Examining the Results</a></li>
 </ul>
 
 <h2>
@@ -76,9 +82,9 @@ values for performing the search using the <a href="http://redhook.gsfc.nasa.gov
 <h2>
 <a NAME="order"></a>Ordering and Downloading the Data</h2>
 Order and download the above files to some directory we'll call the tutorial_1
-directory where you have at least 500 MB of disk space. Note that you can
-also download the *.met files that accompany the *.hdf files, but the MS2GT
-software doesn't use them.
+directory where you have at least 1 GB of free disk space. Note that you
+can also download the *.met files that accompany the *.hdf files, but the
+MS2GT software doesn't use them.
 <h2>
 <a NAME="command"></a>Creating the mod02.pl Command File</h2>
 Create a text file in the tutorial_1 directory called gl1_2000153_1445.csh
@@ -95,7 +101,8 @@ is invoked will contain the input and output files.</li>
 
 <li>
 tag is "gl1_2000153_1445" indicating that all output filenames containing
-gridded data created by mod02.pl will begin with the string "gl1_2000153_1445".</li>
+gridded data created by <a href="index.html#mod02_usage">mod02.pl</a> will
+begin with the string "gl1_2000153_1445".</li>
 
 <li>
 listfile is "listfile.txt" containing a list of the MOD02 files to be processed
@@ -194,13 +201,14 @@ in <b>bold</b>:
 <p><tt>enter .gpd file name:</tt>
 <p>Rounding off these column and row values, we see that the upper left
 corner our region is at column 1660, row 3860, and the lower right corner
-is at column 3519, row 5599. The dimensions of our region are 3519 - 1660
-+ 1 = 1860 columns and 5599 - 3860 + 1 = 1740 rows. Note that the origin
-(in this case the north pole) of <a href="http://nsidc.org/NASA/GUIDE/EASE/Na1.gpd">Na1.gpd</a>
-is at column 3609.5 and row 3609.5. Thus the origin of our region will
-be at 3609.5 - 1660 = column 1949.5 and 3609.5 - 3860 = row -250.5. We
-now have all the information we need to create Gl1250.gpd in the ms2gt/grids
-directory:
+is at column 3519, row 5599. Thus, the dimensions of our region are 3519
+- 1660 + 1 = 1860 columns and 5599 - 3860 + 1 = 1740 rows. Note that the
+origin (in this case the north pole) of <a href="http://nsidc.org/NASA/GUIDE/EASE/Na1.gpd">Na1.gpd</a>
+is at column 3609.5, row 3609.5. Thus the origin of our region will be
+at 3609.5 - 1660 = column 1949.5 and 3609.5 - 3860 = row -250.5. We now
+have all the information we need to create Gl1250.gpd in the ms2gt/grids
+directory (if you don't want to type the file in, then just copy Gl1250.gpd
+from the ms2gt/tutorial_1 directory to the ms2gt/grids directory):
 <p><tt>N200correct.mpp map projection parameters&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # EASE-Grid</tt>
 <br><tt>1860 1740&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; columns rows&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -214,20 +222,37 @@ outer: 67.7002335N 82.6942368W</tt>
 # UL center:67.7052002N 82.6779327W</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # = Na1.gpd col 1660 row 3860</tt>
+<p>We can view <a href="http://nsidc.org/NASA/GUIDE/EASE/N200correct.mpp">N200correct.mpp</a>
+by typing:
+<p><b><tt>cat $PATHMPP/N200correct.mpp</tt></b>
+<br><tt>Azimuthal Equal-Area</tt>
+<br><tt>90.0&nbsp;&nbsp;&nbsp; 0.0&nbsp;&nbsp;&nbsp;&nbsp; lat0 lon0</tt>
+<br><tt>0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+rotation</tt>
+<br><tt>200.5402&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scale (km/pixel)</tt>
+<br><tt>90.00&nbsp;&nbsp; 00.00&nbsp;&nbsp; center lat lon</tt>
+<br><tt>0.00&nbsp;&nbsp; 90.00&nbsp;&nbsp;&nbsp; lat min max</tt>
+<br><tt>-180.00&nbsp; 180.00 lon min max</tt>
+<br><tt>15.00 30.00&nbsp;&nbsp;&nbsp;&nbsp; grid</tt>
+<br><tt>0.00&nbsp;&nbsp;&nbsp; 00.00&nbsp;&nbsp; label lat lon</tt>
+<br><tt>1 0 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+cil bdy riv</tt>
 <p>Note that <a href="http://nsidc.org/NASA/GUIDE/EASE/N200correct.mpp">N200correct.mpp</a>
-is used to define the same map projection in Gl1250.gpd as in <a href="http://nsidc.org/NASA/GUIDE/EASE/Na1.gpd">Na1.gpd</a>,
+is used to define the same map projection (an Azimuthal Equal Area projection
+centered at the north pole with 0 degrees longitude extending straight
+down) in Gl1250.gpd as in <a href="http://nsidc.org/NASA/GUIDE/EASE/Na1.gpd">Na1.gpd</a>,
 and that the resolution (200.5402 km/pixel from <a href="http://nsidc.org/NASA/GUIDE/EASE/N200correct.mpp">N200correct.mpp</a>
-divided by 160 grid cells per map unit =~ 1.25 km) is also the same. Once
-Gl1250.gpd has been created in the ms2gt/grids directory, we can use gtest
-again to check that the latitude and longitude values of the upper left
-and lower right corners are what we expect:
-<p><b><tt>gtest</tt></b><tt></tt>
+divided by 160 grid cells per map unit =~ 1.25 km/pixel) is also the same.
+Once Gl1250.gpd has been created in the ms2gt/grids directory, we can use
+gtest again to check that the latitude and longitude values of the upper
+left and lower right corners are about what we expect:
+<p><b><tt>gtest</tt></b>
 <p><tt>enter .gpd file name: <b>Gl1250.gpd</b></tt>
-<br><tt>> assuming old style fixed format file</tt><tt></tt>
-<p><tt>gpd: /export/data/ms2gth/grids/Gl1250.gpd</tt>
-<br><tt>mpp:/export/data/ms2gth/grids/N200correct.mpp</tt><tt></tt>
+<br><tt>> assuming old style fixed format file</tt>
+<p><tt>gpd: /export/data/ms2gt/grids/Gl1250.gpd</tt>
+<br><tt>mpp:/export/data/ms2gt/grids/N200correct.mpp</tt>
 <p><tt>forward_grid:</tt>
-<br><tt>enter lat lon:</tt><tt></tt>
+<br><tt>enter lat lon:</tt>
 <p><tt>inverse_grid:</tt>
 <br><tt>enter r s: <b>0 0</b></tt>
 <br><tt>lat,lon = 67.705200 -82.677933&nbsp;&nbsp;&nbsp; status = 1</tt>
@@ -235,9 +260,11 @@ and lower right corners are what we expect:
 <br><tt>enter r s: <b>1859 1739</b></tt>
 <br><tt>lat,lon = 67.406090 -2.604522&nbsp;&nbsp;&nbsp; status = 1</tt>
 <br><tt>col,row = 1859.000000 1739.000244&nbsp;&nbsp;&nbsp; status = 1</tt>
-<br><tt>enter r s:</tt><tt></tt>
+<br><tt>enter r s:</tt>
 <p><tt>enter .gpd file name:</tt>
-<br>&nbsp;
+<p>Note that the upper left corner (column 0, row 0) is close to 67.70N,
+82.68 W, and that the lower right corner (column 1859, row 1739) is close
+to 67.41 N and 2.60 W.
 <h2>
 <a NAME="chanfile"></a>Creating the chanfile</h2>
 Create a text file in the tutorial_1 directory called chanfile.txt containing
@@ -270,8 +297,199 @@ zenith and solar zenith, respectively. Each file will consist of an array
 of binary floating-point numbers in degrees. Since we didn't specify weight
 type or fill, they are set to their default values, namely "avg" and "0,"
 just as they were in chanfile.
-<br>
-<hr><font size=-1>Last updated: April 17, 2001 by</font>
+<h2>
+<a NAME="running"></a>Running the mod02.pl Command File</h2>
+Run the shell script containing the <a href="index.html#mod02_usage">mod02.pl</a>
+command by typing:
+<p><b><tt>gl1_2000153_1445.csh</tt></b>
+<p>You'll see lots of messages displayed while the <a href="index.html#mod02_usage">mod02.pl</a>
+script runs various IDL and C programs. In this example, the programs include:
+<ol>
+<li>
+extract_latlon - an IDL procedure for extracting latitude and longitude
+data from a MOD02 or MOD03 file. This program calls another IDL procedure,
+modis_ancillary_read. In this example, extract_latlon is called twice,
+once for each of the two MOD03 files. Two binary floating-point files are
+created per call containing latitude and longitude data, respectively.
+The <a href="index.html#mod02_usage">mod02.pl</a> script concatenates the
+two latitude files and the two longitude files to create a single latitude
+file and a single longitude file, and the pre-concatenated files are deleted.</li>
+
+<li>
+ll2cr - a C program for converting latitude, longitude pairs to column,
+row pairs for a particular grid. The grid specified in this example is
+Gl1250.gpd. The concatenated latitude and longitude files are read and
+two binary floating-point files are created containing column and row numbers,
+respectively. The <a href="index.html#mod02_usage">mod02.pl</a> script
+then deletes the concatenated latitude and longitude files.</li>
+
+<li>
+extract_chan - an IDL procedure for extracting channel data from a MOD02
+file. This program calls another IDL procedure, modis_level1b_read. In
+this example, extract_chan is called eight times: four times for each of
+the two MOD021KM files; on each call, channel 1, channel 2, channel 31,
+or channel 32 is extracted, and the result is converted to reflectance
+(channels 1 and 2) or temperature (channels 31 and 32). One binary floating-point
+file is created per call containing the channel data. The <a href="index.html#mod02_usage">mod02.pl</a>
+script concatenates each pair of channel files, creates four concatenated
+channel files, and then deletes the pre-concatenated ancillary files.</li>
+
+<li>
+extract_ancil - an IDL procedure for extracting ancillary data from a MOD02
+or MOD03 file. This program calls another IDL procedure, modis_ancillary_read.
+In this example, extract_ancil is called four times: twice for each of
+the two MOD03 files; on each call, sensor zenith or solar zenith is extracted,
+and the result is converted to degrees. One binary floating-point file
+is created per call containing the ancillary data. The <a href="index.html#mod02_usage">mod02.pl</a>
+script concatenates each pair of ancillary files, creates two concatenated
+ancillary files, and then deletes the pre-concatenated ancillary files.</li>
+
+<li>
+fornav - a C program for performing forward navigation from a swath to
+a grid. In this example, fornav is called six times, once for each of the
+four concatenated channel files and the two concatenated ancillary files.
+On each call, the column and row files are read as well. An elliptical
+weighted averaging algorithm is applied during forward navigation to minimize
+holes and aliasing in the gridded data. One binary floating-point file
+is created per call containing the gridded data. The <a href="index.html#mod02_usage">mod02.pl</a>
+script then deletes the concatenated channel and ancillary files as well
+as the column and row files.</li>
+</ol>
+The final message should contain the string:
+<p><tt>MOD02: MESSAGE: done</tt>
+<h2>
+<a NAME="results"></a>Examining the Results</h2>
+Enter the command:
+<p><b><tt>ls -l *.img</tt></b>
+<p>You should see something like this:
+<p><tt>-rw-r--r--&nbsp;&nbsp;&nbsp; 1 haran&nbsp;&nbsp;&nbsp; nsidc&nbsp;&nbsp;&nbsp;&nbsp;
+12945600 Apr 19 14:24 gl1_2000153_1445_refa_ch01_01860_01740.img</tt>
+<br><tt>-rw-r--r--&nbsp;&nbsp;&nbsp; 1 haran&nbsp;&nbsp;&nbsp; nsidc&nbsp;&nbsp;&nbsp;&nbsp;
+12945600 Apr 19 14:24 gl1_2000153_1445_refa_ch02_01860_01740.img</tt>
+<br><tt>-rw-r--r--&nbsp;&nbsp;&nbsp; 1 haran&nbsp;&nbsp;&nbsp; nsidc&nbsp;&nbsp;&nbsp;&nbsp;
+12945600 Apr 19 14:25 gl1_2000153_1445_scaa_seze_01860_01740.img</tt>
+<br><tt>-rw-r--r--&nbsp;&nbsp;&nbsp; 1 haran&nbsp;&nbsp;&nbsp; nsidc&nbsp;&nbsp;&nbsp;&nbsp;
+12945600 Apr 19 14:25 gl1_2000153_1445_scaa_soze_01860_01740.img</tt>
+<br><tt>-rw-r--r--&nbsp;&nbsp;&nbsp; 1 haran&nbsp;&nbsp;&nbsp; nsidc&nbsp;&nbsp;&nbsp;&nbsp;
+12945600 Apr 19 14:24 gl1_2000153_1445_tema_ch31_01860_01740.img</tt>
+<br><tt>-rw-r--r--&nbsp;&nbsp;&nbsp; 1 haran&nbsp;&nbsp;&nbsp; nsidc&nbsp;&nbsp;&nbsp;&nbsp;
+12945600 Apr 19 14:25 gl1_2000153_1445_tema_ch32_01860_01740.img</tt>
+<p>Each file contains a gridded array of 1860 columns and 1740 rows of
+binary floating-point values (1860 * 1740 * 4 = 12945600 bytes).
+<p>The file naming convention for gridded channel files is as follows:
+<p>&lt;tag>_&lt;conversion>&lt;weight_type>_&lt;chxx>_&lt;columns>_&lt;rows>.img
+<ul>
+<li>
+&lt;tag> is the <a href="index.html#mod02_usage">mod02.pl</a> tag parameter</li>
+
+<li>
+&lt;conversion> is one of:</li>
+
+<ul>
+<li>
+raw - raw (2-byte unsigned integers)</li>
+
+<li>
+cor - corrected (4-byte floating-point)</li>
+
+<li>
+rad - radiance (4-byte floating-point)</li>
+
+<li>
+ref - reflectance (4-byte floating-point)</li>
+
+<li>
+tem - temperature (4-byte floating-point)</li>
+</ul>
+
+<li>
+&lt;weight_type> is one of:</li>
+
+<ul>
+<li>
+a - averaged</li>
+
+<li>
+m - maximum</li>
+</ul>
+
+<li>
+&lt;chxx> is he channel number: ch01-ch36</li>
+
+<li>
+&lt;columns> is the number of columns in the grid</li>
+
+<li>
+&lt;rows> is the number of rows in the grid</li>
+</ul>
+The file naming convention for gridded ancillary files is as follows:
+<p>&lt;tag>_&lt;conversion>&lt;weight_type>_&lt;ancil>_&lt;columns>_&lt;rows>.img
+<ul>
+<li>
+&lt;tag> is the <a href="index.html#mod02_usage">mod02.pl</a> tag parameter</li>
+
+<li>
+&lt;conversion> is one of:</li>
+
+<ul>
+<li>
+raw - raw (2-byte signed integers except that Range is 2-byte unsigned
+integer and Land/SeaMask and gflags are unsigned bytes)</li>
+
+<li>
+sca - scaled (4-byte floating-point) (raw values multiplied by a parameter-specific
+scale factor. Note that scaling factor for Height, Land/SeaMask, and gflags
+is 1)</li>
+</ul>
+
+<li>
+&lt;weight_type> is one of:</li>
+
+<ul>
+<li>
+a - averaged</li>
+
+<li>
+m - maximum</li>
+</ul>
+
+<li>
+&lt;ancil> is an ancilfile param code:</li>
+
+<ul>
+<li>
+hght - Height</li>
+
+<li>
+seze - SensorZenith</li>
+
+<li>
+seaz - SensorAzimuth</li>
+
+<li>
+rang - Range</li>
+
+<li>
+soze - SolarZenith</li>
+
+<li>
+soaz - SolarAzimuth</li>
+
+<li>
+lmsk - Land/SeaMask (available in MOD03 only)</li>
+
+<li>
+gflg - gflags</li>
+</ul>
+
+<li>
+&lt;columns> is the number of columns in the grid</li>
+
+<li>
+&lt;rows> is the number of rows in the grid</li>
+</ul>
+
+<hr><font size=-1>Last updated: April 19, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>
