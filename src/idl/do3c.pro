@@ -90,12 +90,12 @@ endif else begin
         else $
           max = max_in[i]
         j = where(img_in lt min, count)
-        if count then $
-          img_in[j] = min
+        ;if count then $
+        ;  img_in[j] = min
         print, 'count min:', count
         j = where(img_in gt max, count)
-        if count then $
-          img_in[j] = max
+        ;if count then $
+        ;  img_in[j] = max
         print, 'count max:', count
         print, min(img_in), max(img_in), min, max
         if histeq gt 0 then $
