@@ -4,17 +4,17 @@
 # 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /export/data/modis/src/ll2cr/Makefile,v 1.4 2001/01/10 17:07:52 haran Exp haran $
+RCSID = $Header: /export/data/modis/src/ll2cr/Makefile,v 1.5 2001/01/11 15:34:06 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
 #
 #	installation directories
 #
-TOPDIR = $(HOME)
+TOPDIR = ../..
 LIBDIR = $(TOPDIR)/lib
 INCDIR = $(TOPDIR)/include
-BINDIR = ../../bin
+BINDIR = $(TOPDIR)/bin
 
 #
 #	commands
