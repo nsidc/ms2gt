@@ -9,8 +9,8 @@ require("$source_navdir/date.pl");
 
 my $Usage = "\n
 USAGE: mod02.pl dirinout tag listfile gpdfile
-                [chanlist [swath_scan_first [swath_scans [keep]]]]
-       defaults:    1            0               0          0
+                [chanlist [keep [old_fornav]]]
+       defaults:    1        0       1
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
@@ -18,17 +18,10 @@ USAGE: mod02.pl dirinout tag listfile gpdfile
   gpdfile: .gpd file that defines desired output grid.
   chanlist: string specifying channel numbers to be gridded. The default
             is 1, i.e. grid channel 1 only.
-  swath_scan_first: the number of the first swath scan to process. The default
-                    is 0, i.e. the first scan in the swath.
-  swath_scans: the number of scans to process:
-                  1km (MOD021KM) files contain 10 rows per scan.
-                 500m (MOD02HKM) files contain 20 rows per scan.
-                 250m (MOD02QKM) files contain 40 rows per scan.
-               A typical 5 minute MOD02 granule contains 203 scans.
-               The default is 0, i.e. process all scans in the swath
-               following swath_scan_first.
-  keep: 0: delete intermediate chan, col, and row files (default).
-        1: do not delete intermediate chan, col, and row files.\n\n";
+  keep: 0: delete intermediate chan, lat, lon, col, and row files (default).
+        1: do not delete intermediate chan, lat, lon, col, and row files.
+  old_fornav: 0: use fornav.c (default).
+              1: use fornav.pro.\n\n";
 
 #The following symbols are defined in pfsetup.pl and were used only once in
 #this module. They appear here to suppress warning messages.
@@ -46,15 +39,14 @@ my $tag;
 my $listfile;
 my $gpdfile;
 my $chanlist = "1";
-my $swath_scan_first = 0;
-my $swath_scans = 0;
 my $keep = 0;
+my $old_fornav = 0;
 
 if (@ARGV < 4) {
     print $Usage;
     exit;
 }
-if (@ARGV <= 8) {
+if (@ARGV <= 7) {
     $dirinout = $ARGV[0];
     $tag = $ARGV[1];
     $listfile = $ARGV[2];
@@ -62,12 +54,9 @@ if (@ARGV <= 8) {
     if (@ARGV >= 5) {
 	$chanlist = $ARGV[4];
 	if (@ARGV >= 6) {
-	    $swath_scan_first = $ARGV[5];
+	    $keep = $ARGV[5];
 	    if (@ARGV >= 7) {
-		$swath_scans = $ARGV[6];
-		if (@ARGV <= 8) {
-		    $keep = $ARGV[7];
-		}
+		$old_fornav = $ARGV[6];
 	    }
 	}
     }
@@ -83,9 +72,8 @@ print_stderr("\n".
 	     "> listfile         = $listfile\n".
 	     "> gpdfile          = $gpdfile\n".
 	     "> chanlist         = $chanlist\n".
-	     "> swath_scan_first = $swath_scan_first\n".
-	     "> swath_scans      = $swath_scans\n".
-	     "> keep             = $keep\n\n");
+	     "> keep             = $keep\n".
+	     "> old_fornav       = $old_fornav\n");
 
 chdir_or_die($dirinout);
 
@@ -101,6 +89,8 @@ close(LISTFILE);
 my $hdf;
 my $swath_cols = 0;
 my $swath_rows = 0;
+my $latlon_cols = 0;
+my $latlon_rows = 0;
 my $lat_cat = "cat ";
 my $lon_cat = "cat ";
 my $chan_count = length($chanlist);
@@ -112,6 +102,9 @@ for ($i = 0; $i < $chan_count; $i++) {
     $chans[$i] = sprintf("%02d", substr($chanlist, $i, 1));
 }
 my $swath_rows_per_scan;
+my $this_swath_cols;
+my $this_swath_rows;
+my $interp_factor;
 foreach $hdf (@list) {
     chomp $hdf;
     my ($filestem) = ($hdf =~ /(.*)\.hdf/);
@@ -121,7 +114,7 @@ foreach $hdf (@list) {
 	do_or_die("idl_sh.pl extract_chan \"'$hdf'\" $chan");
 	my @chan_glob = glob("$filestem_chan*");
 	my $chan_file = $chan_glob[0];
-	my ($this_swath_cols, $this_swath_rows) =
+	($this_swath_cols, $this_swath_rows) =
 	    ($chan_file =~ /$filestem_chan(.....)_(.....)/);
 	print "$chan_file contains $this_swath_cols cols and " .
 	    "$this_swath_rows rows\n";
@@ -140,7 +133,7 @@ foreach $hdf (@list) {
 
     my ($resolution) = ($hdf =~ /MOD02(.)/);
     $swath_rows_per_scan = 10;
-    my $interp_factor = 1;
+    $interp_factor = 1;
     my $hdf_latlon = $hdf;
     if ($resolution eq "1") {
 	$hdf_latlon =~ s/1KM/HKM/;
@@ -148,8 +141,7 @@ foreach $hdf (@list) {
 	$interp_factor = ($resolution eq "H") ? 2 : 4;
 	$swath_rows_per_scan *= $interp_factor;
     }
-    do_or_die("idl_sh.pl extract_latlon \"'$hdf_latlon'\" " .
-	      "$interp_factor");
+    do_or_die("idl_sh.pl extract_latlon \"'$hdf_latlon'\"");
 
     my $filestem_lat = $filestem . "_latf_";
     my @lat_glob = glob("$filestem_lat*");
@@ -158,11 +150,14 @@ foreach $hdf (@list) {
 	($lat_file =~ /$filestem_lat(.....)_(.....)/);
     print "$lat_file contains $this_lat_cols cols and " .
 	  "$this_lat_rows rows\n";
-    if ($this_lat_cols != $swath_cols) {
+    if ($interp_factor * $this_lat_cols != $this_swath_cols ||
+	$interp_factor * $this_lat_rows != $this_swath_rows) {
 	diemail("$script: FATAL: " .
 		"inconsistent size for $lat_file");
     }
     $lat_cat .= "$lat_file ";
+    $latlon_cols += $this_lat_cols;
+    $latlon_rows += $this_lat_rows;
 
     my $filestem_lon = $filestem . "_lonf_";
     my @lon_glob = glob("$filestem_lon*");
@@ -171,13 +166,16 @@ foreach $hdf (@list) {
 	($lon_file =~ /$filestem_lon(.....)_(.....)/);
     print "$lon_file contains $this_lon_cols cols and " .
 	  "$this_lon_rows rows\n";
-    if ($this_lon_cols != $swath_cols) {
+    if ($interp_factor * $this_lon_cols != $this_swath_cols ||
+	$interp_factor * $this_lon_rows != $this_swath_rows) {
 	diemail("$script: FATAL: " .
 		"inconsistent size for $lon_file");
     }
     $lon_cat .= "$lon_file ";
 }
 $swath_rows = sprintf("%05d", $swath_rows);
+$latlon_cols = sprintf("%05d", $latlon_cols);
+$latlon_rows = sprintf("%05d", $latlon_rows);
 
 my @chan_files;
 for ($i = 0; $i < $chan_count; $i++) {
@@ -195,8 +193,8 @@ my $lon_rm = $lon_cat;
 $lat_rm  =~ s/cat/rm -f/;
 $lon_rm  =~ s/cat/rm -f/;
 
-my $lat_file  = "$tag\_latf_$swath_cols\_$swath_rows.img";
-my $lon_file  = "$tag\_lonf_$swath_cols\_$swath_rows.img";
+my $lat_file  = "$tag\_latf_$latlon_cols\_$latlon_rows.img";
+my $lon_file  = "$tag\_lonf_$latlon_cols\_$latlon_rows.img";
 
 do_or_die("$lat_cat  >$lat_file");
 do_or_die("$lon_cat  >$lon_file");
@@ -204,25 +202,111 @@ do_or_die("$lon_cat  >$lon_file");
 do_or_die("$lat_rm");
 do_or_die("$lon_rm");
 
-my $col_file  = "$tag\_cols_$swath_cols\_$swath_rows.img";
-my $row_file  = "$tag\_rows_$swath_cols\_$swath_rows.img";
-
-do_or_die("ll2cr -v $swath_cols $swath_rows $lat_file $lon_file " .
-	  "$gpdfile $col_file $row_file");
+$latlon_rows_per_scan = 10;
+my $latlon_scans = $latlon_rows / $latlon_rows_per_scan;
+my $force = ($interp_factor == 1) ? "" : "-f";
+do_or_die("ll2cr -v $force $latlon_cols $latlon_scans $latlon_rows_per_scan " .
+	  "$lat_file $lon_file $gpdfile $tag");
 if (!$keep) {
     do_or_die("rm -f $lat_file");
     do_or_die("rm -f $lon_file");
 }
+
+my $filestem_cols = $tag . "_cols_";
+my @cols_glob = glob("$filestem_cols*");
+my $cols_file = $cols_glob[0];
+my ($this_cols_cols, $this_cols_scans,
+    $this_cols_scan_first, $this_cols_rows_per_scan) =
+    ($cols_file =~ /$filestem_cols(.....)_(.....)_(.....)_(..)/);
+print "$cols_file contains $this_cols_cols cols,\n" .
+    "   $this_cols_scans scans, $this_cols_scan_first scan_first,\n" .
+    "   and $this_cols_rows_per_scan rows_per_scan\n";
+
+my $filestem_rows = $tag . "_rows_";
+my @rows_glob = glob("$filestem_rows*");
+my $rows_file = $rows_glob[0];
+my ($this_rows_cols, $this_rows_scans,
+    $this_rows_scan_first, $this_rows_rows_per_scan) =
+    ($rows_file =~ /$filestem_rows(.....)_(.....)_(.....)_(..)/);
+print "$rows_file contains $this_rows_cols cols,\n" .
+    "   $this_rows_scans scans, $this_rows_scan_first scan_first,\n" .
+    "   and $this_rows_rows_per_scan rows_per_scan\n";
+
+if ($this_cols_cols != $this_rows_cols ||
+    $this_cols_scans != $this_rows_scans ||
+    $this_cols_scan_first != $this_rows_scan_first ||
+    $this_cols_rows_per_scan != $this_rows_rows_per_scan) {
+    diemail("$script: FATAL: " .
+	    "inconsistent sizes for $cols_file and $rows_file");
+}
+my $cr_cols = $this_cols_cols;
+my $cr_scans = $this_cols_scans;
+my $cr_scan_first = $this_cols_scan_first;
+my $cr_rows_per_scan = $this_cols_rows_per_scan;
 
 open_or_die("GPDFILE", "$ENV{PATHMPP}/$gpdfile");
 my $line = <GPDFILE>;
 $line = <GPDFILE>;
 close(GPDFILE);
 my ($grid_cols, $grid_rows) = ($line =~ /(\S+)\s+(\S+)/);
-if ($swath_scans eq "0") {
-    $swath_scans = $swath_rows / $swath_rows_per_scan - $swath_scan_first;
+
+if ($interp_factor > 1) {
+    my $col_min = 0;
+    my $col_max = $grid_cols - 1;
+    my $row_min = 0;
+    my $row_max = $grid_rows - 1;
+
+    do_or_die("idl_sh.pl interp_colrow " .
+	      "$interp_factor $cr_cols $cr_scans $cr_rows_per_scan " .
+	      "\"'$cols_file'\" \"'$rows_file'\" \"'$tag'\" " .
+	      "grid_check=[$col_min,$col_max,$row_min,$row_max]");
+    do_or_die("rm -f $cols_file");
+    do_or_die("rm -f $rows_file");
+
+    $filestem_cols = $tag . "_cols_";
+    @cols_glob = glob("$filestem_cols*");
+    $cols_file = $cols_glob[0];
+    ($this_cols_cols, $this_cols_scans,
+     $this_cols_scan_first, $this_cols_rows_per_scan) =
+	 ($cols_file =~ /$filestem_cols(.....)_(.....)_(.....)_(..)/);
+    print "$cols_file contains $this_cols_cols cols,\n" .
+	  "   $this_cols_scans scans, $this_cols_scan_first scan_first,\n" .
+	  "   and $this_cols_rows_per_scan rows_per_scan\n";
+
+    $filestem_rows = $tag . "_rows_";
+    @rows_glob = glob("$filestem_rows*");
+    $rows_file = $rows_glob[0];
+    ($this_rows_cols, $this_rows_scans,
+     $this_rows_scan_first, $this_rows_rows_per_scan) =
+	 ($cols_file =~ /$filestem_cols(.....)_(.....)_(.....)_(..)/);
+    print "$rows_file contains $this_rows_cols cols,\n" .
+          "   $this_rows_scans scans, $this_rows_scan_first scan_first,\n" .
+          "   and $this_rows_rows_per_scan rows_per_scan\n";
+
+    if ($this_cols_cols != $this_rows_cols ||
+	$this_cols_scans != $this_rows_scans ||
+	$this_cols_scan_first != $this_rows_scan_first ||
+	$this_cols_rows_per_scan != $this_rows_rows_per_scan) {
+	diemail("$script: FATAL: " .
+		"inconsistent sizes for $cols_file and $rows_file");
+    }
+    $cr_cols = $this_cols_cols;
+    $cr_scans = $this_cols_scans;
+    $cr_scan_first = $this_cols_scan_first;
+    $cr_rows_per_scan = $this_cols_rows_per_scan;
 }
 
+if ($swath_cols != $cr_cols) {
+    diemail("$script: FATAL: " .
+	    "swath_cols: $swath_cols is not equal to cr_cols: $cr_cols");
+}
+if ($swath_rows_per_scan != $cr_rows_per_scan) {
+    diemail("$script: FATAL: " .
+	    "swath_rows_per_scan: $swath_rows_per_scan is not equal to cr_rows_per_scan: $cr_rows_per_scan");
+}
+
+my $swath_scans = $cr_scans;
+my $swath_scan_first = $cr_scan_first;
 my $chan_file_param = "[";
 my $grid_file_param = "[";
 for ($i = 0; $i < $chan_count; $i++) {
@@ -239,16 +323,23 @@ for ($i = 0; $i < $chan_count; $i++) {
 $chan_file_param .= "]";
 $grid_file_param .= "]";
 
-do_or_die("idl_sh.pl fornav " .
-	  "$swath_cols $swath_scans $swath_rows_per_scan " .
-	  "\"'$col_file'\" \"'$row_file'\" $chan_file_param " .
-	  "$grid_cols $grid_rows $grid_file_param " .
-	  "weight_sum_min=0.001 " .
-	  "swath_scan_first=$swath_scan_first");
+if ($old_fornav) {
+    do_or_die("idl_sh.pl fornav " .
+	      "$swath_cols $swath_scans $swath_rows_per_scan " .
+	      "\"'$cols_file'\" \"'$rows_file'\" $chan_file_param " .
+	      "$grid_cols $grid_rows $grid_file_param " .
+	      "weight_sum_min=0.001 " .
+	      "swath_scan_first=$swath_scan_first /col_row_presubsetted");
+} else {
+    do_or_die("fornav -v -p -s $swath_scan_first " .
+	      "$swath_cols $swath_scans $swath_rows_per_scan " .
+	      "\"'$cols_file'\" \"'$rows_file'\" $chan_file_param " .
+	      "$grid_cols $grid_rows $grid_file_param");
+}
 if (!$keep) {
     for ($i = 0; $i < $chan_count; $i++) {
 	do_or_die("rm -f $chan_files[$i]");
     }
-    do_or_die("rm -f $col_file");
-    do_or_die("rm -f $row_file");
+    do_or_die("rm -f $cols_file");
+    do_or_die("rm -f $rows_file");
 }
