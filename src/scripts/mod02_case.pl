@@ -1,4 +1,14 @@
 #!/usr/local/bin/perl -w
+
+# $Id: pfsetup.pl,v 1.170 2000/12/20 17:55:04 haran Exp $
+
+#========================================================================
+# mod02_case.pl - determines case for mod02.pl
+#
+# 25-Oct-2000 T. Haran tharan@colorado.edu 303-492-1847
+# National Snow & Ice Data Center, University of Colorado, Boulder
+#========================================================================
+
 $|=1;
 
 sub mod02_case {
@@ -61,4 +71,5 @@ sub mod02_case {
     return($ancil_src, $latlon_src, $filestem, $prefix, $case);
 }
 
-1
+# this makes the routine work properly using require in other programs
+1;

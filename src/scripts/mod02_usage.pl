@@ -1,5 +1,16 @@
 #!/usr/local/bin/perl -w
+
+# $Id: pfsetup.pl,v 1.170 2000/12/20 17:55:04 haran Exp $
+
+#========================================================================
+# mod02_usage.pl - defines mod02.pl usage message
+#
+# 25-Oct-2000 T. Haran tharan@colorado.edu 303-492-1847
+# National Snow & Ice Data Center, University of Colorado, Boulder
+#========================================================================
+
 $|=1;
+
 $Usage = "\n
 USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                 [ancilfile [latlon_src [ancil_src [keep [rind]]]]]
@@ -82,3 +93,6 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
         1: do not delete intermediate chan, lat, lon, col, and row files.
   rind: number of pixels to add around intermediate grid to eliminate
         holes in final grid. Default is 50.\n\n";
+
+# this makes the routine work properly using require in other programs
+1;

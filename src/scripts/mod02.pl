@@ -1,18 +1,24 @@
 #!/usr/local/bin/perl -w
+
+# $Id: pfsetup.pl,v 1.170 2000/12/20 17:55:04 haran Exp $
+
+#========================================================================
+# mod02.pl - grids MOD02 and MOD03 data
+#
+# 25-Oct-2000 T. Haran tharan@colorado.edu 303-492-1847
+# National Snow & Ice Data Center, University of Colorado, Boulder
+#========================================================================
+
 $|=1;
+
 $path_modis_src = $ENV{PATH_MODIS_SRC};
-$path_navdir_src = $ENV{PATH_NAVDIR_SRC};
 $source_modis = "$path_modis_src/scripts";
-$source_navdir = "$path_navdir_src/scripts";
 
 require("$source_modis/mod02_usage.pl");
 require("$source_modis/mod02_case.pl");
-require("$source_navdir/pfsetup.pl");
-require("$source_navdir/error_mail.pl");
-require("$source_navdir/date.pl");
-
-#The following symbols are defined in pfsetup.pl and were used only once in
-#this module. They appear here to suppress warning messages.
+require("$source_modis/setup.pl");
+require("$source_modis/error_mail.pl");
+require("$source_modis/date.pl");
 
 my $junk = $script;
 
