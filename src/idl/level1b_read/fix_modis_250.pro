@@ -1,6 +1,6 @@
 FUNCTION fix_modis_250, image
 coeffs = [0.9994515103, $ ; increased by 0.003 over Mark's number
-          1.0010342508, $
+          1.0020342508, $ ; increased by 0.001 
           1.0031991534, $
           1.0045418857, $
           1.0048417388, $
@@ -38,7 +38,7 @@ coeffs = [0.9994515103, $ ; increased by 0.003 over Mark's number
           1.0108138919, $
           1.0108824534, $
           1.0096043691, $
-          1.0077523096]
+          1.0082523096]   ; increased by 0.0005
 image_size = size(image)
 cols = image_size[1]
 rows = image_size[2]
