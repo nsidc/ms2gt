@@ -3,7 +3,7 @@
 ;*
 ;* 20-Nov-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.5 2002/04/18 23:39:48 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_regress.pro,v 1.1 2002/11/22 00:37:40 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -129,7 +129,7 @@ Pro modis_regress, x, y, slope, intercept, $
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
-  print, 'modis_adjust:'
+  print, 'modis_adjust: $Header$'
   help, x
   help, y
   print, '  y_tolerance:      ', y_tolerance
@@ -261,7 +261,7 @@ Pro modis_regress, x, y, slope, intercept, $
           else $
             final = ''
           annot = string('  tag: ', plot_tag, $
-                         '  iterations: ', regression_count, $
+                         '  iteration: ', regression_count, $
                          '  status: ', status, $
                          '  intercept: ', intercept, $
                          '  slope: ', slope[0], final, $
@@ -301,11 +301,11 @@ Pro modis_regress, x, y, slope, intercept, $
           ymm = slope[0] * xmm + intercept - y_tolerance
           oplot, xmm, ymm, psym=0, color=125
       endif
-      xyouts, .12, .92, annot, charsize=1.0, /normal
-      annot = string('y_tolerance: ', y_tolerance)
-      xyouts, .12, .89, annot, charsize=1.0, /normal
-      annot = string('regression count: ', regression_count)
-      xyouts, .12, .86, annot, charsize=1.0, /normal
+      xyouts, .10, .92, annot, charsize=1.0, /normal
+      annot = string('  y_tolerance: ', y_tolerance)
+      xyouts, .10, .89, annot, charsize=1.0, /normal
+      annot = string('  regression count: ', regression_count)
+      xyouts, .10, .86, annot, charsize=1.0, /normal
   endif
 
   slope = slope[0]
