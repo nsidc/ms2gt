@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.12 2002/05/14 23:00:11 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.13 2002/05/15 15:37:50 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -82,7 +82,7 @@ PRO extract_chan, hdf_file, tag, channel, $
   print, '  channel:        ', channel
   print, '  get_latlon:     ', get_latlon
   print, '  conversion:     ', conversion
-  if modis_type eq 'MOD02' then begin
+  if (modis_type eq 'MOD02') or (modis_type eq 'MYD02') then begin
       print, '  swath_rows:     ', swath_rows
       print, '  swath_row_first:', swath_row_first
       print, '  fix_250:        ', fix_250
@@ -91,18 +91,21 @@ PRO extract_chan, hdf_file, tag, channel, $
   ; NOTE -- area only supported for mod02 for now
   area = [0L, swath_row_first, 999999L, swath_rows]
   if get_latlon ne 0 then begin
-      if modis_type eq 'MOD02' then begin
+      if (modis_type eq 'MOD02') or (modis_type eq 'MYD02') then begin
           modis_level1b_read, hdf_file, channel, image, $
             latitude=lat, longitude=lon, $
             raw=raw, corrected=corrected, reflectance=reflectance, $
             temperature=temperature, area=area, fix_250=fix_250
-      endif else if modis_type eq 'MOD10' then begin
+      endif else if (modis_type eq 'MOD10') or $
+                    (modis_type eq 'MYD10') then begin
           modis_snow_read, hdf_file, channel, image, $
             latitude=lat, longitude=lon
-      endif else if modis_type eq 'MOD29' then begin
+      endif else if (modis_type eq 'MOD29') or $
+                    (modis_type eq 'MYD29') then begin
           modis_ice_read, hdf_file, channel, image, $
             latitude=lat, longitude=lon
-      endif else if modis_type eq 'MOD35' then begin
+      endif else if (modis_type eq 'MOD35') or $
+                    (modis_type eq 'MYD35') then begin
           modis_cloud_read, hdf_file, channel, image, $
             latitude=lat, longitude=lon
       endif else begin
@@ -124,15 +127,18 @@ PRO extract_chan, hdf_file, tag, channel, $
       free_lun, lat_lun
       free_lun, lon_lun
   endif else begin
-      if modis_type eq 'MOD02' then begin 
+      if (modis_type eq 'MOD02') or (modis_type eq 'MYD02') then begin 
           modis_level1b_read, hdf_file, channel, image, $
             raw=raw, corrected=corrected, reflectance=reflectance, $
             temperature=temperature, area=area, fix_250=fix_250
-      endif else if modis_type eq 'MOD10' then begin
+      endif else if (modis_type eq 'MOD10') or $
+                    (modis_type eq 'MYD10') then begin
           modis_snow_read, hdf_file, channel, image
-      endif else if modis_type eq 'MOD29' then begin
+      endif else if (modis_type eq 'MOD29') or $
+                    (modis_type eq 'MYD29') then begin
           modis_ice_read, hdf_file, channel, image
-      endif else if modis_type eq 'MOD35' then begin
+      endif else if (modis_type eq 'MOD35') or $
+                    (modis_type eq 'MYD35') then begin
           modis_cloud_read, hdf_file, channel, image
       endif else begin
           message, 'Unrecognized modis type: ' + modis_type
