@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.9 2001/02/20 17:22:46 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.10 2001/04/19 20:06:09 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -19,7 +19,8 @@
 ;       extract_chan, hdf_file, tag, channel, $
 ;                     /get_latlon, conversion=conversion, $
 ;                     swath_rows=swath_rows, $
-;                     swath_row_first=swath_row_first
+;                     swath_row_first=swath_row_first, $
+;                     fix_250=fix_250
 ;
 ; ARGUMENTS:         
 ;
@@ -35,13 +36,15 @@
 PRO extract_chan, hdf_file, tag, channel, $
                   get_latlon=get_latlon, conversion=conversion, $
                   swath_rows=swath_rows, $
-                  swath_row_first=swath_row_first
+                  swath_row_first=swath_row_first, $
+                  fix_250=fix_250
 
   usage = 'usage: extract_chan, hdf_file, tag, channel ' + $
           '[, /get_latlon]' + $
           '[, conversion=conversion]' + $
           '[, swath_rows=swath_rows]' + $
-          '[, swath_row_first=swath_row_first]'
+          '[, swath_row_first=swath_row_first]' + $
+          '[, fix_250=fix_250]'
 
 
   if n_params() ne 3 then $
@@ -54,6 +57,8 @@ PRO extract_chan, hdf_file, tag, channel, $
     swath_rows = 0
   if n_elements(swath_row_first) eq 0 then $
     swath_row_first = 0
+  if n_elements(fix_250) eq 0 then $
+    fix_250 = 0
 
   raw = 0
   corrected = 0
@@ -80,6 +85,7 @@ PRO extract_chan, hdf_file, tag, channel, $
   if modis_type eq 'MOD02' then begin
       print, '  swath_rows:     ', swath_rows
       print, '  swath_row_first:', swath_row_first
+      print, '  fix_250:        ', fix_250
   endif
 
   ; NOTE -- area only supported for mod02 for now
@@ -89,7 +95,7 @@ PRO extract_chan, hdf_file, tag, channel, $
           modis_level1b_read, hdf_file, channel, image, $
             latitude=lat, longitude=lon, $
             raw=raw, corrected=corrected, reflectance=reflectance, $
-            temperature=temperature, area=area
+            temperature=temperature, area=area, fix_250=fix_250
       endif else if modis_type eq 'MOD10' then begin
           modis_snow_read, hdf_file, channel, image, $
             latitude=lat, longitude=lon
@@ -116,7 +122,7 @@ PRO extract_chan, hdf_file, tag, channel, $
       if modis_type eq 'MOD02' then begin 
           modis_level1b_read, hdf_file, channel, image, $
             raw=raw, corrected=corrected, reflectance=reflectance, $
-            temperature=temperature, area=area
+            temperature=temperature, area=area, fix_250=fix_250
       endif else if modis_type eq 'MOD10' then begin
           modis_snow_read, hdf_file, channel, image
       endif else begin
