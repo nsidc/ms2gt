@@ -4,7 +4,7 @@
 # 23-Nov-2004 Terry Haran tharan@colorado.edu 303-492-1847
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/haran/ms2gth/src/utils/Makefile,v 1.1 2004/11/25 00:28:40 haran Exp haran $
+RCSID = $Header: /data/haran/ms2gth/src/utils/Makefile,v 1.2 2004/11/25 21:13:52 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -69,7 +69,7 @@ install: extract_region insert_region make_mask apply_mask
 	$(INSTALL) extract_region insert_region make_mask apply_mask $(BINDIR)
 
 clean:
-	- $(RM) $(OBJS) ll2cr
+	- $(RM) $(OBJS) extract_region insert_region make_mask apply_mask
 
 depend:
 	- $(CO) $(SRCS) $(HDRS)
