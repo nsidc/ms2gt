@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.18 2002/11/27 17:38:27 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.19 2002/11/27 18:01:25 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -88,17 +88,17 @@
 ;         ignored.
 ;       reg_cols: If set then column regressions are computed.
 ;       file_reg_col_in: Specifies the name of an input text file
-;         containing an initial set of slopes and intercepts that are
+;         containing an initial set of intercepts and slopes that are
 ;         applied to the data before any column regressions (if any) are
 ;         computed. The file must have rows_per_scan + 1 lines.
 ;         The file has the following format:
-;           SS_Detector  Col_Slope         Col_Intercept
-;               00        1.00000000E+00    0.00000000E+00
-;               01        1.00000000E+00    0.00000000E+00
-;               .               .                 .
-;               39        1.00000000E+00    0.00000000E+00
+;           SS_Detector  Col_Intercept     Col_Slope
+;           00            0.00000000E+00    1.00000000E+00
+;           01            0.00000000E+00    1.00000000E+00
+;           .                   .                 .
+;           39            0.00000000E+00    1.00000000E+00
 ;       file_reg_col_out: Specifies the name of an output text file
-;         containing the final set of slopes and intercepts for column
+;         containing the final set of intercepts and slopes for column
 ;         regressions. The file has the same format as for file_reg_col_out.
 ;       reg_col_detectors: Array of zero-based detector numbers to use for
 ;         column regressions. The default value of reg_col_detectors
@@ -111,17 +111,17 @@
 ;         NOTE: reg_col_offset must be less than reg_col_stride.
 ;       reg_rows: If set then row regressions are computed.
 ;       file_reg_row_in: Specifies the name of an input text file
-;         containing an initial set of slopes and intercepts that are
+;         containing an initial set of intercepts and slopes that are
 ;         applied to the data before any row regressions (if any) are
 ;         computed. The file must have 2 * rows_per_scan + 1 lines.
 ;         The file has the following format:
-;           DS_Detector  Row_Slope         Row_Intercept
-;               00        1.00000000E+00    0.00000000E+00
-;               01        1.00000000E+00    0.00000000E+00
-;               .               .                 .
-;               79        1.00000000E+00    0.00000000E+00
+;           DS_Detector  Row_Intercept     Row_Slope
+;           00            0.00000000E+00    1.00000000E+00
+;           01            0.00000000E+00    1.00000000E+00
+;           .                   .                 .
+;           79            0.00000000E+00    1.00000000E+00
 ;       file_reg_row_out: Specifies the name of an output text file
-;         containing the final set of slopes and intercepts for row
+;         containing the final set of intercepts and slopes for row
 ;         regressions. The file has the same format as for file_reg_row_out.
 ;       NOTE: The keywords below are preceded by either col_ or row_
 ;         indicating to which set of regressions they refer.
@@ -330,7 +330,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds) 
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.18 2002/11/27 17:38:27 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.19 2002/11/27 18:01:25 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -479,8 +479,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       swath = temporary(swath) * soze
   endif
 
-  reg_cols_slope = make_array(rows_per_scan, /float, value=1.0)
-  reg_cols_intcp = make_array(rows_per_scan, /float, value=0.0)
+  reg_slope = make_array(rows_per_scan, /float, value=1.0)
+  reg_intcp = make_array(rows_per_scan, /float, value=0.0)
 
   if (file_reg_cols_in ne '') or (reg_cols ne 0) then begin
 
@@ -515,8 +515,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       det_count = n_elements(reg_col_detectors)
       det_ctr = 0
       for det = 0, rows_per_scan - 1 do begin
-          slope = reg_cols_slope[det]
-          intcp = reg_cols_intcp[det]
+          slope = reg_slope[det]
+          intcp = reg_intcp[det]
           target = reform(swath[[cols_target], det, *], $
                           cells_per_det_target)
           if file_reg_cols_in ne '' then begin
@@ -526,11 +526,12 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               readf, lun, det_test, slope, intcp
               if det_test eq det then begin
                   if abs(slope) ge epsilon then $
-                    target = (target - intcp) / slope                  
-                  reg_cols_slope[det] = slope
-                  reg_cols_intcp[det] = intcp
+                    target = (target - intcp) / slope
+                  reg_slope[det] = slope
+                  reg_intcp[det] = intcp
               endif else begin
-                  message, 'Entry for detector ' + string(det, format='(i2)') + $
+                  message, 'Entry for SS_Detector ' + $
+                           string(det, format='(i2)') + $
                            ' missing from ' + file_reg_cols_in
               endelse
           endif
@@ -562,8 +563,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                             plot_titles=[xtitle,ytitle]
               if abs(slope) ge epsilon then $
                 swath[[cols_target], det, *] = (target - intcp) / slope
-              reg_cols_slope[det] = slope * reg_cols_slope[det]
-              reg_cols_intcp[det] = slope * reg_cols_intcp[det] + intcp
+              reg_slope[det] = slope * reg_slope[det]
+              reg_intcp[det] = slope * reg_intcp[det] + intcp
               if det_ctr lt det_count - 1 then $
                 det_ctr = det_ctr + 1
           endif else begin      ; if (reg_cols ne 0) and (det_target eq det)
@@ -579,27 +580,33 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   if file_reg_cols_out ne '' then begin
      openw, lun, file_reg_cols_out, /get_lun
-     printf, lun, 'Detector  Col_Slope        Col_Intercept'
+     printf, lun, 'SS_Detector  Col_Slope        Col_Intercept'
      for det = 0, rows_per_scan - 1 do $
-       printf, lun, det, reg_cols_slope[det], reg_cols_intcp[det], $
-                    format='(i2.2, 8X, E15.8, 2x, E15.8)'
+       printf, lun, det, reg_intcp[det], reg_slope[det], $
+                    format='(i2.2, 11X, e15.8, 2x, e15.8)'
      free_lun, lun
   endif
 
-  print, 'Detector  Col_Slope        Col_Intercept'
-  for det = 0, rows_per_scan - 1 do $
-    print, det, reg_cols_slope[det], reg_cols_intcp[det], $
-           format='(i2.2, 8X, E15.8, 2x, E15.8)'
+  if (file_reg_cols_in ne '') or (file_reg_cols_out ne '') or $
+     (reg_cols ne 0) then begin
+      print, 'SS_Detector  Col_Slope        Col_Intercept'
+      for det = 0, rows_per_scan - 1 do $
+        print, det, reg_intcp[det], reg_slope[det], $
+               format='(i2.2, 11X, e15.8, 2x, e15.8)'
+  endif
 
-  if reg_rows ne 0 then begin
+  ;  compute the number of double-sided scans,
+  ;  and the number of rows per double-sided scan
+
+  ds_scans = scans / 2
+  rows_per_ds_scan = 2 * rows_per_scan
+
+  reg_slope = make_array(rows_per_ds_scan, /float, value=1.0)
+  reg_intcp = make_array(rows_per_ds_scan, /float, value=0.0)
+
+  if (file_reg_rows_in ne '') or (reg_rows ne 0) then begin
 
       ;  perform row regressions
-
-      ;  compute the number of double-sided scans,
-      ;  and the number of rows per double-sided scan
-
-      ds_scans = scans / 2
-      rows_per_ds_scan = 2 * rows_per_scan
 
       ;  if scans is odd, then increment the number of double scans,
       ;  duplicate the penultimate scan, and concatenate it onto the end
@@ -621,6 +628,13 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
       swath = reform(swath, cols, rows_per_ds_scan, ds_scans, /overwrite)
 
+      if file_reg_cols_in ne '' then begin
+          line = ''
+          openr, lun, file_reg_rows_in, /get_lun
+          readf, lun, line
+          free_lun, lun
+      endif
+
       case rows_per_scan of
           40: pass_count = 6
           20: pass_count = 5
@@ -641,6 +655,22 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               for vec_ctr = 0, vectors_per_mean - 1 do begin
                   vector = reform(swath[*, ds_det + vec_ctr, *], $
                                        1, cells_per_ds_det)
+                  if (file_reg_rows_in ne '') and (pass_ctr eq 0) then begin
+                      ds_det_test = 0L
+                      slope = 1.0
+                      intcp = 0.0
+                      readf, lun, ds_det_test, slope, intcp
+                      if ds_det_test eq ds_det + vec_ctr then begin
+                          if abs(slope) ge epsilon then $
+                            vector = (temporary(vector) - intcp) / slope
+                          reg_slope[ds_det] = slope
+                          reg_intcp[ds_det] = intcp
+                      endif else begin
+                          message, 'Entry for DS_Detector ' + $
+                                   string(det, format='(i2)') + $
+                                   ' missing from ' + file_reg_rows_in
+                      endelse
+                  endif         ; if file_reg_rows ne '' and pass_ctr eq 0
                   mean = vector * weight_per_vector + mean
                   vectors[*, vec_ctr] = temporary(vector)
               endfor ; vec_ctr
@@ -666,6 +696,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                                  plot_titles=[xtitle,ytitle]
                   if abs(slope) ge epsilon then $
                     swath[*, ds_det, *] = (vector - intcp) / slope
+                  reg_slope = slope * reg_slope[ds_det]
+                  reg_intcp = slope * reg_intcp[ds_det] + intcp
                   ds_det = ds_det + 1
               endfor ; vec_ctr
               vectors = 0
@@ -678,6 +710,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               spawn, 'mkdir ' + dir, /sh
               spawn, 'mv ' + dir + '*.ps ' + dir, /sh
           endif
+          if (file_reg_rows_in ne '') and (pass_ctr eq 0) then $
+            free_lun, lun
       endfor ; pass_ctr
 
       ; reform the swath array back into its original structure
@@ -690,6 +724,23 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
         swath = temporary(swath[*, *, 0:scans - 1])
 
   endif  ; if reg_rows ne 0
+
+  if file_reg_rows_out ne '' then begin
+     openw, lun, file_reg_rows_out, /get_lun
+     printf, lun, 'DS_Detector  Row_Slope        Row_Intercept'
+     for ds_det = 0, rows_per_ds_scan - 1 do $
+       printf, lun, ds_det, reg_intcp[ds_det], reg_slope[ds_det], $
+                    format='(i2.2, 11X, e15.8, 2x, e15.8)'
+     free_lun, lun
+  endif
+
+  if (file_reg_rows_in ne '') or (file_reg_rows_out ne '') or $
+     (reg_rows ne 0) then begin
+      print, 'DS_Detector  Row_Slope        Row_Intercept'
+      for ds_det = 0, rows_per_ds_scan - 1 do $
+        print, ds_det, reg_intcp[ds_det], reg_slope[ds_det], $
+               format='(i2.2, 11X, e15.8, 2x, e15.8)'
+  endif
 
   ;  undo soze normalization if required
 
