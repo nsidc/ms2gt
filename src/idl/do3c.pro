@@ -76,7 +76,10 @@ if n_elements(file_in) eq 1 then begin
 endif else begin
     img_out = bytarr(3, cols_out, rows_out)
     for i = 0, 2 do begin
-        img_in = intarr(cols_in, rows_in)
+        if bytes_per_cell eq 2 then $
+          img_in = intarr(cols_in, rows_in) $
+	else $
+          img_in = fltarr(cols_in, rows_in)
         openr, lun, file_in[i], /get_lun
         readu, lun, img_in
         free_lun, lun
