@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.38 2004/08/27 00:41:05 haran Exp haran $
+# $Id: mod02.pl,v 1.39 2004/08/27 16:04:42 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -42,56 +42,88 @@ my $ancil_src = "1";
 my $keep = 0;
 my $rind = 50;
 my $fix250 = 0;
+my $fixcolfile = "none";
+my $fixrowfile = "none";
+my $tile_cols = 1;
+my $tile_rows = 1;
+my $tile_overlap = 50;
 
 if (@ARGV < 4) {
     print $mod02_usage;
     exit 1;
 }
-if (@ARGV <= 11) {
-    $dirinout = $ARGV[0];
-    $tag = $ARGV[1];
-    $listfile = $ARGV[2];
-    $gpdfile = $ARGV[3];
-    if (@ARGV >= 5) {
-        $chanfile = $ARGV[4];
-	if (@ARGV >= 6) {
-	    $ancilfile = $ARGV[5];
-	    if (@ARGV >= 7) {
-		$latlon_src = $ARGV[6];
-		if ($latlon_src ne "1" &&
-		    $latlon_src ne "3" &&
-		    $latlon_src ne "H" &&
-		    $latlon_src ne "Q") {
-		    print "invalid latlon_src\n$mod02_usage";
-		    exit 1;
-		}
-		if (@ARGV >= 8) {
-		    $ancil_src = $ARGV[7];
-		    if ($ancil_src ne "1" &&
-			$ancil_src ne "3") {
-			print "invalid ancil_src\n$mod02_usage";
-			exit 1;
-		    }
-		    if (@ARGV >= 9) {
-			$keep = $ARGV[8];
-			if ($keep ne "0" && $keep ne "1") {
-			    print "invalid keep\n$mod02_usage";
-			    exit 1;
-			}
-			if (@ARGV >= 10) {
-			    $rind = $ARGV[9];
-			    if (@ARGV >= 11) {
-				$fix250 = $ARGV[10];
-				if ($fix250 ne "0" && $fix250 ne "1" &&
-				    $fix250 ne "2" && $fix250 ne "3") {
-				    print "invalid fix250\n$mod02_usage";
-				    exit 1;
-				}
-			    }
-			}
-		    }
-		}
-	    }
+if (@ARGV <= 16) {
+    $dirinout = shift(@ARGV);
+    $tag = shift(@ARGV);
+    $listfile = shift(@ARGV);
+    $gpdfile = shift(@ARGV);
+    if (@ARGV) {
+        $chanfile = shift(@ARGV);
+    }
+    if (@ARGV) {
+	$ancilfile = shift(@ARGV);
+    }
+    if (@ARGV) {
+	$latlon_src = shift(@ARGV);
+	if ($latlon_src ne "1" &&
+	    $latlon_src ne "3" &&
+	    $latlon_src ne "H" &&
+	    $latlon_src ne "Q") {
+	    print "invalid latlon_src\n$mod02_usage";
+	    exit 1;
+	}
+    }
+    if (@ARGV) {
+	$ancil_src = shift(@ARGV);
+	if ($ancil_src ne "1" &&
+	    $ancil_src ne "3") {
+	    print "invalid ancil_src\n$mod02_usage";
+	    exit 1;
+	}
+    }
+    if (@ARGV) {
+	$keep = shift(@ARGV);
+	if ($keep ne "0" && $keep ne "1") {
+	    print "invalid keep\n$mod02_usage";
+	    exit 1;
+	}
+    }
+    if (@ARGV) {
+	$rind = shift(@ARGV);
+	if ($rind < 0) {
+	    print "invalid rind\n$mod02_usage";
+	}
+    }
+    if (@ARGV) {
+	$fix250 = shift(@ARGV);
+	if ($fix250 ne "0" && $fix250 ne "1" &&
+	    $fix250 ne "2" && $fix250 ne "3") {
+	    print "invalid fix250\n$mod02_usage";
+	    exit 1;
+	}
+    }
+    if (@ARGV) {
+	$fixcolfile = shift(@ARGV);
+    }
+    if (@ARGV) {
+	$fixrowfile = shift(@ARGV);
+    }
+    if (@ARGV) {
+	$tile_cols = shift(@ARGV);
+	if ($tile_cols < 1) {
+	    print "invalid tile_cols\n$mod02_usage";
+	}
+    }
+    if (@ARGV) {
+	$tile_rows = shift(@ARGV);
+	if ($tile_rows < 1) {
+	    print "invalid tile_rows\n$mod02_usage";
+	}
+    }
+    if (@ARGV) {
+	$tile_overlap = shift(@ARGV);
+	if ($tile_overlap < 0) {
+	    print "invalid tile_overlap\n$mod02_usage";
 	}
     }
 } else {
@@ -111,7 +143,12 @@ print_stderr("\n".
 	     "> ancil_src        = $ancil_src\n".
 	     "> keep             = $keep\n".
 	     "> rind             = $rind\n".
-	     "> fix250           = $fix250\n");
+	     "> fix250           = $fix250\n".
+	     "> fixcolfile       = $fixcolfile\n".
+	     "> fixrowfile       = $fixrowfile\n".
+             "> tile_cols        = $tile_cols\n".
+             "> tile_rows        = $tile_rows\n".
+             "> tile_overlap     = $tile_overlap\n");
 
 if ($chanfile eq "none" && $ancilfile eq "none") {
     diemail("$script: FATAL: chanfile and ancilfile must not both be none");
@@ -272,6 +309,7 @@ my $swath_cols = 0;
 my $swath_rows = 0;
 my $ancil_cols = 0;
 my $ancil_rows = 0;
+my $ancil_mirror = 2;
 my $latlon_cols = 0;
 my $latlon_rows = 0;
 my $lat_cat = "cat ";
@@ -294,6 +332,8 @@ my $this_swath_rows = 0;
 my $ancil_rows_per_scan;
 my $this_ancil_cols;
 my $this_ancil_rows = 0;
+my $this_ancil_mirror = 2;
+my $ancil_mirror_expected = 2;
 my $ancil_interp_factor;
 my $ancil_col_offset = 0;
 my $ancil_row_offset = 0;
@@ -470,7 +510,7 @@ for ($line = 0; $line < @list; $line++) {
     my ($this_lat_cols, $this_lat_rows) =
 	($lat_file =~ /$filestem_lat(.....)_(.....)/);
     print "$lat_file contains $this_lat_cols cols and " .
-	  "$this_lat_rows rows\n";
+	"$this_lat_rows rows\n";
     $lat_cat .= "$lat_file ";
     $latlon_cols = $this_lat_cols;
     $latlon_rows += $this_lat_rows;
@@ -684,10 +724,24 @@ for ($line = 0; $line < @list; $line++) {
 		diemail("$script: FATAL: $filestem_ancil_conv* not found");
 	    }
 	    my $ancil_file = $ancil_glob[0];
-	    ($this_ancil_cols, $this_ancil_rows) =
-		($ancil_file =~ /$filestem_ancil_conv(.....)_(.....)/);
-	    print "$ancil_file contains $this_ancil_cols cols and " .
-		"$this_ancil_rows rows\n";
+	    ($this_ancil_mirror, $this_ancil_cols, $this_ancil_rows) =
+		($ancil_file =~ /$filestem_ancil_conv(.)_(.....)_(.....)/);
+	    print "$ancil_file starts on mirror side $this_ancil_mirror and\n" .
+		"   contains $this_ancil_cols cols and $this_ancil_rows rows\n";
+	    if ($ancil_mirror_expected == 2) {
+		$ancil_mirror_expected = $this_ancil_mirror;
+	    }
+	    if ($this_ancil_mirror != $ancil_mirror_expected) {
+		diemail("$script: FATAL: expected $ancil_file to start on" .
+			"mirror side $ancil_mirror_expected");
+	    }
+	    if ($i < $ancil_count - 1) {
+		$ancil_mirror_expected = $this_ancil_mirror;
+	    } else {
+		$ancil_mirror_expected = ($this_ancil_mirror < 2) ?
+		    ($this_ancil_mirror + 
+		     $this_ancil_rows / $ancil_rows_per_scan) % 2 : 2;
+	    }
 	    if ($chan_count == 0 && $i == 0) {
 		if ($line == 0) {
 		    $this_swath_cols = $ancil_interp_factor * $this_ancil_cols -
@@ -704,6 +758,9 @@ for ($line = 0; $line < @list; $line++) {
 			"inconsistent number of columns in $ancil_file");
 	    }
 	    $ancil_cat[$i] .= "$ancil_file ";
+	}
+	if ($line == 0) {
+	    $ancil_mirror = $this_ancil_mirror;
 	}
 	$ancil_cols = $this_ancil_cols;
 	$ancil_rows += $this_ancil_rows;
@@ -734,7 +791,8 @@ for ($i = 0; $i < $ancil_count; $i++) {
     my $ancil_rm = $ancil_cat[$i];
     my $tagext = substr($ancil_conversions[$i], 0, 3);
     $ancil_rm =~ s/cat/rm -f/;
-    $ancil_files[$i] = "$tag\_$tagext\_$ancil\_$ancil_cols\_$ancil_rows.img";
+    $ancil_files[$i] =
+	"$tag\_$tagext\_$ancil\_$ancil_mirror\_$ancil_cols\_$ancil_rows.img";
     do_or_die("$ancil_cat[$i] >$ancil_files[$i]");
     do_or_die("$ancil_rm");
     if ($ancil eq "soze") {
@@ -762,7 +820,7 @@ if ($ancil_interp_factor > 1) {
 		  "$swath_cols \"'$filestem_ancil_conv'\" " .
 		  "data_type=\"'$data_type'\" " .
 		  "col_offset=$ancil_col_offset row_offset=$ancil_row_offset " .
-		  "$nearest_neighbor");
+		  "$nearest_neighbor mirror_side=$ancil_mirror");
 
 	my @ancil_glob = glob("$filestem_ancil_conv*");
 	if (@ancil_glob == 0) {
@@ -774,14 +832,17 @@ if ($ancil_interp_factor > 1) {
 	if ($ancil eq "soze") {
 	    $soze_file = $ancil_files[$i];
 	}
-	($this_ancil_cols, $this_ancil_scans,
+	($this_ancil_mirror, $this_ancil_cols, $this_ancil_scans,
 	 $this_ancil_scan_first, $this_ancil_rows_per_scan) =
-	 ($ancil_file =~ /$filestem_ancil_conv\_(.....)_(.....)_(.....)_(..)/);
-	print "$ancil_file contains $this_ancil_cols cols,\n" .
+	 ($ancil_file =~
+	  /$filestem_ancil_conv\_(.)_(.....)_(.....)_(.....)_(..)/);
+	print "$ancil_file starts on mirror side $this_ancil_mirror and\n" .
+	  "  contains $this_ancil_cols cols,\n" .
 	  "   $this_ancil_scans scans, $this_ancil_scan_first scan_first,\n" .
 	  "   and $this_ancil_rows_per_scan rows_per_scan\n";
 
-	if ($this_ancil_cols != $swath_cols ||
+	if ($this_ancil_mirror != $ancil_mirror ||
+	    $this_ancil_cols != $swath_cols ||
 	    $this_ancil_scans != $swath_scans ||
 	    $this_ancil_scan_first != 0 ||
 	    $this_ancil_rows_per_scan != $swath_rows_per_scan) {
@@ -802,11 +863,25 @@ for ($i = 0; $i < $chan_count; $i++) {
 	my $nor_rows = "";
 	my $reg_rows = "";
 	my $undo_soze = "";
+	my $file_reg_col_in = "";
+	my $file_reg_col_out = "";
+	my $file_reg_row_in = "";
+	my $file_reg_row_out = "";
 	if ($fix250 == 1 || $fix250 == 2) {
-	    $reg_col_offset = "reg_col_offset=" . (($chan == 0) ? "3" : "0");
-	    $reg_cols = "/reg_cols";
-	    $nor_rows = "/nor_rows";
-	    $reg_rows = "/reg_rows";
+	    $reg_col_offset = "reg_col_offset=" . (($chan == 1) ? "3" : "0");
+	    if ($fixcolfile eq "none") {
+		$reg_cols = "/reg_cols";
+		$file_reg_col_out = "file_reg_col_out=$chan_file" . "colfix";
+	    } else {
+		$file_reg_col_in = "file_reg_col_in=$fixcolfile";
+	    }
+	    if ($fixrowfile eq "none") {
+		$nor_rows = "/nor_rows";
+		$reg_rows = "/reg_rows";
+		$file_reg_row_out = "file_reg_row_out=$chan_file" . "rowfix";
+	    } else {
+		$file_reg_row_in = "file_reg_row_in=$fixrowfile";
+	    }
 	    if ($fix250 == 2) {
 		$undo_soze = "/undo_soze";
 	    }
@@ -814,12 +889,15 @@ for ($i = 0; $i < $chan_count; $i++) {
 	my $data_type = $chan_conversions[$i] eq "raw" ? "u2" : "f4";
 	my $data_type_in = "data_type_in=\"'$data_type'\"";
 	my $data_type_out = "data_type_out=\"'$data_type'\"";
+
 	my $command = "idl_sh.pl modis_adjust $swath_cols $swath_scans " .
 	              "\"'$chan_file_unfixed'\" \"'$chan_file'\" " .
 		      "file_soze=\"'$soze_file'\" " .
 		      "$reg_cols $reg_col_offset " .
 		      "$nor_rows $reg_rows $undo_soze " .
-		      "$data_type_in $data_type_out";
+		      "$data_type_in $data_type_out " .
+                      "$file_reg_col_in $file_reg_col_out " .
+		      "$file_reg_row_in $file_reg_row_out";
 	print_stderr("$command\n");
 	do_or_die($command);
 	if (!$keep) {
