@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.3 2004/11/21 02:35:18 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.4 2004/11/21 19:59:39 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -18,7 +18,8 @@
 ;
 ; CALLING SEQUENCE:
 ;       image = extract_valid_scans(sd_id, sds_name, lines_per_scan,
-;                                   band_index, area=area)
+;                                   band_index, area=area, 
+;                                   invalid_count_max=invalid_count_max)
 ;
 ; ARGUMENTS:
 ;
@@ -76,53 +77,59 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
         hdf_sd_getdata, var_id, image, start=start, count=count
         hdf_sd_endaccess, var_id
 
-  endelse
+    endelse
 
-;- Get fill value
-    attname = '_FillValue'
-    attinfo = hdf_sd_attinfo(sd_id, sds_name, attname)
-    if (attinfo.name eq attname) then $
-      fill = attinfo.data[0] $
-    else $
-      fill = 0
+;- Read valid range attribute
+    valid_name = 'valid_range'
+    att_info = hdf_sd_attinfo(sd_id, sds_name, valid_name)
+    if (att_info.name eq '') then message, 'Attribute not found: ' + valid_name
+    valid_range = att_info.data
 
-;- Create a scan's worth of fill values
+;- Set invalid_count_max
     npixels_per_scan = npixels_across * lines_per_scan
-    scan_fill = make_array(npixels_per_scan, /float, value=fill)
-
-;- Remove any scans that are all fill
-    if npixels_along mod lines_per_scan ne 0 then $
-      message, 'Number of lines in ' + sds_name + ':' + $
-               string(npixels_across) + ' is not evenly divisible by ' + $
-               string(lines_per_scan)
     nscans = npixels_along / lines_per_scan
-    got_fill_scan = 0
-    for i = 0L, nscans - 1 do begin
-        first = i * npixels_per_scan
-        last  = first + npixels_per_scan - 1
+    got_invalid_scan = 0
+    if n_elements(invalid_count_max) eq 0 then $
+      invalid_count_max = long(0.5 * npixels_per_scan)
 
-    ;- count gets number of elements where scan is not fill
-        j = where((image[first:last] ne scan_fill) eq 1b, count)
-        if count eq 0 then begin
+    if invalid_count_max gt 0 then begin
 
-        ;- scan was all fill
-            got_fill_scan = 1
-            if i lt nscans - 1 then begin
-                image[first:(nscans - 1) * npixels_per_scan - 1] = $
-                  image[first + npixels_per_scan:nscans * npixels_per_scan - 1]
-                if got_mirror then $
-                  mirror[i:nscans - 2] = mirror[i + 1:nscans - 1]
+    ;- Remove any scans that have too many values outside of valid range
+        if npixels_along mod lines_per_scan ne 0 then $
+          message, 'Number of lines in ' + sds_name + ':' + $
+                   string(npixels_across) + ' is not evenly divisible by ' + $
+                   string(lines_per_scan)
+        for i = 0L, nscans - 1 do begin
+            first = i * npixels_per_scan
+            last  = first + npixels_per_scan - 1
+
+        ;- count gets number of invalid
+            image_scan = image[first:last]
+            j = where((image_scan lt valid_range[0]) or $
+                      (image_scan gt valid_range[1]), count)
+            if count ge invalid_count_max then begin
+
+            ;- scan was almost all invalid
+                got_invalid_scan = 1
+                if i lt nscans - 1 then begin
+                    image[first:(nscans - 1) * npixels_per_scan - 1] = $
+                      image[first + npixels_per_scan: $
+                            nscans * npixels_per_scan - 1]
+                    if got_mirror then $
+                      mirror[i:nscans - 2] = mirror[i + 1:nscans - 1]
+                endif
+                i = i - 1
+                nscans = nscans - 1
+                npixels_along = npixels_along - lines_per_scan
             endif
-            i = i - 1
-            nscans = nscans - 1
-            npixels_along = npixels_along - lines_per_scan
-        endif
-    endfor
-    if got_fill_scan then $
+        endfor
+    endif
+
+    if got_invalid_scan then $
       image = image[*, 0:npixels_along - 1]
 
     if got_mirror then begin
-        if got_fill_scan then $
+        if got_invalid_scan then $
           mirror = mirror[0:nscans - 1]
 
     ;- Use AREA keyword if it was supplied
