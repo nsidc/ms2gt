@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.51 2004/12/08 19:33:41 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.52 2004/12/08 22:02:10 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.51 2004/12/08 19:33:41 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.52 2004/12/08 22:02:10 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -1016,11 +1016,12 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
 
   ;  make min and max values the same as on input
+  ;  to ensure that fill values (e.g. 65535) stay as fill
 
   if count_min_in gt 0 then $
-    swath[i_min_in] = min_out
+    swath[i_min_in] = min_in
   if count_max_in gt 0 then $
-    swath[i_max_in] = max_out
+    swath[i_max_in] = max_in
  
   ;  open, write, and close output file
 
