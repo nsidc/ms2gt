@@ -4,7 +4,7 @@
 ;*
 ;* 7-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.4 2004/10/23 17:41:40 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.5 2004/11/21 02:15:29 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -103,7 +103,7 @@ PRO modis_ancillary_read, filename, ancillary, image, mirror=mirror, $
                           conversion=conversion, area=area, $
                           latitude=latitude, longitude=longitude
 
-rcs_id = '$Id: modis_ancillary_read.pro,v 1.4 2004/10/23 17:41:40 haran Exp haran $'
+rcs_id = '$Id: modis_ancillary_read.pro,v 1.5 2004/11/21 02:15:29 haran Exp haran $'
 
 ;-----------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -303,7 +303,7 @@ if arg_present(mirror) then begin
     if mirror eq -1 then begin
 
       ;- Read mirror-side data
-        mirror = extract_valid_scans(sd_id, 'Mirror_side', 10, -1, area=area)
+        mirror = extract_valid_scans(sd_id, 'Mirror side', 10, -1, area=area)
     endif
 endif
 

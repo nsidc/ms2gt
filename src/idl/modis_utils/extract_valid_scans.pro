@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.1 2004/11/21 02:14:49 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.2 2004/11/21 02:24:19 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -41,7 +41,7 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
     message, usage
 
   got_mirror = 0
-  if sds_name eq 'Mirror_side' then begin
+  if sds_name eq 'Mirror side' then begin
 
   ;- Read mirror side data
       got_mirror = 1
@@ -133,7 +133,7 @@ FUNCTION extract_valid_scans, sd_id, sds_name, lines_per_scan, band_index, $
             mirror = mirror[start:last]
         endif
         image = mirror
-        sds_name = 'Mirror_side'
+        sds_name = 'Mirror side'
             
     endif else begin
 
