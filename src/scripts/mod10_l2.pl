@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod02.pl,v 1.21 2001/02/20 00:08:15 haran Exp $
+# $Id: mod10_l2.pl,v 1.5 2001/02/20 00:42:52 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD10_L2 data
@@ -30,11 +30,11 @@ USAGE: mod10_l2.pl dirinout tag listfile gpdfile
             is 1, i.e. grid channel 1 only. The channel numbers are:
               1: Snow Cover - 8-bit unsigned
               2: Snow Cover PixelQA - 8-bit unsigned
-  latlonlistfile: text file containing a list of MOD02 files whose latitude
-            and longitude data should be used in place of the latlon data
-            in the corresponding MOD10_L2 file in listfile. The default is
-            \"none\" indicating that the latlon data in each MOD10_L2 file
-            should be used without substitution.
+  latlonlistfile: text file containing a list of MOD02 or MOD03 files whose
+                  latitude and longitude data should be used in place of the
+                  latlon data in the corresponding MOD10_L2 file in listfile.
+                  The default is \"none\" indicating that the latlon data in
+                  each MOD10_L2 file should be used without substitution.
   keep: 0: delete intermediate chan, lat, lon, col, and row files (default).
         1: do not delete intermediate chan, lat, lon, col, and row files.
   rind: number of pixels to add around intermediate grid to eliminate
@@ -160,16 +160,18 @@ foreach $hdf (@list) {
 		$interp_factor = 10;
 		$offset = 5;
 		$extra_latlon_col = 2;
-		$latlon_rows_per_scan = 2;
 	    } else {
+		$latlon_rows_per_scan = 10;
 		$interp_factor = 2;
 		$hdf_latlon   = $latlonlist[$list_index++];
-		my ($filestem_latlon) = ($hdf_latlon =~ /(.*)\.hdf/);
-		$filestem_lat = $filestem_latlon . "_latf_";
-		$filestem_lon = $filestem_latlon . "_lonf_";
+		chomp $hdf_latlon;
+		my ($latlon_filestem) = ($hdf_latlon =~ /(.*)\.hdf/);
+		$filestem_lat = $latlon_filestem . "_latf_";
+		$filestem_lon = $latlon_filestem . "_lonf_";
 		do_or_die("rm -f $filestem_lat*");
 		do_or_die("rm -f $filestem_lon*");
-		do_or_die("idl_sh.pl extract_latlon \"'$hdf_latlon'\"");
+		do_or_die("idl_sh.pl extract_latlon \"'$hdf_latlon'\" " .
+			  "\"'$latlon_filestem'\"");
 	    }
 	}
 	do_or_die("idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" $chan " .
@@ -368,17 +370,19 @@ my $f_option = "-f 255";
 for ($i = 0; $i < $chan_count; $i++) {
     my $chan_file = $chan_files[$i];
     my $chan = $chans[$i];
-    my $grid_file = "$tag\_ch$chan\_grid\_$grid_cols\_$grid_rows.img";
+    my $tagext = "rawm";
+    my $grid_file = "$tag\_$tagext\_ch$chan\_$grid_cols\_$grid_rows.img";
     do_or_die("fornav 1 -v -m $t_option $f_option " .
 	      "-s $swath_scan_first 0 " .
 	      "$swath_cols $swath_scans $swath_rows_per_scan " .
 	      "$cols_file $rows_file $chan_file " .
 	      "$grid_cols $grid_rows $grid_file");
-}
-if (!$keep) {
-    for ($i = 0; $i < $chan_count; $i++) {
-	do_or_die("rm -f $chan_files[$i]");
+    if (!$keep) {
+	do_or_die("rm -f $chan_file");
     }
+}
+
+if (!$keep) {
     do_or_die("rm -f $cols_file");
     do_or_die("rm -f $rows_file");
 }
