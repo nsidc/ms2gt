@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod35_l2_usage.pl,v 1.2 2001/05/14 14:38:20 haran Exp $
+# $Id: mod35_l2_usage.pl,v 1.1 2002/05/15 22:51:04 haran Exp haran $
 
 #========================================================================
 # mod35_l2_usage.pl - defines mod35_l2.pl usage message
@@ -26,18 +26,18 @@ USAGE: mod35_l2.pl dirinout tag listfile gpdfile chanfile
               containing seconds since 1993-1-1 00:00:00.0 that indicates
               the start time for the scan in which the data point was
               acquired.
-            cld1-6 - Cloud Mask - Specifies one of up to six 8-bit unsigned
+            cld0-5 - Cloud Mask - Specifies one of up to six 8-bit unsigned
               byte arrays containing the 48-bit cloud mask. The left-most bit
               (bit 7) is the most significant bit within each byte.
-                 cld1 - contains Cloud Mask bits  7-0  in cld1 bits 7-0. 
-                 cld2 - contains Cloud Mask bits 15-8  in cld2 bits 7-0. 
-                 cld3 - contains Cloud Mask bits 23-16 in cld3 bits 7-0. 
-                 cld4 - contains Cloud Mask bits 31-24 in cld4 bits 7-0. 
-                 cld5 - contains Cloud Mask bits 39-32 in cld5 bits 7-0. 
-                 cld6 - contains Cloud Mask bits 47-40 in cld6 bits 7-0.
-            cqa1-8 - Quality Assurance - Specifies one of up to eight 8-bit
+                 cld0 - contains Cloud Mask bits  7-0  in cld0 bits 7-0. 
+                 cld1 - contains Cloud Mask bits 15-8  in cld1 bits 7-0. 
+                 cld2 - contains Cloud Mask bits 23-16 in cld2 bits 7-0. 
+                 cld3 - contains Cloud Mask bits 31-24 in cld3 bits 7-0. 
+                 cld4 - contains Cloud Mask bits 39-32 in cld4 bits 7-0. 
+                 cld5 - contains Cloud Mask bits 47-40 in cld5 bits 7-0.
+            cqa0-9 - Quality Assurance - Specifies one of up to ten 8-bit
               unsigned byte arrays containing cloud mask quality assurance
-              bytes 1-8.
+              bytes 0-9.
               NOTE: For more information on interpreting cloud mask and 
                     quality assurance information, see:
                     http://cimss.ssec.wisc.edu/modis1/pdf/CMUSERSGUIDE.PDF

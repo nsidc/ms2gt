@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod35_l2.pl,v 1.15 2001/05/14 14:33:20 haran Exp $
+# $Id: mod35_l2.pl,v 1.1 2002/05/15 22:50:49 haran Exp haran $
 
 #========================================================================
 # mod35_l2.pl - grids MOD35_L2 data
@@ -112,12 +112,13 @@ while (<CHANFILE>) {
     print "$chan\n";
     $line++;
     if ($chan ne "time" &&
+	$chan ne "cld0" &&
 	$chan ne "cld1" &&
 	$chan ne "cld2" &&
 	$chan ne "cld3" &&
 	$chan ne "cld4" &&
 	$chan ne "cld5" &&
-	$chan ne "cld6" &&
+	$chan ne "cqa0" &&
 	$chan ne "cqa1" &&
 	$chan ne "cqa2" &&
 	$chan ne "cqa3" &&
@@ -125,7 +126,8 @@ while (<CHANFILE>) {
 	$chan ne "cqa5" &&
 	$chan ne "cqa6" &&
 	$chan ne "cqa7" &&
-	$chan ne "cqa8") {
+	$chan ne "cqa8" &&
+	$chan ne "cqa9") {
 	diemail("$script: FATAL: " .
 		"invalid channel on line $line in $chanfile\n");
     }
