@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.16 2001/01/19 18:44:24 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.17 2001/01/28 21:59:23 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -688,7 +688,7 @@ int WriteGridImage(image *ip, image *wp,
   fp = iop->fp;
   rows = ip->rows;
   cols = ip->cols;
-  fill = ip->fill;
+  fill = iop->fill;
   data_type = iop->data_type;
   if (weight_sum_min <= 0.0)
     weight_sum_min = EPSILON;
