@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.13 2002/11/24 23:05:22 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.14 2002/11/25 18:33:25 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -274,7 +274,10 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.13 2002/11/24 23:05:22 haran Exp haran $' 
+  time_start = systime(/seconds) 
+
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.14 2002/11/25 18:33:25 haran Exp haran $'
+  print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
   print, '  file_in:              ', file_in
@@ -536,5 +539,15 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   openw, lun, file_out, /get_lun
   writeu, lun, swath
   free_lun, lun
+
+  time_end = systime(/seconds)
+  elapsed_seconds = time_end - time_start
+  elapsed_minutes = fix(elapsed_seconds / 60)
+  elapsed_seconds = elapsed_seconds - 60 * elapsed_minuts
+  print, 'modis_adjust:'
+  print, '  completed:            ', systime(0, time_start)
+  print, '  elapsed time:         ', elapsed_minutes, ' min  ', $
+                                     elapsed_seconds, ' sec  ', $
+                                     format = '(a, i3, a, i2, a)'
 
 END ; modis_adjust
