@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.27 2002/12/05 18:35:26 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.28 2002/12/05 19:03:14 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -30,7 +30,8 @@
 ; CALLING SEQUENCE:
 ;       MODIS_ADJUST, cols, scans, file_in, file_out,
 ;               [, rows_per_scan=rows_per_scan]
-;               [, data_type=data_type]
+;               [, data_type_in=data_type_in]
+;               [, data_type_out=data_type_out]
 ;               [, file_soze=file_soze]
 ;               [, /undo_soze]
 ;               [, /reg_cols]
@@ -364,7 +365,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.27 2002/12/05 18:35:26 haran Exp haran $'
+  print, 'modis_adjust: $Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.28 2002/12/05 19:03:14 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -490,14 +491,14 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   ; convert swath to floating-point as needed
 
-  if data_type_in ne 'f4' then $
-    swath = float(temporary(swath))
-
   ; open, read, and close input raster files
 
   openr, lun, file_in, /get_lun
   readu, lun, swath
   free_lun, lun
+  if data_type_in ne 'f4' then $
+    swath = float(temporary(swath))
+
   if file_soze ne '' then begin
       openr, lun, file_soze, /get_lun
       readu, lun, soze
