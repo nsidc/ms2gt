@@ -56,7 +56,9 @@ endelse
 cols_out = cols_in / shrink_factor
 rows_out = rows_in / shrink_factor
 if n_elements(file_in) eq 1 then begin
-    if bytes_per_cell eq 2 then $
+    if bytes_per_cell eq 4 then $
+      img_in = fltarr(cols_in, rows_in) $
+    else if bytes_per_cell eq 2 then $
       img_in = intarr(cols_in, rows_in) $
     else $
       img_in = bytarr(cols_in, rows_in)
@@ -87,7 +89,9 @@ if n_elements(file_in) eq 1 then begin
 endif else begin
     img_out = bytarr(3, cols_out, rows_out)
     for i = 0, 2 do begin
-        if bytes_per_cell eq 2 then $
+        if bytes_per_cell eq 4 then $
+          img_in = fltarr(cols_in, rows_in) $
+        else if bytes_per_cell eq 2 then $
           img_in = intarr(cols_in, rows_in) $
 	else $
           img_in = fltarr(cols_in, rows_in)
