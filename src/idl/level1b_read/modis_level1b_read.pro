@@ -135,7 +135,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; MODIFICATION HISTORY:
 ; Liam.Gumley@ssec.wisc.edu
 ; http://cimss.ssec.wisc.edu/~gumley
-; $Id: modis_level1b_read.pro,v 1.7 2004/11/21 19:58:19 haran Exp haran $
+; $Id: modis_level1b_read.pro,v 1.8 2004/11/23 18:45:23 haran Exp haran $
 ;
 ; Copyright (C) 1999, 2000 Liam E. Gumley
 ;
@@ -154,7 +154,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ;-
 
-rcs_id = '$Id: modis_level1b_read.pro,v 1.7 2004/11/21 19:58:19 haran Exp haran $'
+rcs_id = '$Id: modis_level1b_read.pro,v 1.8 2004/11/23 18:45:23 haran Exp haran $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -355,7 +355,7 @@ endelse
 
 ;- Get valid scans for the channel data
 image = extract_valid_scans(sd_id, sds_name, lines_per_scan, band_index, $
-                            area=area, /valid_fill)
+                            area=area)
 
 if band eq 26 then $
   band_index = 0
