@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.11 2001/01/08 18:35:52 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.12 2001/01/08 18:44:50 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -15,8 +15,9 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/for
 
 #define USAGE \
 "usage: fornav chan_count\n"\
-"              [-v] [-m] [-s swath_scan_first] [-S grid_col_start grid_row_start]\n"\
-"       defaults:                   0                     0              0\n"\
+"              [-v] [-m] [-p]\n"\
+"              [-s swath_scan_first] [-S grid_col_start grid_row_start]\n"\
+"       defaults:         0                     0              0\n"\
 "              [-t swath_data_type_1 ... swath_data_type_chan_count]\n"\
 "       defaults:          s2                       s2\n"\
 "              [-T grid_data_type_1 ... grid_data_type_chan_count]\n"\
@@ -58,14 +59,18 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/for
 "           cells as indicated by grid_type (see below).\n"\
 "\n"\
 " option: v: verbose (may be repeated).\n"\
-"         s swath_scan_first: the first scan number to process. Default is 0.\n"\
-"         S grid_col_start grid_row_start: starting grid column number and row\n"\
-"             number to write to each output grid file. The defaults are 0.\n"\
 "         m: maximum weight mode. If -m is not present, a weighted average of\n"\
 "             all swath cells that map to a particular grid cell is used.\n"\
 "             If -m is present, the swath cell having the maximum weight of all\n"\
 "             swath cells that map to a particular grid cell is used. The -m\n"\
 "             option should be used for coded data, i.e. snow cover.\n"\
+"         p: col and row files presubsetted. If -p is not present, then\n"\
+"             swath_scan_first (see below) applies to all swath input files.\n"\
+"             If -p is present, then swath_scan_first does not apply to\n"\
+"             swath_col_file and swath_row_file.\n"\
+"         s swath_scan_first: the first scan number to process. Default is 0.\n"\
+"         S grid_col_start grid_row_start: starting grid column number and row\n"\
+"             number to write to each output grid file. The defaults are 0.\n"\
 "         t swath_data_type_1 ... swath_data_type_chan_count: specifies the type\n"\
 "             of each swath cell for each channel as follows:\n"\
 "               u1: unsigned 8-bit integer.\n"\
@@ -736,6 +741,7 @@ main (int argc, char *argv[])
   int   grid_col_start;
   int   grid_row_start;
   bool  maximum_weight_mode;
+  bool  col_row_presubsetted;
   bool  got_grid_data_type;
   bool  got_grid_fill;
   int   first_scan_with_data;
@@ -750,6 +756,7 @@ main (int argc, char *argv[])
   int   swath_rows_per_scan;
   int   grid_cols;
   int   grid_rows;
+  int   col_row_scan_first;
 
   image  *swath_col_image;
   image  *swath_row_image;
@@ -771,10 +778,11 @@ main (int argc, char *argv[])
    */
   verbose                = FALSE;
   very_verbose           = FALSE;
+  maximum_weight_mode    = FALSE;
+  col_row_presubsetted   = FALSE;
   swath_scan_first       = 0;
   grid_col_start         = 0;
   grid_row_start         = 0;
-  maximum_weight_mode    = FALSE;
   got_grid_data_type     = FALSE;
   got_grid_fill          = FALSE;
   weight_count           = 10000;
@@ -828,6 +836,9 @@ main (int argc, char *argv[])
 	break;
       case 'm':
 	maximum_weight_mode = TRUE;
+	break;
+      case 'p':
+	col_row_presubsetted = TRUE;
 	break;
       case 's':
 	++argv; --argc;
@@ -984,6 +995,7 @@ main (int argc, char *argv[])
 	      grid_chan_io_image[i].file);
     fprintf(stderr, "\n");
     fprintf(stderr, "  maximum_weight_mode = %d\n", maximum_weight_mode);
+    fprintf(stderr, "  col_row_presubsetted= %d\n", col_row_presubsetted);
     fprintf(stderr, "  swath_scan_first    = %d\n", swath_scan_first);
     fprintf(stderr, "  grid_col_start      = %d\n", grid_col_start);
     fprintf(stderr, "  grid_row_start      = %d\n", grid_row_start);
@@ -1012,11 +1024,12 @@ main (int argc, char *argv[])
    */
   if (swath_rows_per_scan < 2)
     error_exit("fornav: swath_rows_per_scan must be at least 2");
+  col_row_scan_first = col_row_presubsetted ? 0 : swath_scan_first;
   InitializeImage(swath_col_image, "swath_col_image", "r", "f4",
-		  swath_cols, swath_rows_per_scan, swath_scan_first);
+		  swath_cols, swath_rows_per_scan, col_row_scan_first);
 
   InitializeImage(swath_row_image, "swath_row_image", "r", "f4",
-		  swath_cols, swath_rows_per_scan, swath_scan_first);
+		  swath_cols, swath_rows_per_scan, col_row_scan_first);
   for (i = 0; i < chan_count; i++) {
     char name[100];
     sprintf(name, "swath_chan_image %d", i); 
