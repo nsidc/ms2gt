@@ -9,6 +9,25 @@
 
 ; Initialization.
 ;
+; $Log$
+;----------------------------
+;revision 1.4	locked by: haran;
+;date: 2001/03/13 17:40:55;  author: haran;  state: Exp;  lines: +5 -5
+;changed image_drop to be under pos_text instead of to the right of it to
+;save space in the image window
+;----------------------------
+;revision 1.3
+;date: 2001/03/13 15:02:58;  author: haran;  state: Exp;  lines: +2 -2
+;added format statements to pos_text lon and lat string() calls
+;----------------------------
+;revision 1.2
+;date: 2001/03/13 00:17:17;  author: haran;  state: Exp;  lines: +2 -2
+;changed /continents to /coasts in map_continents call
+;----------------------------
+;revision 1.1
+;date: 2001/03/12 22:15:48;  author: haran;  state: Exp;
+;Initial revision
+;
 FUNCTION NSIDC_DIST_GRID::INIT, main_obj, file_obj, grid_id, grid_name, field_names, dims, $
    SWATH=swath, STRIDE=stride, PARENT=parent, WIN_SIZE=win_size, ZOOM_BOX=zoom_box, $
    SHOW_GRAT=show_grat, SHOW_COAST=show_coast, R=r_in, G=g_in, B=b_in

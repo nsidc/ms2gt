@@ -8,6 +8,18 @@
 
 ; Initialization.
 ;
+; $Log$
+;
+;----------------------------
+;revision 1.2	locked by: haran;
+;date: 2001/03/12 18:32:16;  author: haran;  state: Exp;  lines: +2 -2
+;added x_scroll_size=900 to call to widget_base in creation of Polar
+;HDF-EOS Metadata dialog.
+;----------------------------
+;revision 1.1
+;date: 2001/03/12 18:12:08;  author: haran;  state: Exp;
+;Initial revision
+;
 FUNCTION NSIDC_DIST_MAIN::INIT
 
    ; General setup.
