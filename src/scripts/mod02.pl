@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.34 2001/12/05 20:04:09 haran Exp haran $
+# $Id: mod02.pl,v 1.35 2003/03/18 16:57:14 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -82,7 +82,8 @@ if (@ARGV <= 11) {
 			    $rind = $ARGV[9];
 			    if (@ARGV >= 11) {
 				$fix250 = $ARGV[10];
-				if ($fix250 ne "0" && $fix250 ne "1") {
+				if ($fix250 ne "0" && $fix250 ne "1" &&
+				    $fix250 ne "2") {
 				    print "invalid fix250\n$mod02_usage";
 				    exit 1;
 				}
@@ -188,7 +189,7 @@ my @ancil_fills;
 my @ancil_data_types;
 if ($ancilfile ne "none") {
     open_or_die("ANCILFILE", "$ancilfile");
-    print_stderr("contents of ancilfile:\n");
+    print_stderr("contents of ancilfile (data_type):\n");
     my $line = 0;
     while (<ANCILFILE>) {
 	my ($ancil, $conversion, $weight_type, $fill) =
@@ -221,7 +222,7 @@ if ($ancilfile ne "none") {
 	push(@ancil_weight_types, $weight_type);
 	push(@ancil_fills, $fill);
 	push(@ancil_data_types, $data_type);
-	print "$ancil $conversion $weight_type $fill $data_type\n";
+	print "$ancil $conversion $weight_type $fill ($data_type)\n";
 	$line++;
 	if ($ancil ne "hght" &&
 	    $ancil ne "seze" &&
@@ -487,7 +488,7 @@ do_or_die("$lat_rm");
 do_or_die("$lon_rm");
 
 my $latlon_scans = $latlon_rows / $latlon_rows_per_scan;
-my $force = ($latlon_interp_factor == 1) ? "-r $rind" : "-f";
+my $force = ($latlon_interp_factor == 1 && $rind != 0) ? "-r $rind" : "-f";
 my $filestem_cols = $tag . "_cols_";
 my $filestem_rows = $tag . "_rows_";
 do_or_die("rm -f $filestem_cols*");
@@ -531,16 +532,20 @@ my $cr_rows_per_scan = $this_cols_rows_per_scan;
 
 $swath_cols = $cr_cols * $latlon_interp_factor - $latlon_col_extra;
 if ($latlon_interp_factor > 1) {
-    my $col_min = -$rind;
-    my $col_max = $grid_cols + $rind - 1;
-    my $row_min = -$rind;
-    my $row_max = $grid_rows + $rind - 1;
+    my $grid_check = "";
+    if ($rind != 0) {
+	my $col_min = -$rind;
+	my $col_max = $grid_cols + $rind - 1;
+	my $row_min = -$rind;
+	my $row_max = $grid_rows + $rind - 1;
+	$grid_check = "grid_check=[$col_min,$col_max,$row_min,$row_max] ";
+    }
 
     do_or_die("idl_sh.pl interp_colrow " .
 	      "$latlon_interp_factor $cr_cols $cr_scans $cr_rows_per_scan " .
 	      "\"'$cols_file'\" \"'$rows_file'\" " .
 	      "$swath_cols \"'$tag'\" " .
-	      "grid_check=[$col_min,$col_max,$row_min,$row_max] " .
+	      $grid_check .
 	      "col_offset=$latlon_offset row_offset=$latlon_offset");
     do_or_die("rm -f $cols_file");
     do_or_die("rm -f $rows_file");
@@ -606,16 +611,13 @@ for ($line = 0; $line < @list; $line++) {
 	    my $conv = substr($conversion, 0, 3);
 	    my $filestem_chan_conv = "$filestem\_ch$chan\_$conv\_";
 	    do_or_die("rm -f $filestem_chan_conv*");
-	    print_stderr("idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" " .
-		      "$chan conversion=\"'$conversion'\" " .
-		      "swath_rows=$this_swath_rows_max " .
-		      "swath_row_first=$this_swath_row_first " .
-                      "fix_250=$fix250");
-	    do_or_die("idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" " .
-		      "$chan conversion=\"'$conversion'\" " .
-		      "swath_rows=$this_swath_rows_max " .
-		      "swath_row_first=$this_swath_row_first " .
-                      "fix_250=$fix250");
+	    my $extract_command = 
+		"idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" " .
+		"$chan conversion=\"'$conversion'\" " .
+		"swath_rows=$this_swath_rows_max " .
+		"swath_row_first=$this_swath_row_first";
+	    print_stderr($extract_command);
+	    do_or_die($extract_command);
 	    my @chan_glob = glob("$filestem_chan_conv*");
 	    if (@chan_glob == 0) {
 		diemail("$script: FATAL: $filestem_chan_conv* not found");
@@ -707,6 +709,7 @@ for ($i = 0; $i < $chan_count; $i++) {
 }
 
 my @ancil_files;
+my $soze_file = "";
 for ($i = 0; $i < $ancil_count; $i++) {
     my $ancil = $ancils[$i];
     my $ancil_rm = $ancil_cat[$i];
@@ -715,6 +718,9 @@ for ($i = 0; $i < $ancil_count; $i++) {
     $ancil_files[$i] = "$tag\_$tagext\_$ancil\_$ancil_cols\_$ancil_rows.img";
     do_or_die("$ancil_cat[$i] >$ancil_files[$i]");
     do_or_die("$ancil_rm");
+    if ($ancil eq "soze") {
+	$soze_file = $ancil_files[$i];
+    }
 }
 
 if ($ancil_interp_factor > 1) {
@@ -746,6 +752,9 @@ if ($ancil_interp_factor > 1) {
 	do_or_die("rm -f $ancil_file");
 	$ancil_file = $ancil_glob[0];
 	$ancil_files[$i] = $ancil_file;
+	if ($ancil eq "soze") {
+	    $soze_file = $ancil_files[$i];
+	}
 	($this_ancil_cols, $this_ancil_scans,
 	 $this_ancil_scan_first, $this_ancil_rows_per_scan) =
 	 ($ancil_file =~ /$filestem_ancil_conv\_(.....)_(.....)_(.....)_(..)/);
@@ -766,6 +775,20 @@ if ($ancil_interp_factor > 1) {
 for ($i = 0; $i < $chan_count; $i++) {
     my $chan_file = $chan_files[$i];
     my $chan = $chans[$i];
+    if ($fix250) {
+	my $chan_file_unfixed = $chan_file . ".unfixed";
+	do_or_die("mv $chan_file $chan_file_unfixed");
+	my $reg_col_offset = ($chan == 0) ? 3 : 0;
+	my $undo_soze = ($fix250 eq "2") ? "/undo_soze" : "";
+	do_or_die("idl_sh.pl modis_adjust $swath_cols $swath_scans " .
+		  "\"'$chan_file_unfixed'\" \"'$chan_file'\" " .
+		  "file_soze=\"'$soze_file'\" " .
+		  "/reg_cols reg_col_offset=$reg_col_offset " .
+		  "/nor_rows /reg_rows $undo_soze");
+	if (!$keep) {
+	    system("rm -f $chan_file_unfixed");
+	}
+    }
     my $tagext = substr($chan_conversions[$i], 0, 3);
     my $m_option;
     if ($chan_weight_types[$i] eq "avg") {
