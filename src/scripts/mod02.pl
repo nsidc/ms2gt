@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.42 2004/10/31 03:19:20 haran Exp haran $
+# $Id: mod02.pl,v 1.43 2004/10/31 22:21:40 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -910,8 +910,9 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 			    $reg_cols = "/reg_cols";
 			}
 			$file_reg_cols_out = "file_reg_cols_out=\"'$chan_file" . ".colfix'\"";
-		    } else {
-			$file_reg_cols_in = "file_reg_cols_in=\"'$fixcolfile'\"";
+		    } elsif ($platform eq "terra" && $chan == 2) {
+			$file_reg_cols_in =
+			    "file_reg_cols_in=\"'$fixcolfile'\"";
 		    }
 		    if ($fixrowfile eq "none") {
 			$nor_rows = "/nor_rows";
