@@ -3,7 +3,7 @@
 ;*
 ;* 11-Jan-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/congridx.pro,v 1.2 2001/01/12 18:43:12 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/congridx.pro,v 1.3 2001/01/19 01:16:46 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -86,6 +86,8 @@ usage = 'usage: result = CONGRIDX(array, interp_factor, ' + $
     message, 'array must have at least 2 columns'
   if rows_in lt 2 then $
     message, 'array must have at least 2 rows'
+  if n_elements(interp) eq 0 then $
+    interp = 0
 
   ; array_x will contain the extrapolated array
 
@@ -94,51 +96,95 @@ usage = 'usage: result = CONGRIDX(array, interp_factor, ' + $
   array_x = fltarr(cols_in_x, rows_in_x)
   array_x[1:cols_in_x-2, 1:rows_in_x-2] = array
 
-  ; compute the first row
-  array_x[1:cols_in_x-2, 0] = $
-    array_x[1:cols_in_x-2, 1] * 2 - $
-    array_x[1:cols_in_x-2, 2]
+  if (interp eq 0) and n_elements(cubic) eq 0 then begin
 
+  ; **** use nearest neighbor extrapolation ****
+
+  ; compute the first row
+      array_x[1:cols_in_x-2, 0] = $
+        array_x[1:cols_in_x-2, 1]
+      
   ; compute the last row
-  array_x[1:cols_in_x-2, rows_in_x-1] = $
-    array_x[1:cols_in_x-2, rows_in_x-2] * 2 - $
-    array_x[1:cols_in_x-2, rows_in_x-3]
+      array_x[1:cols_in_x-2, rows_in_x-1] = $
+      array_x[1:cols_in_x-2, rows_in_x-2]
 
   ; compute the first column
-  array_x[0, 1:rows_in_x-2] = $
-    array_x[1, 1:rows_in_x-2] * 2 - $
-    array_x[2, 1:rows_in_x-2]
-
+      array_x[0, 1:rows_in_x-2] = $
+        array_x[1, 1:rows_in_x-2]
+      
   ; compute the last column
-  array_x[cols_in_x-1, 1:rows_in_x-2] = $
-    array_x[cols_in_x-2, 1:rows_in_x-2] * 2 - $
-    array_x[cols_in_x-3, 1:rows_in_x-2]
+      array_x[cols_in_x-1, 1:rows_in_x-2] = $
+        array_x[cols_in_x-2, 1:rows_in_x-2]
 
   ; compute the upper left cell
-  array_x[0, 0] = $
-    ((array_x[1, 0] * 2 - array_x[2, 0]) + $
-     (array_x[0, 1] * 2 - array_x[0, 2])) / 2
+      array_x[0, 0] = array_x[1, 1]
 
   ; compute the upper right cell
-  array_x[cols_in_x-1, 0] = $
-    ((array_x[cols_in_x-2, 0] * 2 - $
-      array_x[cols_in_x-3, 0]) + $
-     (array_x[cols_in_x-1, 1] * 2 - $
-      array_x[cols_in_x-1, 2])) / 2
+      array_x[cols_in_x-1, 0] = array_x[cols_in_x-2, 1]
 
   ; compute the lower left cell
-  array_x[0, rows_in_x-1] = $
-    ((array_x[1, rows_in_x-1] * 2 - $
-      array_x[2, rows_in_x-1]) + $
-     (array_x[0, rows_in_x-2] * 2 - $
+      array_x[0, rows_in_x-1] = array_x[1, rows_in_x-2]
+
+  ; compute the lower right cell
+      array_x[cols_in_x-1, rows_in_x-1] = array_x[cols_in_x-2, rows_in_x-2]
+
+  endif else begin
+
+  ; **** use linear extrapolation ****
+
+  ; array_x will contain the extrapolated array
+
+      cols_in_x = cols_in + 2
+      rows_in_x = rows_in + 2
+      array_x = fltarr(cols_in_x, rows_in_x)
+      array_x[1:cols_in_x-2, 1:rows_in_x-2] = array
+
+  ; compute the first row
+      array_x[1:cols_in_x-2, 0] = $
+        array_x[1:cols_in_x-2, 1] * 2 - $
+        array_x[1:cols_in_x-2, 2]
+      
+  ; compute the last row
+      array_x[1:cols_in_x-2, rows_in_x-1] = $
+        array_x[1:cols_in_x-2, rows_in_x-2] * 2 - $
+        array_x[1:cols_in_x-2, rows_in_x-3]
+
+  ; compute the first column
+      array_x[0, 1:rows_in_x-2] = $
+        array_x[1, 1:rows_in_x-2] * 2 - $
+        array_x[2, 1:rows_in_x-2]
+      
+  ; compute the last column
+      array_x[cols_in_x-1, 1:rows_in_x-2] = $
+        array_x[cols_in_x-2, 1:rows_in_x-2] * 2 - $
+        array_x[cols_in_x-3, 1:rows_in_x-2]
+
+  ; compute the upper left cell
+      array_x[0, 0] = $
+        ((array_x[1, 0] * 2 - array_x[2, 0]) + $
+         (array_x[0, 1] * 2 - array_x[0, 2])) / 2
+
+  ; compute the upper right cell
+      array_x[cols_in_x-1, 0] = $
+        ((array_x[cols_in_x-2, 0] * 2 - $
+          array_x[cols_in_x-3, 0]) + $
+         (array_x[cols_in_x-1, 1] * 2 - $
+          array_x[cols_in_x-1, 2])) / 2
+
+  ; compute the lower left cell
+      array_x[0, rows_in_x-1] = $
+        ((array_x[1, rows_in_x-1] * 2 - $
+          array_x[2, rows_in_x-1]) + $
+         (array_x[0, rows_in_x-2] * 2 - $
       array_x[0, rows_in_x-3])) / 2
 
   ; compute the lower right cell
-  array_x[cols_in_x-1, rows_in_x-1] = $
-    ((array_x[cols_in_x-2, rows_in_x-1] * 2 - $
-      array_x[cols_in_x-3, rows_in_x-1]) + $
-     (array_x[cols_in_x-1, rows_in_x-2] * 2 - $
-      array_x[cols_in_x-1, rows_in_x-3])) / 2
+      array_x[cols_in_x-1, rows_in_x-1] = $
+        ((array_x[cols_in_x-2, rows_in_x-1] * 2 - $
+          array_x[cols_in_x-3, rows_in_x-1]) + $
+         (array_x[cols_in_x-1, rows_in_x-2] * 2 - $
+          array_x[cols_in_x-1, rows_in_x-3])) / 2
+  endelse
 
   ; array_x will be replaced by the interpolated array
   cols_out_x = fix(interp_factor * cols_in_x)
