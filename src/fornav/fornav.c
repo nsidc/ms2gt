@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.9 2001/01/08 16:53:22 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.10 2001/01/08 18:33:15 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -417,7 +417,7 @@ static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
     this_ewap->u_del = sqrt(c * d);
     this_ewap->v_del = sqrt(a * d);
     if (very_verbose &&
-	(col == 10 || col == uimg->cols / 2 || col == uimg->cols - 11))
+	(col == 0 || col == uimg->cols / 2 || col == uimg->cols - 1))
       fprintf(stderr,
 	      "%4d %13e %13e %13e %13e %13e %13e %13e %13e %13e\n",
 	      col, ux, vx, uy, vy, a, b, c,
