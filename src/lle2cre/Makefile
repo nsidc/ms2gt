@@ -4,14 +4,14 @@
 # 26-Nov-2001 T.Haran 303-492-1847  tharan@kryos.colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /home/haran/photoclin/src/lle2cre/Makefile,v 1.2 2003/06/24 16:54:03 haran Exp haran $
+RCSID = $Header: /home/haran/photoclin/src/lle2cre/Makefile,v 1.3 2004/07/30 19:54:57 haran Exp $
 
 #------------------------------------------------------------------------
 # configuration section
 #
 #	installation directories
 #
-TOPDIR = ../../..
+TOPDIR = ../..
 LIBDIR = $(TOPDIR)/lib
 INCDIR = $(TOPDIR)/include
 BINDIR = $(TOPDIR)/bin
