@@ -4,7 +4,7 @@
  * 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char ll2cr_c_rcsid[] = "$Header: /export/data/ms2gth/src/ll2cr/ll2cr.c,v 1.12 2001/05/24 23:27:58 haran Exp haran $";
+static const char ll2cr_c_rcsid[] = "$Header: /export/data/ms2gth/src/ll2cr/ll2cr.c,v 1.13 2001/10/24 16:04:09 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -73,8 +73,8 @@ main (int argc, char *argv[])
   bool verbose;
   bool force;
   int  rind;
-  float fill_in;
-  float fill_out;
+  double fill_in;
+  double fill_out;
 
   char colfile[FILENAME_MAX];
   char rowfile[FILENAME_MAX];
@@ -90,8 +90,10 @@ main (int argc, char *argv[])
   float *lonp;
   float *rowp;
   float *colp;
-  float lat;
-  float lon;
+  double dlat;
+  double dlon;
+  double dcol;
+  double drow;
   int bytes_per_row;
   int bytes_per_scan;
   int scansout;
@@ -104,7 +106,6 @@ main (int argc, char *argv[])
   int col_max;
   int row_min;
   int row_max;
-  int status;
   grid_class *grid_def;
 
 /*
@@ -139,12 +140,12 @@ main (int argc, char *argv[])
 	++argv; --argc;
 	if (argc <= 0)
 	  DisplayInvalidParameter("fill_in");
-	if (sscanf(*argv, "%f", &fill_in) != 1)
+	if (sscanf(*argv, "%lf", &fill_in) != 1)
 	  DisplayInvalidParameter("fill_in");
 	++argv; --argc;
 	if (argc <= 0)
 	  DisplayInvalidParameter("fill_out");
-	if (sscanf(*argv, "%f", &fill_out) != 1)
+	if (sscanf(*argv, "%lf", &fill_out) != 1)
 	  DisplayInvalidParameter("fill_out");
 	break;
       default:
@@ -175,8 +176,8 @@ main (int argc, char *argv[])
     fprintf(stderr, "ll2cr:\n");
     fprintf(stderr, "  force         = %d\n", force);
     fprintf(stderr, "  rind          = %d\n", rind);
-    fprintf(stderr, "  fill_in       = %f\n", fill_in);
-    fprintf(stderr, "  fill_out      = %e\n", fill_out);
+    fprintf(stderr, "  fill_in       = %lf\n", fill_in);
+    fprintf(stderr, "  fill_out      = %le\n", fill_out);
     fprintf(stderr, "  colsin        = %d\n", colsin);
     fprintf(stderr, "  scansin       = %d\n", scansin);
     fprintf(stderr, "  rowsperscan   = %d\n", rowsperscan);
@@ -312,24 +313,22 @@ main (int argc, char *argv[])
 	/*
 	 *  convert latitude-longitude pair to column-row pair
 	 */
-	lat = *latp++;
-	lon = *lonp++;
-	if (lat == fill_in || lon == fill_in) {
-	  *colp = fill_out;
-	  *rowp = fill_out;
-	} else {
-	  status = forward_grid(grid_def, lat, lon, colp, rowp);
-	  if ((force && status) ||
-	      (!force && *colp >= col_min && *colp <= col_max &&
+	dlat = *latp++;
+	dlon = *lonp++;
+	*colp = fill_out;
+	*rowp = fill_out;
+	if (dlat != fill_in && dlon != fill_in) {
+	  forward_grid(grid_def, dlat, dlon, &dcol, &drow);
+	  *colp = dcol;
+	  *rowp = drow;
+	  if (force ||
+	      (*colp >= col_min && *colp <= col_max &&
 	       *rowp >= row_min && *rowp <= row_max)) {
 	    if (!force) {
 	      if (scanfirst < 0)
 		scanfirst = scan;
 	      scanlast = scan;
 	    }
-	  } else {
-	    *colp = fill_out;
-	    *rowp = fill_out;
 	  }
 	}
       }
