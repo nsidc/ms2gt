@@ -15,7 +15,7 @@ if (!($?IDL_PATH)) then
     setenv IDL_PATH           \+$IDL_DIR/lib
 endif
 setenv IDL_PATH               $IDL_PATH\:\+$PATH_MS2GT_IDL
-setenv PATHMPP                $MS2GT_HOME/lib/maps
+setenv PATHMPP                $MS2GT_HOME/grids
 
 set path = ( $path . $MS2GT_HOME/bin \
 		     $MS2GT_HOME/src/scripts )
