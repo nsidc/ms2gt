@@ -60,7 +60,7 @@ PRO NSIDC_DIST_MAIN::ADD_FILE, hdf_file
          KILL_NOTIFY='NSIDC_DIST_MAIN_FILE_KILL', /TLB_KILL_REQUEST_EVENTS, $
          UNAME='file_base')
       self.scroll_base = WIDGET_BASE(self.file_base, /COLUMN, $
-         XPAD=1, YPAD=1, SPACE=1, Y_SCROLL_SIZE=512)
+         XPAD=1, YPAD=1, SPACE=1, x_scroll_size=900, Y_SCROLL_SIZE=512)
 
       WIDGET_CONTROL, self.file_base, SET_UVALUE=self
       WIDGET_CONTROL, self.file_base, /REALIZE
