@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.19 2001/04/10 18:23:57 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/ms2gth/src/fornav/fornav.c,v 1.20 2001/04/30 22:50:05 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -233,6 +233,7 @@ static void InitializeImage(image *ip, char *name, char *open_type_str,
     fprintf(stderr, "Error initializing %s\n", name);
     error_exit("fornav: InitializeImage: can't allocate memory for buffer");
   }
+  
   if (!strcmp(ip->open_type_str, "r")) {
     int offset;
     offset = ip->bytes_per_row * ip->rows * swath_scan_first;
@@ -481,7 +482,7 @@ static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
   this_ewap->v_del = (this_ewap + 1)->v_del;
 }
 
-static bool ComputeEwa(image *uimg, image *vimg,
+bool ComputeEwa(image *uimg, image *vimg,
 		       ewa_weight *ewaw, ewa_parameters *ewap,
 		       int chan_count, image *swath_chan_image,
 		       bool maximum_weight_mode,
@@ -734,10 +735,9 @@ int WriteGridImage(image *ip, image *wp,
 	   this_chanp++,
 	   this_weightp++,
 	   this_chanp_out += bytes_per_cell) {
-      if (*this_weightp < weight_sum_min) {
+      if (*this_weightp < weight_sum_min)
 	chanf = fill;
-	fill_count++;
-      } else if (maximum_weight_mode)
+      else if (maximum_weight_mode)
 	chanf = *this_chanp;
       else if (*this_chanp >= 0.0)
 	chanf = *this_chanp / *this_weightp + roundoff;
@@ -749,6 +749,8 @@ int WriteGridImage(image *ip, image *wp,
 	  chanf = 0.0;
 	if (chanf > 255.0)
 	  chanf = 255.0;
+	if (chanf == fill)
+	  fill_count++;
 	*((byte1 *)this_chanp_out) = (byte1)chanf;
 	break;
       case TYPE_UINT2:
@@ -756,6 +758,8 @@ int WriteGridImage(image *ip, image *wp,
 	  chanf = 0.0;
 	if (chanf > 65535.0)
 	  chanf = 65535.0;
+	if (chanf == fill)
+	  fill_count++;
 	*((byte2 *)this_chanp_out) = (byte2)chanf;
 	break;
       case TYPE_SINT2:
@@ -763,6 +767,8 @@ int WriteGridImage(image *ip, image *wp,
 	  chanf = -32768.0;
 	if (chanf > 32767.0)
 	  chanf = 32767.0;
+	if (chanf == fill)
+	  fill_count++;
 	*((int2 *)this_chanp_out) = (int2)chanf;
 	break;
       case TYPE_UINT4:
@@ -770,6 +776,8 @@ int WriteGridImage(image *ip, image *wp,
 	  chanf = 0.0;
 	if (chanf > 4294967295.0)
 	  chanf = 4294967295.0;
+	if (chanf == fill)
+	  fill_count++;
 	*((byte4 *)this_chanp_out) = (byte4)chanf;
 	break;
       case TYPE_SINT4:
@@ -777,9 +785,13 @@ int WriteGridImage(image *ip, image *wp,
 	  chanf = -2147483648.0;
 	if (chanf > 2147483647.0)
 	  chanf = 2147483647.0;
+	if (chanf == fill)
+	  fill_count++;
 	*((int4 *)this_chanp_out) = (int4)chanf;
 	break;
       case TYPE_FLOAT:
+	if (chanf == fill)
+	  fill_count++;
 	*((float *)this_chanp_out) = chanf;
 	break;
       }
@@ -834,8 +846,12 @@ main (int argc, char *argv[])
   ewa_weight     ewaw;
 
   int   i;
+  int   j;
+  int   n;
   int   chan_scan_last;
   int   scan;
+  float *fptr;
+  float fill;
   
   /*
    *	set defaults
@@ -1030,8 +1046,10 @@ main (int argc, char *argv[])
     for (i = 0; i < chan_count; i++)
       grid_chan_io_image[i].data_type_str = swath_chan_image[i].data_type_str;
   if (!got_grid_fill)
-    for (i = 0; i < chan_count; i++)
+    for (i = 0; i < chan_count; i++) {
       grid_chan_io_image[i].fill = swath_chan_image[i].fill;
+      grid_chan_image[i].fill = swath_chan_image[i].fill;
+    }
   if (!got_weight_sum_min)
     weight_sum_min = weight_min;
 
@@ -1126,6 +1144,11 @@ main (int argc, char *argv[])
     sprintf(name, "grid_chan_image %d", i); 
     InitializeImage(&grid_chan_image[i], name, "", "f4",
 		    grid_cols, grid_rows, 0);
+    n = grid_cols * grid_rows;
+    fptr =&(**((float **)grid_chan_image[i].buf));
+    fill = grid_chan_io_image[i].fill;
+    for (j = 0; j < n; j++)
+      *fptr++ = fill;
   }
 
   InitializeImage(grid_weight_image, "grid_weight_image", "", "f4",
