@@ -4,6 +4,16 @@
 ; National Snow and Ice Data Center
 ; Boulder, Colorado
 ;
+; $Log$
+;----------------------------
+;revision 1.2	locked by: haran;
+;date: 2001/03/08 01:00:16;  author: haran;  state: Exp;  lines: +7 -7
+;changed uppercase procedure names to lowercase
+;----------------------------
+;revision 1.1
+;date: 2001/03/08 00:50:25;  author: haran;  state: Exp;
+;Initial revision
+;
 ; Calling sequence:
 ; IDL > @Make
 ;

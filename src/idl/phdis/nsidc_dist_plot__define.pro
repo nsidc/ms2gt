@@ -5,7 +5,17 @@
 ; Boulder, Colorado
 ;
 ; Plot object definition.   Stubbed-out for future use.
-
+;
+; $Log$
+;----------------------------
+;revision 1.2	locked by: haran;
+;date: 2001/03/15 22:46:53;  author: haran;  state: Exp;  lines: +21 -24
+;Dan fixed a bunch of stuff.
+;----------------------------
+;revision 1.1
+;date: 2001/03/15 22:45:58;  author: haran;  state: Exp;
+;Initial revision
+;
 ; Initialization.
 ;
 FUNCTION NSIDC_DIST_PLOT::INIT, main_obj, file_obj, grid_id, grid_name, field_name, dims, $
