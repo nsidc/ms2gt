@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.10 2001/04/19 20:06:09 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.11 2001/12/05 20:03:53 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -99,9 +99,14 @@ PRO extract_chan, hdf_file, tag, channel, $
       endif else if modis_type eq 'MOD10' then begin
           modis_snow_read, hdf_file, channel, image, $
             latitude=lat, longitude=lon
-      endif else begin
+      endif else if modis_type eq 'MOD29' then begin
           modis_ice_read, hdf_file, channel, image, $
             latitude=lat, longitude=lon
+      endif else if modis_type eq 'MOD35' then begin
+          modis_cloud_read, hdf_file, channel, image, $
+            latitude=lat, longitude=lon
+      endif else begin
+          message, 'Unrecognized modis type: ' + modis_type
       endelse
       lat_dimen = size(lat, /dimensions)
       cols = lat_dimen[0]
@@ -125,18 +130,27 @@ PRO extract_chan, hdf_file, tag, channel, $
             temperature=temperature, area=area, fix_250=fix_250
       endif else if modis_type eq 'MOD10' then begin
           modis_snow_read, hdf_file, channel, image
-      endif else begin
+      endif else if modis_type eq 'MOD29' then begin
           modis_ice_read, hdf_file, channel, image
+      endif else if modis_type eq 'MOD35' then begin
+          modis_cloud_read, hdf_file, channel, image
+      endif else begin
+          message, 'Unrecognized modis type: ' + modis_type
       endelse
   endelse
   image_dimen = size(image, /dimensions)
-  channel_string = string(channel, format='(I2.2)')
-  conv_string = strmid(conversion, 0, 3)
   cols_string = string(image_dimen[0], format='(I5.5)')
   rows_string = string(image_dimen[1], format='(I5.5)')
-  file_out = tag + '_ch' + channel_string + '_' + $
-             conv_string + '_' + $
-             cols_string + '_' + rows_string + '.img'
+  if modis_type ne 'MOD35' then begin
+      channel_string = string(channel, format='(I2.2)')
+      conv_string = strmid(conversion, 0, 3)
+      file_out = tag + '_ch' + channel_string + '_' + $
+        conv_string + '_' + $
+        cols_string + '_' + rows_string + '.img'
+  endif else begin
+      file_out = tag + channel + '_raw_' + $
+        cols_string + '_' + rows_string + '.img'
+  endelse
   openw, lun, file_out, /get_lun
   writeu, lun, image
   free_lun, lun
