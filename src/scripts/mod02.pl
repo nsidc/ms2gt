@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.46 2004/11/05 02:11:54 haran Exp haran $
+# $Id: mod02.pl,v 1.47 2004/11/07 20:53:50 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -732,8 +732,9 @@ for ($line = 0; $line < @list; $line++) {
 	    if ($ancil_mirror_expected == 2) {
 		$ancil_mirror_expected = $this_ancil_mirror;
 	    }
-	    if ($this_ancil_mirror != $ancil_mirror_expected) {
-		diemail("$script: FATAL: expected $ancil_file to start on" .
+	    if ($this_ancil_mirror != $ancil_mirror_expected &&
+		$fix250 != 1 && $fix250 != 2) {
+		diemail("$script: FATAL: expected $ancil_file to start on " .
 			"mirror side $ancil_mirror_expected");
 	    }
 	    if ($i < $ancil_count - 1) {
