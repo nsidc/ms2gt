@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: setup.pl,v 1.1 2001/02/19 23:56:20 haran Exp haran $
+# $Id: setup.pl,v 1.2 2001/04/19 16:30:33 haran Exp haran $
 
 #========================================================================
 # setup.pl - sets up some global variables for mod02.pl, mod10_l2.pl and
@@ -17,6 +17,12 @@
 # (but don't forget the \ in front of the @).
 
 # $user_mail_address="$ENV{USER}\@$ENV{HOST}";
+
+#The default value for the fornav -d weight_distance_max parameter is 1.0.
+#The larger value defined here has been found to do a better job of
+#supressing holes in the resulting grids with a minimum of blurring.
+
+$weight_distance_max = 1.2;
 
 # this makes the routine work properly using require in other programs
 1;

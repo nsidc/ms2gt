@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod02.pl,v 1.29 2001/04/19 16:31:19 haran Exp haran $
+# $Id: mod02.pl,v 1.30 2001/04/19 20:26:58 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -18,6 +18,12 @@ require("$source_ms2gt/mod02_usage.pl");
 require("$source_ms2gt/mod02_case.pl");
 require("$source_ms2gt/setup.pl");
 require("$source_ms2gt/error_mail.pl");
+
+# global variables defined in setup.pl and used only once here.
+# dummy assignment here to supress warning messages.
+
+$junk = $weight_distance_max;
+$junk = $junk;
 
 # define a global used by do_or_die and invoke_or_die
 
@@ -808,6 +814,7 @@ for ($i = 0; $i < $ancil_count; $i++) {
     my $fill_out = $ancil_fills[$i];
     my $F_option = "-F $fill_out";
     do_or_die("fornav 1 -v $t_option $f_option $m_option $F_option " .
+	      "-d $weight_distance_max " .
 	      "$swath_cols $swath_scans $swath_rows_per_scan " .
 	      "$cols_file $rows_file $ancil_file " .
 	      "$grid_cols $grid_rows $grid_file");

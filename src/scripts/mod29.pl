@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Id: mod29.pl,v 1.6 2001/04/19 16:30:59 haran Exp haran $
+# $Id: mod29.pl,v 1.7 2001/04/19 20:29:04 haran Exp haran $
 
 #========================================================================
 # mod29.pl - grids MOD29 data
@@ -15,6 +15,12 @@ $source_ms2gt = "$path_ms2gt_src/scripts";
 
 require("$source_ms2gt/setup.pl");
 require("$source_ms2gt/error_mail.pl");
+
+# global variables defined in setup.pl and used only once here.
+# dummy assignment here to supress warning messages.
+
+$junk = $weight_distance_max;
+$junk = $junk;
 
 my $Usage = "\n
 USAGE: mod29.pl dirinout tag listfile gpdfile
@@ -387,6 +393,7 @@ for ($i = 0; $i < $chan_count; $i++) {
     }
     do_or_die("fornav 1 -v -m $t_option $f_option " .
 	      "-s $swath_scan_first 0 " .
+	      "-d $weight_distance_max " .
 	      "$swath_cols $swath_scans $swath_rows_per_scan " .
 	      "$cols_file $rows_file $chan_file " .
 	      "$grid_cols $grid_rows $grid_file");
