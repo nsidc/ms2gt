@@ -362,8 +362,6 @@ if ($swath_rows_per_scan != $cr_rows_per_scan) {
 my $swath_scans = $cr_scans;
 my $swath_scan_first = $cr_scan_first;
 
-my $chan_file_param;
-my $grid_file_param;
 for ($i = 0; $i < $chan_count; $i++) {
     my $chan_file = $chan_files[$i];
     my $chan = $chans[$i];
