@@ -4,7 +4,7 @@
  * 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.3 2001/01/10 22:35:56 haran Exp haran $";
+static const char ll2xy_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.4 2001/01/11 15:30:31 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -65,6 +65,10 @@ main (int argc, char *argv[])
   float *lon_data;
   float *col_data;
   float *row_data;
+  float *latp;
+  float *lonp;
+  float *rowp;
+  float *colp;
   int bytes_per_row;
   int bytes_per_scan;
   int scansout;
@@ -160,9 +164,9 @@ main (int argc, char *argv[])
 
   scansout = scansin;
   scanfirst = 0;
-  sprintf(colfile, "%s_cols_%05d_%05d_%05d_%d.img",
+  sprintf(colfile, "%s_cols_%05d_%05d_%05d_%02d.img",
 	  tag, colsin, scansout, scanfirst, rowsperscan);
-  sprintf(rowfile, "%s_rows_%05d_%05d_%05d_%d.img",
+  sprintf(rowfile, "%s_rows_%05d_%05d_%05d_%02d.img",
 	  tag, colsin, scansout, scanfirst, rowsperscan);
 
   /*
@@ -232,6 +236,13 @@ main (int argc, char *argv[])
       exit(ABORT);
     }
 
+    /*
+     *  set pointers to the beginning of each buffer
+     */
+    latp = lat_data;
+    lonp = lon_data;
+    colp = col_data;
+    rowp = row_data;
     for (row = 0; row < rowsperscan; row++) {
 
       /*
@@ -242,8 +253,8 @@ main (int argc, char *argv[])
 	/*
 	 *  convert latitude-longitude pair to column-row pair
 	 */
-	status = forward_grid(grid_def, lat_data[col], lon_data[col],
-			      &col_data[col], &row_data[col]);
+	status = forward_grid(grid_def, *latp++, *lonp++,
+			      colp++, rowp++);
 	if (status) {
 	  if (scanfirst < 0)
 	    scanfirst = scan;
@@ -296,9 +307,9 @@ main (int argc, char *argv[])
     char rowfile_new[FILENAME_MAX];
 
     scansout = scanlast - scanfirst + 1;
-    sprintf(colfile_new, "%s_cols_%05d_%05d_%05d_%d.img",
+    sprintf(colfile_new, "%s_cols_%05d_%05d_%05d_%02d.img",
 	    tag, colsin, scansout, scanfirst, rowsperscan);
-    sprintf(rowfile_new, "%s_rows_%05d_%05d_%05d_%d.img",
+    sprintf(rowfile_new, "%s_rows_%05d_%05d_%05d_%02d.img",
 	    tag, colsin, scansout, scanfirst, rowsperscan);
     rename(colfile, colfile_new);
     rename(rowfile, rowfile_new);
