@@ -1,11 +1,20 @@
 #!/usr/local/bin/perl -w
-$|=1;
-$path_navdir_src = $ENV{PATH_NAVDIR_SRC};
-$source_navdir = "$path_navdir_src/scripts";
+# $Id: mod10_l2.pl,v 1.5 2001/02/20 00:42:52 haran Exp $
 
-require("$source_navdir/pfsetup.pl");
-require("$source_navdir/error_mail.pl");
-require("$source_navdir/date.pl");
+#========================================================================
+# mod29.pl - grids MOD29 data
+#
+# 28-Jan-2001 T. Haran tharan@colorado.edu 303-492-1847
+# National Snow & Ice Data Center, University of Colorado, Boulder
+#========================================================================
+
+$|=1;
+
+$path_modis_src = $ENV{PATH_MODIS_SRC};
+$source_modis = "$path_modis_src/scripts";
+
+require("$source_modis/setup.pl");
+require("$source_modis/error_mail.pl");
 
 my $Usage = "\n
 USAGE: mod29.pl dirinout tag listfile gpdfile
@@ -24,20 +33,15 @@ USAGE: mod29.pl dirinout tag listfile gpdfile
               4: Ice Surface Temperature PixelQA - 8-bit unsigned
               5: Sea Ice by IST - 8-bit unsigned
               6: Combined Sea Ice - 8-bit unsigned
-  latlonlistfile: text file containing a list of MOD02 files whose latitude
-            and longitude data should be used in place of the latlon data
-            in the corresponding MOD29 file in listfile. The default is
+  latlonlistfile: text file containing a list of MOD02 or MOD03 files whose
+            latitude and longitude data should be used in place of the latlon
+            data in the corresponding MOD29 file in listfile. The default is
             \"none\" indicating that the latlon data in each MOD29 file
             should be used without substitution.
   keep: 0: delete intermediate chan, lat, lon, col, and row files (default).
         1: do not delete intermediate chan, lat, lon, col, and row files.
   rind: number of pixels to add around intermediate grid to eliminate
         holes in final grid. Default is 50.\n\n";
-
-#The following symbols are defined in pfsetup.pl and were used only once in
-#this module. They appear here to suppress warning messages.
-
-my $junk = $script;
 
 # define a global used by do_or_die and invoke_or_die
 
@@ -149,7 +153,7 @@ foreach $hdf (@list) {
     do_or_die("rm -f $filestem_lon*");
     for ($i = 0; $i < $chan_count; $i++) {
 	my $chan = $chans[$i];
-	my $filestem_chan = $filestem . "_ch$chan\_";
+	my $filestem_chan = $filestem . "_ch$chan\_raw_";
 	do_or_die("rm -f $filestem_chan*");
 	my $get_latlon = "";
 	if ($i == 0) {
@@ -159,19 +163,21 @@ foreach $hdf (@list) {
 		$interp_factor = 5;
 		$offset = 2;
 		$extra_latlon_col = 1;
-		$latlon_rows_per_scan = 2;
 	    } else {
+		$latlon_rows_per_scan = 10;
 		$interp_factor = 1;
 		$hdf_latlon   = $latlonlist[$list_index++];
-		my ($filestem_latlon) = ($hdf_latlon =~ /(.*)\.hdf/);
-		$filestem_lat = $filestem_latlon . "_latf_";
-		$filestem_lon = $filestem_latlon . "_lonf_";
+		chomp $hdf_latlon;
+		my ($latlon_filestem) = ($hdf_latlon =~ /(.*)\.hdf/);
+		$filestem_lat = $latlon_filestem . "_latf_";
+		$filestem_lon = $latlon_filestem . "_lonf_";
 		do_or_die("rm -f $filestem_lat*");
 		do_or_die("rm -f $filestem_lon*");
-		do_or_die("idl_sh.pl extract_latlon \"'$hdf_latlon'\"");
+		do_or_die("idl_sh.pl extract_latlon \"'$hdf_latlon'\" " .
+			  "\"'$latlon_filestem'\"");
 	    }
 	}
-	do_or_die("idl_sh.pl extract_chan \"'$hdf'\" $chan " .
+	do_or_die("idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" $chan " .
 		  "$get_latlon");
 	my @chan_glob = glob("$filestem_chan*");
 	my $chan_file = $chan_glob[0];
@@ -365,9 +371,10 @@ my $swath_scan_first = $cr_scan_first;
 for ($i = 0; $i < $chan_count; $i++) {
     my $chan_file = $chan_files[$i];
     my $chan = $chans[$i];
-    my $grid_file = "$tag\_ch$chan\_grid\_$grid_cols\_$grid_rows.img";
     my $t_option;
     my $f_option;
+    my $tagext = "rawm";
+    my $grid_file = "$tag\_$tagext\_ch$chan\_$grid_cols\_$grid_rows.img";
     if ($chan != 3) {
 	$t_option = "-t u1";
 	$f_option = "-f 255";
@@ -380,11 +387,11 @@ for ($i = 0; $i < $chan_count; $i++) {
 	      "$swath_cols $swath_scans $swath_rows_per_scan " .
 	      "$cols_file $rows_file $chan_file " .
 	      "$grid_cols $grid_rows $grid_file");
+    if (!$keep) {
+	do_or_die("rm -f $chan_file");
+    }
 }
 if (!$keep) {
-    for ($i = 0; $i < $chan_count; $i++) {
-	do_or_die("rm -f $chan_files[$i]");
-    }
     do_or_die("rm -f $cols_file");
     do_or_die("rm -f $rows_file");
 }
