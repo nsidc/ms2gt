@@ -373,6 +373,7 @@ for ($line = 0; $line < @list; $line++) {
     }
     if ($case == 9) {
 	$swath_resolution = "0";
+	$swath_rows_per_scan = 10;
 	$ancil_interp_factor = 1;
 	$ancil_rows_per_scan = 10;
 	$latlon_interp_factor = 1;
