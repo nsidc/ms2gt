@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.13 2003/03/18 16:57:01 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.14 2003/08/01 22:02:46 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -102,8 +102,9 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
              keep solar zenith correction.
           2: apply de-striping fix for MOD02QKM or MYD02QKM data and
              undo solar zenith correction.
-      NOTE: If fix250 is 1 or 2, then conversion must be set to reflectance in
-      chanfile, and param must be set to soze (Solar Zenith) in ancilfile.\n\n";
+          3: apply solar zenith correction only for MOD02QKM or MYD02QKM data.
+      NOTE: If fix250 is not 0, then param must be set to soze (Solar Zenith)
+      and conversion must be set to scaled (decimal degrees) in ancilfile.\n\n";
 
 # this makes the routine work properly using require in other programs
 1;
