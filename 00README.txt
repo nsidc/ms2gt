@@ -69,4 +69,5 @@ modis_level1b_read.pro were made such that valid scans are now determined
 exclusively by the latitude array. However, out of range data values are
 still mapped to the fill value for valid scans. Added checks to make sure
 that fix250 is specified with correct chanfile and ancilfile
-specifications.
+specifications. Fixed error messages in extract_valid_scans.pro and fixed
+modis_ancillary_read.pro so that it works with MOD021KM data.
