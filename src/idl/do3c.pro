@@ -20,6 +20,7 @@ if n_elements(color_table) eq 0 then $
 if n_elements(histeq) eq 0 then $
   histeq = 0
 rgb = bytarr(256, 3)
+ext = strmid(file_out, 3, 4, /reverse_offset)
 if color_table eq -1 then begin
     loadct, 0
     tvlct, rgb, /get
@@ -73,9 +74,16 @@ if n_elements(file_in) eq 1 then begin
         else $
           img_in = bytscl(img_in, min=min_in, max=max_in)
     endif
-    img_in = reverse(img_in, 2)
-    write_tiff, file_out, img_in, 0, $
-      red=rgb[*,0], green=rgb[*,1], blue=rgb[*,2]
+    if ext eq ".tif" then begin
+        img_in = reverse(img_in, 2)
+        write_tiff, file_out, img_in, 0, $
+          red=rgb[*,0], green=rgb[*,1], blue=rgb[*,2]
+    endif else if ext eq ".png" then begin
+        write_png, file_out, img_in, $
+          rgb[*,0], rgb[*,1], rgb[*,2]
+    endif else begin
+        message, "ext must be .tif or .png for 8-bit color images"
+    endelse
 endif else begin
     img_out = bytarr(3, cols_out, rows_out)
     for i = 0, 2 do begin
@@ -110,7 +118,13 @@ endif else begin
           img_in = bytscl(img_in, min=min, max=max)
         img_out[i, *, *] = img_in
     endfor
-    write_tiff, file_out, img_out
+    if ext eq ".tif" then begin
+        write_tiff, file_out, img_out
+    endif else if ext eq ".jpg" then  begin
+        write_jpeg, file_out, img_out, quality=100, true=1, /order
+    endif else begin
+        message, "ext must be .tif or .jpg for 24-bit color images"
+    endelse
 endelse
 
 end
