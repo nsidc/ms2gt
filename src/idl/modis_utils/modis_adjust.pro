@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.20 2002/11/28 00:41:21 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.21 2002/11/28 00:44:31 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -330,7 +330,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds) 
 
-  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.20 2002/11/28 00:41:21 haran Exp haran $'
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.21 2002/11/28 00:44:31 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -696,8 +696,8 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
                                  plot_titles=[xtitle,ytitle]
                   if abs(slope) ge epsilon then $
                     swath[*, ds_det, *] = (vector - intcp) / slope
-                  reg_slope = slope * reg_slope[ds_det]
-                  reg_intcp = slope * reg_intcp[ds_det] + intcp
+                  reg_slope[ds_det] = slope * reg_slope[ds_det]
+                  reg_intcp[ds_det] = slope * reg_intcp[ds_det] + intcp
                   ds_det = ds_det + 1
               endfor ; vec_ctr
               vectors = 0
