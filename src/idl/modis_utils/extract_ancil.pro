@@ -3,7 +3,7 @@
 ;*
 ;* 8-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/extract_ancil.pro,v 1.2 2001/02/19 01:03:14 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_ancil.pro,v 1.3 2002/05/15 16:42:03 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -66,12 +66,12 @@ PRO extract_ancil, hdf_file, tag, ancillary, $
   area = [0L, swath_row_first, 999999L, swath_rows]
   if get_latlon ne 0 then begin
       if swath_rows gt 0 then $
-          modis_ancillary_read, hdf_file, ancillary, image, $
+          modis_ancillary_read, hdf_file, ancillary, image, mirror=mirror, $
                                 conversion=conversion, area=area, $
-                               latitude=lat, longitude=lon, $
-                               lat_dimen = size(lat, /dimensions) $
+                                latitude=lat, longitude=lon, $
+                                lat_dimen = size(lat, /dimensions) $
       else $
-          modis_ancillary_read, hdf_file, ancillary, image, $
+          modis_ancillary_read, hdf_file, ancillary, image, mirror=mirror, $
                                 conversion=conversion, $
                                latitude=lat, longitude=lon, $
                                lat_dimen = size(lat, /dimensions)
@@ -91,18 +91,19 @@ PRO extract_ancil, hdf_file, tag, ancillary, $
       free_lun, lon_lun
   endif else begin
       if swath_rows gt 0 then $
-          modis_ancillary_read, hdf_file, ancillary, image, $
+          modis_ancillary_read, hdf_file, ancillary, image, mirror=mirror, $
                                 conversion=conversion, area=area $
       else $
-          modis_ancillary_read, hdf_file, ancillary, image, $
+          modis_ancillary_read, hdf_file, ancillary, image, mirror=mirror, $
                                 conversion=conversion
   endelse
   image_dimen = size(image, /dimensions)
   conv_string = strmid(conversion, 0, 3)
   cols_string = string(image_dimen[0], format='(I5.5)')
   rows_string = string(image_dimen[1], format='(I5.5)')
+  mirror_string = string(mirror[0], format='(I1)')
   file_out = tag + '_' + ancillary + '_' + $
-             conv_string + '_' + $
+             conv_string + '_' + mirror_string + '_' + $
              cols_string + '_' + rows_string + '.img'
   openw, lun, file_out, /get_lun
   writeu, lun, image
