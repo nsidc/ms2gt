@@ -4,7 +4,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_latlon.pro,v 1.3 2001/01/08 17:38:44 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/extract_latlon.pro,v 1.4 2001/01/10 00:45:26 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -47,7 +47,8 @@ PRO extract_latlon, hdf_file
   cols = lat_dimen[0]
   rows = lat_dimen[1]
   image = 0
-  filestem = strmid(hdf_file, 0, 40)
+  ext_pos = strpos(hdf_file, '.hdf')
+  filestem = strmid(hdf_file, 0, ext_pos)
   cols_string = string(cols, format='(I5.5)')
   rows_string = string(rows, format='(I5.5)')
   lat_file_out = filestem + '_latf_' + $
