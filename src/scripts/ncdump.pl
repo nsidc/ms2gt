@@ -5,7 +5,6 @@ $|=1;
 $path_ms2gt_src = $ENV{PATH_MS2GT_SRC};
 $source_ms2gt = "$path_ms2gt_src/scripts";
 
-require("$source_ms2gt/mod35_l2_usage.pl");
 require("$source_ms2gt/setup.pl");
 require("$source_ms2gt/error_mail.pl");
 
