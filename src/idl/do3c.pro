@@ -1,6 +1,7 @@
 pro do3c, cols_in, rows_in, file_in, file_out, $
           shrink_factor=shrink_factor, min_in=min_in, max_in=max_in, $
-          bytes_per_cell=bytes_per_cell, color_table=color_table
+          bytes_per_cell=bytes_per_cell, color_table=color_table, $
+          histeq=histeq
 
 !order = 1
 if n_params() ne 4 then $
@@ -16,6 +17,8 @@ if n_elements(bytes_per_cell) eq 0 then $
   bytes_per_cell = 2
 if n_elements(color_table) eq 0 then $
   color_table = 0
+if n_elements(histeq) eq 0 then $
+  histeq = 0
 rgb = bytarr(256, 3)
 if color_table eq -1 then begin
     loadct, 0
@@ -47,7 +50,7 @@ if color_table eq -1 then begin
     tvlct, rgb
 endif else begin
     loadct, color_table
-    tvlct, rgb
+    tvlct, rgb, /get
 endelse
 cols_out = cols_in / shrink_factor
 rows_out = rows_in / shrink_factor
@@ -64,7 +67,11 @@ if n_elements(file_in) eq 1 then begin
       min_in = min(img_in)
     if n_elements(max_in) eq 0 then $
       max_in = max(img_in)
-    img_in = reverse(bytscl(img_in, min=min_in, max=max_in), 2)
+    if histeq gt 0 then $
+      img_in = hist_equal(img_in, min=min, max=max) $
+    else $
+      img_in = bytscl(img_in, min=min_in, max=max_in)
+    img_in = reverse(img_in, 2)
     write_gif, file_out, img_in, rgb[*,0], rgb[*,1], rgb[*,2]
 endif else begin
     img_out = bytarr(3, cols_out, rows_out)
@@ -91,7 +98,10 @@ endif else begin
           img_in[j] = max
         print, 'count max:', count
         print, min(img_in), max(img_in), min, max
-        img_in = bytscl(img_in, min=min, max=max)
+        if histeq gt 0 then $
+          img_in = hist_equal(img_in, min=min, max=max) $
+        else $
+          img_in = bytscl(img_in, min=min, max=max)
         img_out[i, *, *] = reverse(img_in, 2)
     endfor
     write_jpeg, file_out, img_out, quality=100, true=1 
