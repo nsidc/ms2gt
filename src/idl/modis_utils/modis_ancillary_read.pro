@@ -4,7 +4,7 @@
 ;*
 ;* 7-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.6 2001/01/30 18:54:43 haran Exp $
+;$Header: /export/data/modis/src/idl/fornav/modis_ancillary_read.pro,v 1.1 2001/02/10 00:21:56 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -58,6 +58,9 @@
 ;                     ancillary parameters that don't include a scale factor,
 ;                     namely Height, Land/SeaMask, and gflags, a scale factor
 ;                     of 1.0 will be used.
+;    AREA           A four element vector specifying the area to be read,
+;                   in the format [X0,Y0,NX,NY]
+;                   (default is to read the entire image).
 ;    LATITUDE       On return, an array containing the latitude data as
 ;                   floating-point degrees.
 ;    LONGITUDE      On return, an array containing the longitude data as
@@ -93,10 +96,10 @@
 ;-
 
 PRO modis_ancillary_read, filename, ancillary, image, $
-                          conversion=conversion, $
+                          conversion=conversion, area=area, $
                           latitude=latitude, longitude=longitude
 
-rcs_id = '$Id: modis_ancillary_read.pro,v 1.2 2000/10/21 01:00:14 haran Exp $'
+rcs_id = '$Id: modis_ancillary_read.pro,v 1.1 2001/02/10 00:21:56 haran Exp haran $'
 
 ;-----------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -114,6 +117,11 @@ if (n_elements(ancillary) eq 0) then $
 
 if (arg_present(image) ne 1) then $
   message, 'Argument IMAGE cannot be modified'
+
+if (n_elements(area) gt 0) then begin
+  if (n_elements(area) ne 4) then $
+    message, 'AREA must be a 4-element vector of the form [X0,Y0,NX,NY]'
+endif
 
 ;- Check options
 if (n_elements(conversion) eq 0) then $
@@ -214,7 +222,7 @@ sd_id = hdf_sd_start(fileinfo.name)
 
 if (ancillary ne 'none') then begin
 
-; Set variable name for ancillary data
+  ; Set variable name for ancillary data
     case ancillary of
         'hght' : sds_name = 'Height'
         'seze' : sds_name = 'SensorZenith'
@@ -226,8 +234,27 @@ if (ancillary ne 'none') then begin
         'gflg' : sds_name = 'gflags'
     endcase
 
+  ;- Get information about the image array
+    varinfo = hdf_sd_varinfo(sd_id, sds_name)
+    if (varinfo.name eq '') then $
+      message, 'Image array was not found: ' + sds_name
+    npixels_across = varinfo.dims[0]
+    npixels_along  = varinfo.dims[1]
+
+  ;- Set start and count values
+    start = [0L, 0L]
+    count = [npixels_across, npixels_along]
+
+  ;- Use AREA keyword if it was supplied
+    if (n_elements(area) eq 4) then begin
+        start[0] = (long(area[0]) > 0L) < (npixels_across - 1L)
+        start[1] = (long(area[1]) > 0L) < (npixels_along  - 1L)
+        count[0] = (long(area[2]) > 1L) < (npixels_across - start[0])
+        count[1] = (long(area[3]) > 1L) < (npixels_along  - start[1])
+    endif
+
 ;- Read ancillary data
-    hdf_sd_varread, sd_id, sds_name, image
+    hdf_sd_varread, sd_id, sds_name, image, start=start, count=count 
 
     if conversion eq 'scaled' then begin
 
