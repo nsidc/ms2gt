@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.10 2002/11/24 21:43:55 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.11 2002/11/24 21:53:26 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -266,7 +266,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   reg_col_detectors_count = n_elements(reg_col_detectors)
 
-  print, 'modis_adjust: $Header$' 
+  print, 'modis_adjust: $Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.11 2002/11/24 21:53:26 haran Exp haran $' 
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
   print, '  file_in:              ', file_in
@@ -431,10 +431,11 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       mean_count = rows_per_ds_scan
       for pass_ctr = 0, pass_count - 1 do begin
           mean_count = mean_count / 2
-          if (mean_count mod 2) eq 1 then $
+          if mean_count eq 5 then $
             mean_count = mean_count - 1
           vectors_per_mean = rows_per_ds_scan / mean_count
           ds_det = 0
+          cells_per_vector = cells_per_ds_det
           for mean_ctr = 0, mean_count - 1 do begin
               weight_per_vector = 1.0 / vectors_per_mean
               mean = 0
@@ -473,6 +474,12 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
               vector = 0
               mean = 0
           endfor ; mean_ctr
+          if row_plot_tag ne '' then begin
+              dir = string(row_plot_tag, '_', pass_ctr, $
+                           format='(a, a, i1.1)')
+              spawn, 'mkdir ' + dir, /sh
+              spawn, 'mv dir*.ps dir', /sh
+          endif
       endfor ; pass_ctr
 
       ; reform the swath array back into its original structure
