@@ -21,7 +21,7 @@ if n_elements(file_in) eq 1 then begin
       min_in = min(img_in)
     if n_elements(max_in) eq 0 then $
       max_in = max(img_in)
-    img_in = bytscl(img_in, min=min_in, max=max_in)
+    img_in = reverse(bytscl(img_in, min=min_in, max=max_in), 2)
     write_jpeg, file_out, img_in, quality=100
 endif else begin
     img_out = bytarr(3, cols_out, rows_out)
