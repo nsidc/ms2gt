@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.6 2002/11/22 23:59:55 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.7 2002/11/24 00:29:00 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -552,7 +552,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       ; remove bogus scan at end if necessary
 
       if (scans mod 2) eq 1 then $
-        swath = temporary(swath[*, *, 0:scans - 2])
+        swath = temporary(swath[*, *, 0:scans - 1])
 
   endif  ; if reg_rows ne 0
 
