@@ -4,17 +4,17 @@
 # 27-Dec-2000 T.Haran 303-492-1847  tharan@kryos.colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /export/data/modis/src/fornav/Makefile,v 1.2 2001/01/17 00:51:03 haran Exp haran $
+RCSID = $Header: /export/data/modis/src/fornav/Makefile,v 1.3 2001/01/28 21:58:42 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
 #
 #	installation directories
 #
-TOPDIR = $(HOME)
+TOPDIR = ../..
 LIBDIR = $(TOPDIR)/lib
 INCDIR = $(TOPDIR)/include
-BINDIR = ../../bin
+BINDIR = $(TOPDIR)/bin
 #
 #	commands
 #
@@ -54,7 +54,7 @@ SYSLIBS = -lm
 #------------------------------------------------------------------------
 
 CFLAGS = -I$(INCDIR) $(CONFIG_CFLAGS)
-LIBS = -L$(LIBDIR) -lmodels $(SYSLIBS)
+LIBS = -L$(LIBDIR) -lmaps $(SYSLIBS)
 
 SRCS = fornav.c
 OBJS = fornav.o
