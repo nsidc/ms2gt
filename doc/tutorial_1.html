@@ -114,7 +114,7 @@ listfile is "listfile.txt" containing a list of the MOD02 files to be processed
 (see <a href="#listfile">Creating the listfile</a>).</li>
 
 <li>
-gpdfile is "Gl1250.txt" containing a specification of the grid and its
+gpdfile is "Gl1250.gpd" containing a specification of the grid and its
 associated map projection to use in gridding the data (see <a href="#gpdfile">Creating
 the *.gpd and *.mpp files</a>).</li>
 
@@ -299,7 +299,7 @@ just as they were in chanfile.
 <h2>
 <a NAME="running"></a>Running the mod02.pl Command File</h2>
 Run the shell script containing the <a href="index.html#mod02_usage">mod02.pl</a>
-command by typing:
+command by changing to the tutorial_1 directory, and then typing:
 <p><b><tt>gl1_2000153_1445.csh</tt></b>
 <p>You'll see lots of messages displayed while the <a href="index.html#mod02_usage">mod02.pl</a>
 script runs various IDL and C programs. In this example, the programs include:
@@ -375,7 +375,7 @@ Enter the command:
 12945600 Apr 19 14:25 gl1_2000153_1445_tema_ch32_01860_01740.img</tt>
 <p>Each file contains a gridded array of 1860 columns and 1740 rows of
 binary floating-point values (1860 * 1740 * 4 = 12945600 bytes).
-<p>The file naming convention for gridded channel files is as follows:
+<p>The file naming convention for gridded MOD02 channel files is as follows:
 <p>&lt;tag>_&lt;conversion>&lt;weight_type>_&lt;chxx>_&lt;columns>_&lt;rows>.img
 <ul>
 <li>
@@ -421,7 +421,8 @@ m - maximum</li>
 <li>
 &lt;rows> is the number of rows in the grid</li>
 </ul>
-The file naming convention for gridded ancillary files is as follows:
+The file naming convention for gridded MOD02 and MOD03 ancillary files
+is as follows:
 <p>&lt;tag>_&lt;conversion>&lt;weight_type>_&lt;ancil>_&lt;columns>_&lt;rows>.img
 <ul>
 <li>
@@ -525,7 +526,7 @@ the following two commands:
 columns and 1740 rows of binary floating-point values. The latitude values
 are stored in gl1_lat_01860_01740.img and the longitude values in gl1_lon_01860_01740.img.
 <br>
-<hr><font size=-1>Last updated: April 23, 2001 by</font>
+<hr><font size=-1>Last updated: April 27, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>

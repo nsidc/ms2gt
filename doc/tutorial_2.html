@@ -106,7 +106,7 @@ listfile is "listfile.txt" containing a list of the MOD02 files to be processed
 (see <a href="#listfile">Creating the listfile</a>).</li>
 
 <li>
-gpdfile is "Gl0250.txt" containing a specification of the grid and its
+gpdfile is "Gl0250.gpd" containing a specification of the grid and its
 associated map projection to use in gridding the data (see <a href="#gpdfile">Creating
 the *.gpd and *.mpp files</a>).</li>
 
@@ -164,10 +164,9 @@ will be 5 * 1860 = 9300 columns and 5 * 1740 = 8700 rows. The grid cells
 per map unit will be 5 * 160 = 800. The map origin column will be 5 * (1949.5
 + 0.5) - 0.5 = 9749.5 and the map origin row will be 5 * (-250.5 + 0.5)
 - 0.5 = -1250.5. We now have all the information we need to create Gl0250.gpd
-in the
-<br>ms2gt/grids directory (if you don't want to type the file in, then
+in the ms2gt/grids directory (if you don't want to type the file in, then
 just copy Gl0250.gpd from the ms2gt/tutorial_2 directory to the ms2gt/grids
-<br>directory):
+directory):
 <p><tt>N200correct.mpp map projection parameters&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # EASE-Grid</tt>
 <br><tt>9300 8700&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; columns rows&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -233,7 +232,7 @@ specify weight type or fill, they are set to their default values, namely
 <h2>
 <a NAME="running"></a>Running the mod02.pl Command File</h2>
 Run the shell script containing the <a href="index.html#mod02_usage">mod02.pl</a>
-command by typing:
+command by changing to the tutorial_2 directory, and then typing:
 <p><b><tt>gl250_2000153_1445.csh</tt></b>
 <p>You'll see lots of messages displayed while the <a href="index.html#mod02_usage">mod02.pl</a>
 script runs various IDL and C programs. In this example, the programs include:
@@ -251,7 +250,7 @@ file and a single longitude file, and the pre-concatenated files are deleted.</l
 <li>
 ll2cr - a C program for converting latitude, longitude pairs to column,
 row pairs for a particular grid. The grid specified in this example is
-Gl1250.gpd. The concatenated latitude and longitude files are read and
+Gl0250.gpd. The concatenated latitude and longitude files are read and
 two binary floating-point files are created containing column and row numbers,
 respectively. The <a href="index.html#mod02_usage">mod02.pl</a> script
 then deletes the concatenated latitude and longitude files.</li>
@@ -298,9 +297,9 @@ The final message should contain the string:
 Enter the command:
 <p><b><tt>ls -l *.img</tt></b>
 <p>You should see something like this:
-<p><tt>-rw-r--r--&nbsp;&nbsp;&nbsp; 1 avhrr&nbsp;&nbsp;&nbsp; avhrr&nbsp;&nbsp;&nbsp;&nbsp;
+<p><tt>-rw-r--r--&nbsp;&nbsp;&nbsp; 1 haran&nbsp;&nbsp;&nbsp; nsidc&nbsp;&nbsp;&nbsp;&nbsp;
 323640000 Apr 23 13:26 gl250_2000153_1445_refa_ch01_09300_08700.img</tt>
-<br><tt>-rw-r--r--&nbsp;&nbsp;&nbsp; 1 avhrr&nbsp;&nbsp;&nbsp; avhrr&nbsp;&nbsp;&nbsp;&nbsp;
+<br><tt>-rw-r--r--&nbsp;&nbsp;&nbsp; 1 haran&nbsp;&nbsp;&nbsp; nsidc&nbsp;&nbsp;&nbsp;&nbsp;
 323640000 Apr 23 13:29 gl250_2000153_1445_refa_ch02_09300_08700.img</tt>
 <p>Each file contains a gridded array of 9300 columns and 8700 rows of
 binary floating-point values (9300 * 8700 * 4 = 323640000 bytes).
@@ -308,7 +307,7 @@ binary floating-point values (9300 * 8700 * 4 = 323640000 bytes).
 <a href="tutorial_1.html#examining">Tutorial
 1</a>.
 <p>
-<hr><font size=-1>Last updated: April 23, 2001 by</font>
+<hr><font size=-1>Last updated: April 27, 2001 by</font>
 <br><font size=-1>Terry Haran</font>
 <br><font size=-1>NSIDC-CIRES</font>
 <br><font size=-1>449 UCB</font>
