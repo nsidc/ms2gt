@@ -120,16 +120,16 @@ if ($chanfile ne "none") {
     while (<CHANFILE>) {
 	my ($chan, $conversion, $weight_type, $fill) =
 	    /(\d+)\s*(\S*)\s*(\S*)\s*(\S*)/;
-	if (!defined($chan)) {
+	if (!defined($chan) || $chan eq "") {
 	    $chan = 0;
 	}
-	if (!defined($conversion)) {
+	if (!defined($conversion) || $conversion eq "") {
 	    $conversion = "raw";
 	}
-	if (!defined($weight_type)) {
+	if (!defined($weight_type) || $weight_type eq "") {
 	    $weight_type = "avg";
 	}
-	if (!defined($fill)) {
+	if (!defined($fill) || $fill eq "") {
 	    $fill = 0;
 	}
 	push(@chans, $chan);
@@ -175,14 +175,14 @@ if ($ancilfile ne "none") {
 	if (!defined($ancil)) {
 	    $ancil = "";
 	}
-	if (!defined($conversion)) {
+	if (!defined($conversion) || $conversion eq "") {
 	    $conversion = "raw";
 	}
-	if (!defined($weight_type)) {
+	if (!defined($weight_type) || $weight_type eq "") {
 	    $weight_type = ($ancil eq "lmsk" ||
 			    $ancil eq "gflg") ? "max" : "avg";
 	}
-	if (!defined($fill)) {
+	if (!defined($fill) || $fill eq "") {
 	    $fill = 0;
 	}
 	my $data_type = "f4";
@@ -249,11 +249,11 @@ for ($i = 0; $i < $ancil_count; $i++) {
 my $swath_resolution;
 my $swath_rows_per_scan;
 my $this_swath_cols;
-my $this_swath_rows;
+my $this_swath_rows = 0;
 
 my $ancil_rows_per_scan;
 my $this_ancil_cols;
-my $this_ancil_rows;
+my $this_ancil_rows = 0;
 my $ancil_interp_factor;
 my $ancil_offset = 0;
 my $ancil_col_extra = 0;
@@ -267,6 +267,9 @@ my $case;
 my $line;
 my $hdf;
 my $hdf_prefix;
+my @filestems;
+my @ancil_filestems;
+my $old_case = -1;
 for ($line = 0; $line < @list; $line++) {
     $hdf = $list[$line];
     chomp $hdf;
@@ -275,6 +278,10 @@ for ($line = 0; $line < @list; $line++) {
     my $old_ancil_src = $ancil_src;
     ($ancil_src, $latlon_src, $filestem, $hdf_prefix, $case) =
 	mod02_case($old_ancil_src, $old_latlon_src, $filestem);
+    if ($line > 0 && $case != $old_case) {
+	diemail("$script: FATAL: inconsistent case values");
+    }
+    $old_case = $case;
     if ($line == 0 && $old_latlon_src ne $latlon_src) {
 	warnmail("$script: WARNING: " .
 		 "forcing latlon_src from $old_latlon_src to $latlon_src");
@@ -283,6 +290,7 @@ for ($line = 0; $line < @list; $line++) {
 	warnmail("$script: WARNING: " .
 		 "forcing ancil_src from $old_ancil_src to $ancil_src");
     }
+    push(@filestems, $filestem);
     my ($latlon_filestem) = $filestem;
     my ($ancil_filestem) = $filestem;
     if ($case == 1) {
@@ -305,14 +313,14 @@ for ($line = 0; $line < @list; $line++) {
 	$ancil_col_extra = 1;
 	$ancil_rows_per_scan = 2;
 	$latlon_interp_factor = 1;
-	$latlon_filestem = s/MOD021KM/MOD02HKM/;
+	$latlon_filestem =~ s/MOD021KM/MOD02HKM/;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 3) {
 	$swath_resolution = "H";
 	$swath_rows_per_scan = 20;
 	$ancil_interp_factor = 10;
-	$ancil_filestem = s/MOD02HKM/MOD021KM/;
+	$ancil_filestem =~ s/MOD02HKM/MOD021KM/;
 	$ancil_offset = 4;
 	$ancil_col_extra = 1;
 	$ancil_rows_per_scan = 2;
@@ -327,7 +335,7 @@ for ($line = 0; $line < @list; $line++) {
 	$ancil_col_extra = 1;
 	$ancil_rows_per_scan = 2;
 	$latlon_interp_factor = 1;
-	$latlon_filestem = s/MOD021KM/MOD02QKM/; 
+	$latlon_filestem =~ s/MOD021KM/MOD02QKM/; 
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 5) {
@@ -336,7 +344,7 @@ for ($line = 0; $line < @list; $line++) {
 	$ancil_interp_factor = 20;
 	$ancil_offset = 8;
 	$ancil_col_extra = 1;
-	$ancil_filestem = s/MOD02QKM/MOD021KM/;
+	$ancil_filestem =~ s/MOD02QKM/MOD021KM/;
 	$ancil_rows_per_scan = 2;
 	$latlon_interp_factor = 1;
 	$latlon_rows_per_scan = 10;
@@ -345,30 +353,30 @@ for ($line = 0; $line < @list; $line++) {
 	$swath_resolution = "1";
 	$swath_rows_per_scan = 10;
 	$ancil_interp_factor = 1;
-	$ancil_filestem = s/MOD021KM/MOD03/;
+	$ancil_filestem =~ s/MOD021KM/MOD03/;
 	$ancil_rows_per_scan = 10;
 	$latlon_interp_factor = 1;
-	$latlon_filestem = s/MOD021KM/MOD03/;
+	$latlon_filestem =~ s/MOD021KM/MOD03/;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 7) {
 	$swath_resolution = "H";
 	$swath_rows_per_scan = 20;
 	$ancil_interp_factor = 2;
-	$ancil_filestem = s/MOD02HKM/MOD03/;
+	$ancil_filestem =~ s/MOD02HKM/MOD03/;
 	$ancil_rows_per_scan = 10;
 	$latlon_interp_factor = 2;
-	$latlon_filestem = s/MOD02HKM/MOD03/;
+	$latlon_filestem =~ s/MOD02HKM/MOD03/;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 8) {
 	$swath_resolution = "Q";
 	$swath_rows_per_scan = 40;
 	$ancil_interp_factor = 4;
-	$ancil_filestem = s/MOD02QKM/MOD03/;
+	$ancil_filestem =~ s/MOD02QKM/MOD03/;
 	$ancil_rows_per_scan = 10;
 	$latlon_interp_factor = 4;
-	$latlon_filestem = s/MOD02QKM/MOD03/;
+	$latlon_filestem =~ s/MOD02QKM/MOD03/;
 	$latlon_rows_per_scan = 10;
     }
     if ($case == 9) {
@@ -378,188 +386,54 @@ for ($line = 0; $line < @list; $line++) {
 	$ancil_rows_per_scan = 10;
 	$latlon_interp_factor = 1;
 	$latlon_rows_per_scan = 10;
+	if ($chan_count != 0) {
+	    diemail("$script: FATAL:\n" .
+		    "listfile $listfile must contain MOD02 files since " .
+		    "chanfile is not none");
+	}
     }
 
+    push(@ancil_filestems, $ancil_filestem);
     my $filestem_lat = $latlon_filestem . "_latf_";
     my $filestem_lon = $latlon_filestem . "_lonf_";
     do_or_die("rm -f $filestem_lat*");
     do_or_die("rm -f $filestem_lon*");
     
-    my $got_latlon = 0;
-    my $get_latlon = "";
-    for ($i = 0; $i < $chan_count; $i++) {
-	my $chan = $chans[$i];
-	my $conversion = $chan_conversions[$i];
-	my $conv = substr($conversion, 0, 3);
-	my $filestem_chan_conv = "$filestem\_ch$chan\_$conv\_";
-	do_or_die("rm -f $filestem_chan_conv*");
-	if ($i == 0) {
-	    if ($case == 9) {
-		diemail("$script: FATAL:\n" .
-			"listfile $listfile must contain MOD02 files since " .
-			"chanfile is not none");
-	    }
-	    if (($case < 6 && $filestem ne $latlon_filestem) ||
-		($case >= 6 && $ancil_count == 0)) {
-		my @latlon_glob = glob("$latlon_filestem*.hdf");
-		if (@latlon_glob == 0) {
-		    diemail("$script: FATAL: " .
-			    "$latlon_filestem*.hdf not found");
-		}
-		my $hdf_latlon = $latlon_glob[0];
-		do_or_die("idl_sh.pl extract_latlon \"'$hdf_latlon'\" " .
-			  "\"'$latlon_filestem'\"");
-		$got_latlon = 1;
-	    } elsif ($filestem eq $latlon_filestem) {
-		$get_latlon = "/get_latlon";
-	    }
-	}
-	do_or_die("idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" $chan " .
-		  "$get_latlon conversion=\"'$conversion'\"");
-	if ($get_latlon) {
-	    $got_latlon = 1;
-	    $get_latlon = "";
-	}
-	my @chan_glob = glob("$filestem_chan_conv*");
-	if (@chan_glob == 0) {
-	    diemail("$script: FATAL: $filestem_chan_conv* not found");
-	}
-	my $chan_file = $chan_glob[0];
-	($this_swath_cols, $this_swath_rows) =
-	    ($chan_file =~ /$filestem_chan_conv(.....)_(.....)/);
-	print "$chan_file contains $this_swath_cols cols and " .
-	    "$this_swath_rows rows\n";
-	if ($swath_cols == 0) {
-	    $swath_cols = $this_swath_cols;
-	}
-	if ($this_swath_cols != $swath_cols) {
-	    diemail("$script: FATAL: " .
-		    "inconsistent number of columns in $chan_file");
-	}
-	$chan_cat[$i] .= "$chan_file ";
-	if ($i == 0) {
-	    $swath_rows += $this_swath_rows;
-	}
+    my @latlon_glob = glob("$latlon_filestem*.hdf");
+    if (@latlon_glob == 0) {
+	diemail("$script: FATAL: $latlon_filestem*.hdf not found");
     }
-
-    for ($i = 0; $i < $ancil_count; $i++) {
-	my $ancil = $ancils[$i];
-	my $conversion = $ancil_conversions[$i];
-	my $conv = substr($conversion, 0, 3);
-	my $filestem_ancil_conv = "$filestem\_$ancil\_$conv\_";
-	do_or_die("rm -f $filestem_ancil_conv*");
-	$get_latlon = "";
-	if ($i == 0) {
-	    if (!$got_latlon) {
-		if ($ancil_filestem ne $latlon_filestem) {
-		    my @latlon_glob = glob("$latlon_filestem*.hdf");
-		    if (@latlon_glob == 0) {
-			diemail("$script: FATAL: " .
-				"$latlon_filestem*.hdf not found");
-		    }
-		    my $hdf_latlon = $latlon_glob[0];
-		    do_or_die("idl_sh.pl extract_latlon \"'$hdf_latlon'\" " .
-			      "\"'$latlon_filestem'\"");
-		} else {
-		    $get_latlon = "/get_latlon";
-		}
-	    }
-	}
-	my @ancil_glob = glob("$ancil_filestem*.hdf");
-	if (@ancil_glob == 0) {
-	    diemail("$script: FATAL: $ancil_filestem*.hdf not found");
-	}
-	my $hdf_ancil = $ancil_glob[0];
-	do_or_die("idl_sh.pl extract_ancil \"'$hdf_ancil'\" " .
-		  "\"'$ancil_filestem'\" \"'$ancil'\" " .
-		  "$get_latlon conversion=\"'$conversion'\"");
-	@ancil_glob = glob("$filestem_ancil_conv*");
-	if (@ancil_glob == 0) {
-	    diemail("$script: FATAL: $filestem_ancil_conv* not found");
-	}
-	my $ancil_file = $ancil_glob[0];
-	($this_ancil_cols, $this_ancil_rows) =
-	    ($ancil_file =~ /$filestem_ancil_conv(.....)_(.....)/);
-	print "$ancil_file contains $this_ancil_cols cols and " .
-	    "$this_ancil_rows rows\n";
-	if ($chan_count == 0 && $i == 0) {
-	    if ($line == 0) {
-		$this_swath_cols = $ancil_interp_factor * $this_ancil_cols -
-		    $ancil_col_extra;
-		$swath_cols = $this_swath_cols;
-	    }
-	    $this_swath_rows = $ancil_interp_factor * $this_ancil_rows;
-	    $swath_rows += $this_swath_rows;
-	}
-	if ($ancil_interp_factor * $this_ancil_cols -
-            $ancil_col_extra != $this_swath_cols ||
-	    $ancil_interp_factor * $this_ancil_rows != $this_swath_rows) {
-	    diemail("$script: FATAL: " .
-		    "inconsistent number of columns in $ancil_file");
-	}
-	$ancil_cat[$i] .= "$ancil_file ";
-	if ($i == 0) {
-	    $ancil_cols = $this_ancil_cols;
-	    $ancil_rows += $this_ancil_rows;
-	}
-    }
+    my $hdf_latlon = $latlon_glob[0];
+    do_or_die("idl_sh.pl extract_latlon \"'$hdf_latlon'\" " .
+	      "\"'$latlon_filestem'\"");
 
     my @lat_glob = glob("$filestem_lat*");
+    if (@lat_glob == 0) {
+	diemail("$script: FATAL: $filestem_lat* not found");
+    }
     my $lat_file = $lat_glob[0];
     my ($this_lat_cols, $this_lat_rows) =
 	($lat_file =~ /$filestem_lat(.....)_(.....)/);
     print "$lat_file contains $this_lat_cols cols and " .
 	  "$this_lat_rows rows\n";
-    if ($latlon_interp_factor * $this_lat_cols -
-	$latlon_col_extra != $this_swath_cols ||
-	$latlon_interp_factor * $this_lat_rows != $this_swath_rows) {
-	diemail("$script: FATAL: " .
-		"inconsistent size for $lat_file");
-    }
     $lat_cat .= "$lat_file ";
     $latlon_cols = $this_lat_cols;
     $latlon_rows += $this_lat_rows;
 
     my @lon_glob = glob("$filestem_lon*");
+    if (@lat_glob == 0) {
+	diemail("$script: FATAL: $filestem_lon* not found");
+    }
     my $lon_file = $lon_glob[0];
     my ($this_lon_cols, $this_lon_rows) =
 	($lon_file =~ /$filestem_lon(.....)_(.....)/);
     print "$lon_file contains $this_lon_cols cols and " .
 	  "$this_lon_rows rows\n";
-    if ($latlon_interp_factor * $this_lon_cols -
-	$latlon_col_extra != $this_swath_cols ||
-	$latlon_interp_factor * $this_lon_rows != $this_swath_rows) {
-	diemail("$script: FATAL: " .
-		"inconsistent size for $lon_file");
-    }
     $lon_cat .= "$lon_file ";
 }
-$swath_rows = sprintf("%05d", $swath_rows);
-$ancil_rows = sprintf("%05d", $ancil_rows);
+
 $latlon_cols = sprintf("%05d", $latlon_cols);
 $latlon_rows = sprintf("%05d", $latlon_rows);
-
-my @chan_files;
-for ($i = 0; $i < $chan_count; $i++) {
-    my $chan = $chans[$i];
-    my $chan_rm = $chan_cat[$i];
-    my $tagext = substr($chan_conversions[$i], 0, 3);
-    $chan_rm =~ s/cat/rm -f/;
-    $chan_files[$i] = "$tag\_$tagext\_ch$chan\_$swath_cols\_$swath_rows.img";
-    do_or_die("$chan_cat[$i] >$chan_files[$i]");
-    do_or_die("$chan_rm");
-}
-
-my @ancil_files;
-for ($i = 0; $i < $ancil_count; $i++) {
-    my $ancil = $ancils[$i];
-    my $ancil_rm = $ancil_cat[$i];
-    my $tagext = substr($ancil_conversions[$i], 0, 3);
-    $ancil_rm =~ s/cat/rm -f/;
-    $ancil_files[$i] = "$tag\_$tagext\_$ancil\_$ancil_cols\_$ancil_rows.img";
-    do_or_die("$ancil_cat[$i] >$ancil_files[$i]");
-    do_or_die("$ancil_rm");
-}
 
 my $lat_rm = $lat_cat;
 my $lon_rm = $lon_cat;
@@ -627,6 +501,7 @@ my ($grid_cols, $grid_rows) = ($line =~ /(\S+)\s+(\S+)/);
 $grid_cols = sprintf("%05d", $grid_cols);
 $grid_rows = sprintf("%05d", $grid_rows);
 
+$swath_cols = $cr_cols * $latlon_interp_factor - $latlon_col_extra;
 if ($latlon_interp_factor > 1) {
     my $col_min = -$rind;
     my $col_max = $grid_cols + $rind - 1;
@@ -677,28 +552,132 @@ if ($latlon_interp_factor > 1) {
 
 if ($cr_scans == 0) {
     if (!$keep) {
-	for ($i = 0; $i < $chan_count; $i++) {
-	    do_or_die("rm -f $chan_files[$i]");
-	}
 	do_or_die("rm -f $cols_file");
 	do_or_die("rm -f $rows_file");
     }
     diemail("$script: FATAL: $tag: grid contains no data");
 }
 
-if ($swath_cols != $cr_cols) {
-    diemail("$script: FATAL: " .
-	    "swath_cols: $swath_cols is not equal to cr_cols: $cr_cols");
-}
-if ($swath_rows_per_scan != $cr_rows_per_scan) {
-    diemail("$script: FATAL: " .
-	    "swath_rows_per_scan: $swath_rows_per_scan is not equal to cr_rows_per_scan: $cr_rows_per_scan");
-}
-
 my $swath_scans = $cr_scans;
 my $swath_scan_first = $cr_scan_first;
 
+my $this_swath_rows_max = $swath_scans * $swath_rows_per_scan;
+my $this_swath_row_first = $swath_scan_first * $swath_rows_per_scan;
+my $this_ancil_rows_max = $swath_scans * $ancil_rows_per_scan;
+my $this_ancil_row_first = $swath_scan_first * $ancil_rows_per_scan;
+for ($line = 0; $line < @list; $line++) {
+    $hdf = $list[$line];
+    chomp $hdf;
+    my $filestem = $filestems[$line];
+    for ($i = 0; $i < $chan_count; $i++) {
+	my $chan = $chans[$i];
+	my $conversion = $chan_conversions[$i];
+	my $conv = substr($conversion, 0, 3);
+	my $filestem_chan_conv = "$filestem\_ch$chan\_$conv\_";
+	do_or_die("rm -f $filestem_chan_conv*");
+	do_or_die("idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" $chan " .
+		  "conversion=\"'$conversion'\" " .
+		  "swath_rows=$this_swath_rows_max " .
+		  "swath_row_first=$this_swath_row_first");
+	my @chan_glob = glob("$filestem_chan_conv*");
+	if (@chan_glob == 0) {
+	    diemail("$script: FATAL: $filestem_chan_conv* not found");
+	}
+	my $chan_file = $chan_glob[0];
+	($this_swath_cols, $this_swath_rows) =
+	    ($chan_file =~ /$filestem_chan_conv(.....)_(.....)/);
+	print "$chan_file contains $this_swath_cols cols and " .
+	    "$this_swath_rows rows\n";
+	if ($this_swath_cols != $swath_cols) {
+	    diemail("$script: FATAL: " .
+		    "inconsistent number of columns in $chan_file");
+	}
+	$chan_cat[$i] .= "$chan_file ";
+	if ($i == 0) {
+	    $swath_rows += $this_swath_rows;
+	}
+    }
+    $this_swath_row_first = 0;
+    $this_swath_rows_max -= $this_swath_rows;
+
+    my $ancil_filestem = $ancil_filestems[$line];
+    for ($i = 0; $i < $ancil_count; $i++) {
+	my $ancil = $ancils[$i];
+	my $conversion = $ancil_conversions[$i];
+	my $conv = substr($conversion, 0, 3);
+	my $filestem_ancil_conv = "$ancil_filestem\_$ancil\_$conv\_";
+	do_or_die("rm -f $filestem_ancil_conv*");
+	my @ancil_glob = glob("$ancil_filestem*.hdf");
+	if (@ancil_glob == 0) {
+	    diemail("$script: FATAL: $ancil_filestem*.hdf not found");
+	}
+	my $hdf_ancil = $ancil_glob[0];
+	do_or_die("idl_sh.pl extract_ancil \"'$hdf_ancil'\" " .
+		  "\"'$ancil_filestem'\" \"'$ancil'\" " .
+		  "conversion=\"'$conversion'\" " .
+		  "swath_rows=$this_ancil_rows_max " .
+		  "swath_row_first=$this_ancil_row_first");
+	@ancil_glob = glob("$filestem_ancil_conv*");
+	if (@ancil_glob == 0) {
+	    diemail("$script: FATAL: $filestem_ancil_conv* not found");
+	}
+	my $ancil_file = $ancil_glob[0];
+	($this_ancil_cols, $this_ancil_rows) =
+	    ($ancil_file =~ /$filestem_ancil_conv(.....)_(.....)/);
+	print "$ancil_file contains $this_ancil_cols cols and " .
+	    "$this_ancil_rows rows\n";
+	if ($chan_count == 0 && $i == 0) {
+	    if ($line == 0) {
+		$this_swath_cols = $ancil_interp_factor * $this_ancil_cols -
+		    $ancil_col_extra;
+		$swath_cols = $this_swath_cols;
+	    }
+	    $this_swath_rows = $ancil_interp_factor * $this_ancil_rows;
+	    $swath_rows += $this_swath_rows;
+	}
+	if ($ancil_interp_factor * $this_ancil_cols -
+            $ancil_col_extra != $this_swath_cols ||
+	    $ancil_interp_factor * $this_ancil_rows != $this_swath_rows) {
+	    diemail("$script: FATAL: " .
+		    "inconsistent number of columns in $ancil_file");
+	}
+	$ancil_cat[$i] .= "$ancil_file ";
+	if ($i == 0) {
+	    $ancil_cols = $this_ancil_cols;
+	    $ancil_rows += $this_ancil_rows;
+	}
+    }
+    $this_ancil_row_first = 0;
+    $this_ancil_rows_max -= $this_ancil_rows;
+
+}
+$swath_rows = sprintf("%05d", $swath_rows);
+$ancil_rows = sprintf("%05d", $ancil_rows);
+
+my @chan_files;
+for ($i = 0; $i < $chan_count; $i++) {
+    my $chan = $chans[$i];
+    my $chan_rm = $chan_cat[$i];
+    my $tagext = substr($chan_conversions[$i], 0, 3);
+    $chan_rm =~ s/cat/rm -f/;
+    $chan_files[$i] = "$tag\_$tagext\_ch$chan\_$swath_cols\_$swath_rows.img";
+    do_or_die("$chan_cat[$i] >$chan_files[$i]");
+    do_or_die("$chan_rm");
+}
+
+my @ancil_files;
+for ($i = 0; $i < $ancil_count; $i++) {
+    my $ancil = $ancils[$i];
+    my $ancil_rm = $ancil_cat[$i];
+    my $tagext = substr($ancil_conversions[$i], 0, 3);
+    $ancil_rm =~ s/cat/rm -f/;
+    $ancil_files[$i] = "$tag\_$tagext\_$ancil\_$ancil_cols\_$ancil_rows.img";
+    do_or_die("$ancil_cat[$i] >$ancil_files[$i]");
+    do_or_die("$ancil_rm");
+}
+
 if ($ancil_interp_factor > 1) {
+    my $ancil_scans = $ancil_rows / $ancil_rows_per_scan;
     for ($i = 0; $i < $ancil_count; $i++) {
 	my $ancil_file = $ancil_files[$i];
 	my $ancil = $ancils[$i];
@@ -708,11 +687,10 @@ if ($ancil_interp_factor > 1) {
 	my $filestem_ancil_conv = "$tag\_$ancil\_$conv";
 	system("rm -f $filestem_ancil_conv*");
 	do_or_die("idl_sh.pl interp_swath " .
-		  "$ancil_interp_factor $ancil_cols $swath_scans " .
+		  "$ancil_interp_factor $ancil_cols $ancil_scans " .
 		  "$ancil_rows_per_scan \"'$ancil_file'\" " .
 		  "$swath_cols \"'$filestem_ancil_conv'\" " .
 		  "data_type=\"'$data_type'\" " .
-		  "scanfirst=$swath_scan_first " .
 		  "col_offset=$ancil_offset row_offset=$ancil_offset");
 
 	my @ancil_glob = glob("$filestem_ancil_conv*");
@@ -731,7 +709,7 @@ if ($ancil_interp_factor > 1) {
 
 	if ($this_ancil_cols != $swath_cols ||
 	    $this_ancil_scans != $swath_scans ||
-	    $this_ancil_scan_first != $swath_scan_first ||
+	    $this_ancil_scan_first != 0 ||
 	    $this_ancil_rows_per_scan != $swath_rows_per_scan) {
 	    diemail("$script: FATAL: " .
 		    "inconsistent size for $ancil_file");
@@ -764,7 +742,6 @@ for ($i = 0; $i < $chan_count; $i++) {
     my $fill = $chan_fills[$i];
     my $F_option = "-F $fill";
     do_or_die("fornav 1 -v $t_option $f_option $m_option $F_option " .
-	      "-s $swath_scan_first 0 " .
 	      "$swath_cols $swath_scans $swath_rows_per_scan " .
 	      "$cols_file $rows_file $chan_file " .
 	      "$grid_cols $grid_rows $grid_file");
