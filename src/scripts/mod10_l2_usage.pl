@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 
-# $Id: mod10_l2.pl,v 1.14 2001/04/27 22:54:51 haran Exp haran $
+# $Id: mod10_l2_usage.pl,v 1.1 2001/05/14 14:33:03 haran Exp haran $
 
 #========================================================================
-# mod10_l2.pl - grids MOD10_L2 data
+# mod10_l2_usage.pl - defines mod10_l2.pl usage message
 #
 # 14-May-2001 T. Haran tharan@colorado.edu 303-492-1847
 # National Snow & Ice Data Center, University of Colorado, Boulder
