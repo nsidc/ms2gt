@@ -3,7 +3,7 @@
 ;*
 ;* 23-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/fornav.pro,v 1.1 2000/10/24 22:53:52 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/fornav.pro,v 1.2 2000/10/25 22:38:14 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -246,7 +246,8 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
 
       ;  read in a scan's worth of data
 
-      print, scan
+      if scan mod 10 eq 0 then $
+        print, scan
       readu, swath_col_lun, swath_col
       readu, swath_row_lun, swath_row
       swath_chan_1 = intarr(swath_cols, swath_rows_per_scan)
