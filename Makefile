@@ -4,7 +4,7 @@
 # 12-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/haran/ms2gth/Makefile,v 1.21 2004/08/25 23:17:32 haran Exp haran $
+RCSID = $Header: /data/haran/ms2gth/Makefile,v 1.22 2004/09/02 17:33:01 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -13,7 +13,7 @@ RCSID = $Header: /data/haran/ms2gth/Makefile,v 1.21 2004/08/25 23:17:32 haran Ex
 #       define current version and release
 #
 VERSION = 0
-RELEASE = 9
+RELEASE = 10
 
 #
 #	installation directories
@@ -37,6 +37,7 @@ LL2DIR = $(SRCDIR)/ll2cr
 LE2DIR = $(SRCDIR)/lle2cre
 MAPDIR = $(SRCDIR)/mapx
 SCTDIR = $(SRCDIR)/scripts
+UTSDIR = $(SRCDIR)/utils
 
 L1BDIR = $(IDLDIR)/level1b_read
 UTLDIR = $(IDLDIR)/modis_utils
@@ -63,6 +64,7 @@ TLL2DIR = $(TSRCDIR)/ll2cr
 TLE2DIR = $(TSRCDIR)/lle2cre
 TMAPDIR = $(TSRCDIR)/mapx
 TSCTDIR = $(TSRCDIR)/scripts
+TUTSDIR = $(TSRCDIR)/utils
 
 TL1BDIR = $(TIDLDIR)/level1b_read
 TUTLDIR = $(TIDLDIR)/modis_utils
@@ -113,6 +115,7 @@ GSZMAKE = $(GSZDIR)/Makefile
 LL2MAKE = $(LL2DIR)/Makefile
 LE2MAKE = $(LE2DIR)/Makefile
 MAPMAKE = $(MAPDIR)/Makefile
+UTSMAKE = $(UTSDIR)/Makefile
 
 GPDSRCS = $(GRDDIR)/*.gpd
 MPPSRCS = $(GRDDIR)/*.mpp
@@ -127,13 +130,14 @@ LL2SRCS = $(LL2MAKE) $(LL2DIR)/*.c
 LE2SRCS = $(LE2MAKE) $(LE2DIR)/*.c
 MAPSRCS = $(MAPMAKE) $(MAPDIR)/*.c $(MAPDIR)/*.h $(MAPDIR)/*.mpp
 SCTSRCS = $(SCTDIR)/*.pl
+UTSSRCS = $(UTSDIR)/*.c
 
 TOPS = $(TOPDIR)/*.txt $(TOPDIR)/Makefile $(TOPDIR)/ms2gt_env.csh
 DOCS = $(DOCDIR)/*.html $(DOCDIR)/*usage $(DOCDIR)/*.gif
 HDRS = $(INCDIR)/*.h
 GRDS = $(GPDSRCS) $(MPPSRCS)
 SRCS = $(SRCMAKE) $(NAVSRCS) $(IDLSRCS) $(LL2SRCS) $(LE2SRCS) $(MAPSRCS) \
-       $(SCTSRCS)
+       $(SCTSRCS) $(UTSSRCS)
 TU1S = $(TU1DIR)/*.txt $(TU1DIR)/*.gpd $(TU1DIR)/*.csh
 TU2S = $(TU2DIR)/*.txt $(TU2DIR)/*.gpd $(TU2DIR)/*.csh
 TU3S = $(TU3DIR)/*.txt $(TU3DIR)/*.gpd $(TU3DIR)/*.mpp $(TU3DIR)/*.csh
@@ -155,7 +159,7 @@ tar:
 	$(MKDIR) $(TBINDIR) $(TDOCDIR) $(TGRDDIR) $(TINCDIR) $(TLIBDIR)
 	$(MKDIR) $(TSRCDIR)
 	$(MKDIR) $(TNAVDIR) $(TGSZDIR) $(TLL2DIR) $(TLE2DIR) $(TMAPDIR) \
-                 $(TSCTDIR)
+                 $(TSCTDIR) $(TUTSDIR)
 	$(MKDIR) $(TIDLDIR) $(TL1BDIR) $(TUTLDIR)
 	$(MKDIR) $(TTU1DIR) $(TTU2DIR) $(TTU3DIR) $(TTU4DIR)
 	$(CP) $(TOPS) $(TARDIR)
@@ -171,6 +175,7 @@ tar:
 	$(CP) $(LE2SRCS) $(TLE2DIR)
 	$(CP) $(MAPSRCS) $(TMAPDIR)
 	$(CP) $(SCTSRCS) $(TSCTDIR)
+	$(CP) $(UTSSRCS) $(TUTSDIR)
 	$(CP) $(TU1S) $(TTU1DIR)
 	$(CP) $(TU2S) $(TTU2DIR)
 	$(CP) $(TU3S) $(TTU3DIR)
