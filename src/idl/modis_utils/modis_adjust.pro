@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.36 2004/11/10 18:37:25 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.37 2004/11/23 20:07:50 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.36 2004/11/10 18:37:25 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.37 2004/11/23 20:07:50 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -555,10 +555,13 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
       ;  compute 1/cos(soze)
       ;  don't divide by small cosines
+      ;  and set swath to min value for small cosines
 
       i = where(abs(soze) lt epsilon, count)
-      if count gt 0 then $
-        soze[i] = 1.0
+      if count gt 0 then begin
+          soze[i] = 1.0
+          swath[i] = min_in
+      endif
       i = where(abs(soze) ge epsilon, count)
       if count gt 0 then $
         soze[i] = 1.0 / temporary(soze[i])
@@ -567,17 +570,18 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       ;  multiply swath data by 1/cos(soze)
 
       swath = temporary(swath) * soze
-
-      ;  make sure that values stay within valid range
-      ;  use le and ge so we can reset these min/max values at the end
-
-      i_min_in = where(swath le min_in, count_min_in)
-      if count_min_in gt 0 then $
-        swath[i_min_in] = min_in
-      i_max_in = where(swath ge max_in, count_max_in)
-      if count_max_in gt 0 then $
-        swath[i_max_in] = max_in
   endif
+
+
+  ;  make sure that values stay within valid range
+  ;  use le and ge so we can reset these min/max values at the end
+
+  i_min_in = where(swath le min_in, count_min_in)
+  if count_min_in gt 0 then $
+    swath[i_min_in] = min_in
+  i_max_in = where(swath ge max_in, count_max_in)
+  if count_max_in gt 0 then $
+    swath[i_max_in] = max_in
 
   reg_slope = make_array(rows_per_scan, /float, value=1.0)
   reg_intcp = make_array(rows_per_scan, /float, value=0.0)
