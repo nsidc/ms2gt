@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.4 2001/01/28 22:13:38 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/extract_chan.pro,v 1.5 2001/01/29 23:54:17 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -29,7 +29,8 @@
 ; REFERENCE:
 ;-
 
-PRO extract_chan, hdf_file, channel, get_latlon=get_latlon
+PRO extract_chan, hdf_file, channel, $
+                  get_latlon=get_latlon, conversion=conversion
 
   usage = 'usage: extract_chan, hdf_file, channel ' + $
           '[, /get_latlon]' + $
@@ -106,9 +107,11 @@ PRO extract_chan, hdf_file, channel, get_latlon=get_latlon
   endelse
   image_dimen = size(image, /dimensions)
   channel_string = string(channel, format='(I2.2)')
+  conv_string = strmid(conversion, 0, 3)
   cols_string = string(image_dimen[0], format='(I5.5)')
   rows_string = string(image_dimen[1], format='(I5.5)')
   file_out = filestem + '_ch' + channel_string + '_' + $
+             conv_string + '_' + $
              cols_string + '_' + rows_string + '.img'
   openw, lun, file_out, /get_lun
   writeu, lun, image
