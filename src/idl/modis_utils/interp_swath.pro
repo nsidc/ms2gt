@@ -3,7 +3,7 @@
 ;*
 ;* 8-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/interp_swath.pro,v 1.4 2001/01/24 17:50:27 haran Exp $
+;$Header: /export/data/modis/src/idl/fornav/interp_swath.pro,v 1.1 2001/02/10 00:14:20 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -23,6 +23,7 @@
 ;               [, scanfirst=scanfirst]
 ;               [, col_offset=col_offset]
 ;               [, row_offset=row_offset]
+;               [, /nearest_neighbor]
 ;
 ; ARGUMENTS:
 ;    Inputs:
@@ -56,7 +57,12 @@
 ;       col_offset: the column number in the output grid to which the
 ;         first column in the input grid is to be mapped. The default is 0.
 ;       row_offset: the row number in the output grid to which the
-;         first column in the input grid is to be mapped. The default is 0.
+;         first column in the input grid is to be mapped. The default is
+;         0.
+;       nearest_neighbor: if set, then nearest neighbor sampling is used.
+;         Otherwise, bilinear interpolation (if rowsperscanin is less than
+;         4) or cubic convolution (if rowsperscanin is greater than or equal
+;         to 4) is used.
 ;
 ; EXAMPLE:
 ;         interp_swath, 5, 271, 330, 5, $
@@ -76,7 +82,8 @@ Pro interp_swath, interp_factor, colsin, scans, rowsperscanin, $
                   filein, colsout, tag, $
                   data_type=data_type, $
                   scanfirst=scanfirst, $
-                  col_offset=col_offset, row_offset=row_offset
+                  col_offset=col_offset, row_offset=row_offset, $
+                  nearest_neighbor=nearest_neighbor
 
   usage = 'usage: interp_swath, ' + $
                   'interp_factor, colsin, scans, rowsperscanin, ' + $
@@ -84,7 +91,8 @@ Pro interp_swath, interp_factor, colsin, scans, rowsperscanin, $
                   '[, data_type=data_type]' + $
                   '[, scanfirst=scanfirst]' + $
                   '[, col_offset=col_offset]' + $
-                  '[, row_offset=row_offset]'
+                  '[, row_offset=row_offset]' + $
+                  '[, nearest_neighbor=nearest_neighbor]'
 
   if n_params() ne 7 then $
     message, usage
@@ -97,19 +105,22 @@ Pro interp_swath, interp_factor, colsin, scans, rowsperscanin, $
     col_offset = 0
   if n_elements(row_offset) eq 0 then $
     row_offset = 0
+  if n_elements(nearest_neighbor) eq 0 then $
+    nearest_neighbor = 0
 
   print, 'interp_swath:'
-  print, '  interp_factor: ', interp_factor
-  print, '  colsin:        ', colsin
-  print, '  scans:         ', scans
-  print, '  rowsperscanin: ', rowsperscanin
-  print, '  filein:        ', filein
-  print, '  colsout:       ', colsout
-  print, '  tag:           ', tag
-  print, '  data_type:     ', data_type
-  print, '  scanfirst:     ', scanfirst
-  print, '  col_offset:    ', col_offset
-  print, '  row_offset:    ', row_offset
+  print, '  interp_factor:    ', interp_factor
+  print, '  colsin:           ', colsin
+  print, '  scans:            ', scans
+  print, '  rowsperscanin:    ', rowsperscanin
+  print, '  filein:           ', filein
+  print, '  colsout:          ', colsout
+  print, '  tag:              ', tag
+  print, '  data_type:        ', data_type
+  print, '  scanfirst:        ', scanfirst
+  print, '  col_offset:       ', col_offset
+  print, '  row_offset:       ', row_offset
+  print, '  nearest_neighbor: ', nearest_neighbor
 
   if colsout gt colsin * interp_factor then $
     message, 'colsout must be less than or equal to colsin * interp_factor'
@@ -189,20 +200,28 @@ Pro interp_swath, interp_factor, colsin, scans, rowsperscanin, $
 
       readu, lun_in, scan_of_swath_in
 
-      if rowsperscanin le 4 then begin
-          scan_of_swath_out = congridx(float(scan_of_swath_in), $
-                                       interp_factor, $
-                                       colsout, rowsperscanout, $
-                                       col_offset=col_offset, $
-                                       row_offset=row_offset, $
-                                       /interp)
+      if nearest_neighbor eq 0 then begin
+          if rowsperscanin le 4 then begin
+              scan_of_swath_out = congridx(float(scan_of_swath_in), $
+                                           interp_factor, $
+                                           colsout, rowsperscanout, $
+                                           col_offset=col_offset, $
+                                           row_offset=row_offset, $
+                                           /interp)
+          endif else begin
+              scan_of_swath_out = congridx(float(scan_of_swath_in), $
+                                           interp_factor, $
+                                           colsout, rowsperscanout, $
+                                           col_offset=col_offset, $
+                                           row_offset=row_offset, $
+                                           cubic=-0.5)
+          endelse
       endif else begin
           scan_of_swath_out = congridx(float(scan_of_swath_in), $
                                        interp_factor, $
                                        colsout, rowsperscanout, $
                                        col_offset=col_offset, $
-                                       row_offset=row_offset, $
-                                       cubic=-0.5)
+                                       row_offset=row_offset)
       endelse
 
       ;  convert back to original data type
