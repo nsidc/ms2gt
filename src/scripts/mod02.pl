@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod02.pl,v 1.25 2001/03/06 14:59:44 haran Exp haran $
+# $Id: mod02.pl,v 1.26 2001/03/06 23:47:45 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -243,7 +243,7 @@ $grid_cols = sprintf("%05d", $grid_cols);
 $grid_rows = sprintf("%05d", $grid_rows);
 print_stderr("$script: MESSAGE:\n" .
 	     "grid will contain $grid_cols cols and $grid_rows rows\n");
-exit;
+
 my $swath_cols = 0;
 my $swath_rows = 0;
 my $ancil_cols = 0;
