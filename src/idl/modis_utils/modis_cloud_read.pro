@@ -23,12 +23,13 @@ PRO MODIS_CLOUD_READ, FILENAME, BAND, IMAGE, $
 ;    BAND           String specifying Band to be read. Must be one of the
 ;                   following:
 ;                     time - Scan Start Time
-;                     cld1 - contains Cloud Mask bits  7-0  in cld1 bits 7-0. 
-;                     cld2 - contains Cloud Mask bits 15-8  in cld2 bits 7-0. 
-;                     cld3 - contains Cloud Mask bits 23-16 in cld3 bits 7-0. 
-;                     cld4 - contains Cloud Mask bits 31-24 in cld4 bits 7-0. 
-;                     cld5 - contains Cloud Mask bits 39-32 in cld5 bits 7-0. 
-;                     cld6 - contains Cloud Mask bits 47-40 in cld6 bits 7-0.
+;                     cld0 - contains Cloud Mask bits  7-0  in cld0 bits 7-0. 
+;                     cld1 - contains Cloud Mask bits 15-8  in cld1 bits 7-0. 
+;                     cld2 - contains Cloud Mask bits 23-16 in cld2 bits 7-0. 
+;                     cld3 - contains Cloud Mask bits 31-24 in cld3 bits 7-0. 
+;                     cld4 - contains Cloud Mask bits 39-32 in cld4 bits 7-0. 
+;                     cld5 - contains Cloud Mask bits 47-40 in cld5 bits 7-0.
+;                     cqa0 - Cloud Quality Assurance byte 0.
 ;                     cqa1 - Cloud Quality Assurance byte 1.
 ;                     cqa2 - Cloud Quality Assurance byte 2.
 ;                     cqa3 - Cloud Quality Assurance byte 3.
@@ -37,6 +38,7 @@ PRO MODIS_CLOUD_READ, FILENAME, BAND, IMAGE, $
 ;                     cqa6 - Cloud Quality Assurance byte 6.
 ;                     cqa7 - Cloud Quality Assurance byte 7.
 ;                     cqa8 - Cloud Quality Assurance byte 8.
+;                     cqa9 - Cloud Quality Assurance byte 9.
 ;
 ; OPTIONAL INPUTS:
 ;    None.
@@ -79,7 +81,7 @@ PRO MODIS_CLOUD_READ, FILENAME, BAND, IMAGE, $
 ;    Based on modis_level1b_read from Liam Gumley.
 ;-
 
-rcs_id = '$Id: modis_cloud_read.pro,v 1.2 2001/05/03 15:57:49 haran Exp $'
+rcs_id = '$Id: modis_cloud_read.pro,v 1.1 2002/05/14 22:55:06 haran Exp haran $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -135,20 +137,22 @@ filetype = 'MOD35_L2'
 
 case band of
   'time': begin & sds_name = 'Scan_Start_Time' & end
-  'cld1': begin & sds_name = 'Cloud_Mask' & byte_elem = 0 & end
-  'cld2': begin & sds_name = 'Cloud_Mask' & byte_elem = 1 & end
-  'cld3': begin & sds_name = 'Cloud_Mask' & byte_elem = 2 & end
-  'cld4': begin & sds_name = 'Cloud_Mask' & byte_elem = 3 & end
-  'cld5': begin & sds_name = 'Cloud_Mask' & byte_elem = 4 & end
-  'cld6': begin & sds_name = 'Cloud_Mask' & byte_elem = 5 & end
-  'cqa1': begin & sds_name = 'Quality_Assurance' & byte_elem = 0 & end
-  'cqa2': begin & sds_name = 'Quality_Assurance' & byte_elem = 1 & end
-  'cqa3': begin & sds_name = 'Quality_Assurance' & byte_elem = 2 & end
-  'cqa4': begin & sds_name = 'Quality_Assurance' & byte_elem = 3 & end
-  'cqa5': begin & sds_name = 'Quality_Assurance' & byte_elem = 4 & end
-  'cqa6': begin & sds_name = 'Quality_Assurance' & byte_elem = 5 & end
-  'cqa7': begin & sds_name = 'Quality_Assurance' & byte_elem = 6 & end
-  'cqa8': begin & sds_name = 'Quality_Assurance' & byte_elem = 7 & end
+  'cld0': begin & sds_name = 'Cloud_Mask' & byte_elem = 0 & end
+  'cld1': begin & sds_name = 'Cloud_Mask' & byte_elem = 1 & end
+  'cld2': begin & sds_name = 'Cloud_Mask' & byte_elem = 2 & end
+  'cld3': begin & sds_name = 'Cloud_Mask' & byte_elem = 3 & end
+  'cld4': begin & sds_name = 'Cloud_Mask' & byte_elem = 4 & end
+  'cld5': begin & sds_name = 'Cloud_Mask' & byte_elem = 5 & end
+  'cqa0': begin & sds_name = 'Quality_Assurance' & byte_elem = 0 & end
+  'cqa1': begin & sds_name = 'Quality_Assurance' & byte_elem = 1 & end
+  'cqa2': begin & sds_name = 'Quality_Assurance' & byte_elem = 2 & end
+  'cqa3': begin & sds_name = 'Quality_Assurance' & byte_elem = 3 & end
+  'cqa4': begin & sds_name = 'Quality_Assurance' & byte_elem = 4 & end
+  'cqa5': begin & sds_name = 'Quality_Assurance' & byte_elem = 5 & end
+  'cqa6': begin & sds_name = 'Quality_Assurance' & byte_elem = 6 & end
+  'cqa7': begin & sds_name = 'Quality_Assurance' & byte_elem = 7 & end
+  'cqa8': begin & sds_name = 'Quality_Assurance' & byte_elem = 8 & end
+  'cqa9': begin & sds_name = 'Quality_Assurance' & byte_elem = 9 & end
 else: message, 'Unrecognized band => ' + band + $
   ' for this MODIS type => ' + filetype
 endcase
