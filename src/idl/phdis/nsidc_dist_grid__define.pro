@@ -710,7 +710,7 @@ PRO NSIDC_DIST_GRID::DRAW, READ_DATA=read_data
    TV, BYTSCL(TEMPORARY(data), MIN=min_dat, MAX=max_dat, TOP=self.max_img)
 
    IF (self.show_coast) THEN $ ; Draw coastlines.
-      MAP_CONTINENTS, /CONTINENTS, /COUNTRIES, /USA, COLOR=self.coast_color, $
+      MAP_CONTINENTS, /COASTS, /COUNTRIES, /USA, COLOR=self.coast_color, $
          /HIRES, /T3D
    IF (self.show_grat) THEN $ ; Draw graticule.
       MAP_GRID, /LABEL, COLOR=self.grat_color, /T3D
