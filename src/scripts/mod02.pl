@@ -9,8 +9,8 @@ require("$source_navdir/date.pl");
 
 my $Usage = "\n
 USAGE: mod02.pl dirinout tag listfile gpdfile
-                [chanlist [latlon_1km [keep [old_fornav]]]]
-       defaults:    1           0       0       0
+                [chanlist [latlon_1km [keep [rind]]]]
+       defaults:    1           0       0     50
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
@@ -24,8 +24,8 @@ USAGE: mod02.pl dirinout tag listfile gpdfile
     NOTE: if file is not 1km, then latlon_1km is ignored.
   keep: 0: delete intermediate chan, lat, lon, col, and row files (default).
         1: do not delete intermediate chan, lat, lon, col, and row files.
-  old_fornav: 0: use fornav.c (default).
-              1: use fornav.pro.\n\n";
+  rind: number of pixels to add around intermediate grid to eliminate
+        holes in final grid. Default is 50.\n\n";
 
 #The following symbols are defined in pfsetup.pl and were used only once in
 #this module. They appear here to suppress warning messages.
@@ -45,7 +45,7 @@ my $gpdfile;
 my $chanlist = "1";
 my $latlon_1km = "1";
 my $keep = 0;
-my $old_fornav = 0;
+my $rind = 50;
 
 if (@ARGV < 4) {
     print $Usage;
@@ -73,11 +73,7 @@ if (@ARGV <= 8) {
 		    exit 1;
 		}
 		if (@ARGV >= 8) {
-		    $old_fornav = $ARGV[7];
-		    if ($old_fornav ne "0" && $old_fornav ne "1") {
-			print "invalid old_fornav\n$Usage";
-			exit 1;
-		    }
+		    $rind = $ARGV[7];
 		}
 	    }
 	}
@@ -96,7 +92,7 @@ print_stderr("\n".
 	     "> chanlist         = $chanlist\n".
 	     "> latlon_1km       = $latlon_1km\n".
 	     "> keep             = $keep\n".
-	     "> old_fornav       = $old_fornav\n");
+	     "> rind             = $rind\n");
 
 chdir_or_die($dirinout);
 
@@ -250,7 +246,7 @@ do_or_die("$lat_rm");
 do_or_die("$lon_rm");
 
 my $latlon_scans = $latlon_rows / $latlon_rows_per_scan;
-my $force = ($interp_factor == 1) ? "" : "-f";
+my $force = ($interp_factor == 1) ? "-r $rind" : "-f";
 my $filestem_cols = $tag . "_cols_";
 my $filestem_rows = $tag . "_rows_";
 do_or_die("rm -f $filestem_cols*");
@@ -301,10 +297,10 @@ $grid_cols = sprintf("%05d", $grid_cols);
 $grid_rows = sprintf("%05d", $grid_rows);
 
 if ($interp_factor > 1) {
-    my $col_min = 0;
-    my $col_max = $grid_cols - 1;
-    my $row_min = 0;
-    my $row_max = $grid_rows - 1;
+    my $col_min = -$rind;
+    my $col_max = $grid_cols + $rind - 1;
+    my $row_min = -$rind;
+    my $row_max = $grid_rows + $rind - 1;
 
     do_or_die("idl_sh.pl interp_colrow " .
 	      "$interp_factor $cr_cols $cr_scans $cr_rows_per_scan " .
@@ -360,47 +356,24 @@ if ($swath_rows_per_scan != $cr_rows_per_scan) {
 my $swath_scans = $cr_scans;
 my $swath_scan_first = $cr_scan_first;
 
-if ($old_fornav) {
-    my $chan_file_param = "[";
-    my $grid_file_param = "[";
-    for ($i = 0; $i < $chan_count; $i++) {
-	if ($i > 0) {
-	    $chan_file_param .= ",";
-	    $grid_file_param .= ",";
-	}
-	my $chan_file = $chan_files[$i];
-	my $chan = $chans[$i];
-	my $grid_file = "$tag\_ch$chan\_grid\_$grid_cols\_$grid_rows.img";
-	$chan_file_param .= "\"'$chan_file'\"";
-	$grid_file_param .= "\"'$grid_file'\"";
+my $chan_file_param;
+my $grid_file_param;
+for ($i = 0; $i < $chan_count; $i++) {
+    if ($i > 0) {
+	$chan_file_param .= " ";
+	$grid_file_param .= " ";
     }
-    $chan_file_param .= "]";
-    $grid_file_param .= "]";
-    do_or_die("idl_sh.pl fornav " .
-	      "$swath_cols $swath_scans $swath_rows_per_scan " .
-	      "\"'$cols_file'\" \"'$rows_file'\" $chan_file_param " .
-	      "$grid_cols $grid_rows $grid_file_param " .
-	      "weight_sum_min=0.001 " .
-	      "swath_scan_first=$swath_scan_first /col_row_presubsetted");
-} else {
-    my $chan_file_param;
-    my $grid_file_param;
-    for ($i = 0; $i < $chan_count; $i++) {
-	if ($i > 0) {
-	    $chan_file_param .= " ";
-	    $grid_file_param .= " ";
-	}
-	my $chan_file = $chan_files[$i];
-	my $chan = $chans[$i];
-	my $grid_file = "$tag\_ch$chan\_grid\_$grid_cols\_$grid_rows.img";
-	$chan_file_param .= $chan_file;
-	$grid_file_param .= $grid_file;
-    }
-    do_or_die("fornav $chan_count -v -p -s $swath_scan_first " .
-	      "$swath_cols $swath_scans $swath_rows_per_scan " .
-	      "$cols_file $rows_file $chan_file_param " .
-	      "$grid_cols $grid_rows $grid_file_param");
+    my $chan_file = $chan_files[$i];
+    my $chan = $chans[$i];
+    my $grid_file = "$tag\_ch$chan\_grid\_$grid_cols\_$grid_rows.img";
+    $chan_file_param .= $chan_file;
+    $grid_file_param .= $grid_file;
 }
+do_or_die("fornav $chan_count -v -s $swath_scan_first 0 " .
+	  "$swath_cols $swath_scans $swath_rows_per_scan " .
+	  "$cols_file $rows_file $chan_file_param " .
+	  "$grid_cols $grid_rows $grid_file_param");
+
 if (!$keep) {
     for ($i = 0; $i < $chan_count; $i++) {
 	do_or_die("rm -f $chan_files[$i]");
