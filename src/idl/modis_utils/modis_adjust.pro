@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.29 2003/01/21 22:43:30 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.30 2003/01/21 22:59:08 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -107,7 +107,7 @@
 ;         regressions. The file has the same format as for file_reg_col_out.
 ;       reg_col_detectors: Array of zero-based detector numbers to use for
 ;         column regressions. The default value of reg_col_detectors
-;         is [28,29].
+;         is [27,28,29].
 ;       reg_col_stride: the stride value to use for performing column
 ;         regressions. The default value of reg_col_stride is 4.
 ;         NOTE: reg_col_stride must divide evenly into cols.
@@ -140,7 +140,8 @@
 ;         from the second linear regression. That is, after k and m have
 ;         been determined from the first linear regression, the values
 ;         y'(i) = k + m * x(i) are calculated. Then outliers are defined
-;         to be all points x(i) for which abs(y'(i) - y(i)) >= y_tolerance.
+;         to be all points x(i) for which
+;         abs((y'(i) - y(i)) / y(i)) >= y_tolerance.
 ;         Then a second regression is performed on the remaining x(i) after
 ;         the outliers have been removed to determine the final k and m
 ;         values. The default value of y_tolerance is 0.01.
@@ -315,7 +316,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   if n_elements(file_reg_cols_out) eq 0 then $
     file_reg_cols_out = ''
   if n_elements(reg_col_detectors) eq 0 then $
-    reg_col_detectors = [28,29]
+    reg_col_detectors = [27,28,29]
   if n_elements(reg_col_stride) eq 0 then $
     reg_col_stride = 4
   if n_elements(reg_col_offset) eq 0 then $
@@ -365,7 +366,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /export/data/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.29 2003/01/21 22:43:30 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.30 2003/01/21 22:59:08 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
