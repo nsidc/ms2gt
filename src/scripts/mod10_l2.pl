@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod10_l2.pl,v 1.9 2001/04/13 20:33:12 haran Exp haran $
+# $Id: mod10_l2.pl,v 1.10 2001/04/19 16:31:36 haran Exp haran $
 
 #========================================================================
 # mod10_l2.pl - grids MOD10_L2 data
@@ -102,8 +102,11 @@ my @list;
 open_or_die("LISTFILE", "$listfile");
 print_stderr("contents of listfile:\n");
 while (<LISTFILE>) {
-    push(@list, $_);
-    print STDERR "$_";
+    my ($file) = /\s*(\S+)/;
+    if (defined($file)) {
+	push(@list, $file);
+	print STDERR "$file";
+    }
 }
 close(LISTFILE);
 

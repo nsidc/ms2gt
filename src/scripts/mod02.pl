@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod02.pl,v 1.28 2001/04/13 20:33:34 haran Exp haran $
+# $Id: mod02.pl,v 1.29 2001/04/19 16:31:19 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -107,8 +107,11 @@ my @list;
 open_or_die("LISTFILE", "$listfile");
 print_stderr("contents of listfile:\n");
 while (<LISTFILE>) {
-    push(@list, $_);
-    print STDERR "$_";
+    my ($file) = /\s*(\S+)/;
+    if (defined($file)) {
+	push(@list, $file);
+	print STDERR "$file";
+    }
 }
 close(LISTFILE);
 
@@ -588,6 +591,10 @@ for ($line = 0; $line < @list; $line++) {
 	    my $conv = substr($conversion, 0, 3);
 	    my $filestem_chan_conv = "$filestem\_ch$chan\_$conv\_";
 	    do_or_die("rm -f $filestem_chan_conv*");
+	    print_stderr("idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" " .
+		      "$chan conversion=\"'$conversion'\" " .
+		      "swath_rows=$this_swath_rows_max " .
+		      "swath_row_first=$this_swath_row_first");
 	    do_or_die("idl_sh.pl extract_chan \"'$hdf'\" \"'$filestem'\" " .
 		      "$chan conversion=\"'$conversion'\" " .
 		      "swath_rows=$this_swath_rows_max " .

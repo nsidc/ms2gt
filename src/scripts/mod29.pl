@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Id: mod29.pl,v 1.5 2001/04/13 20:32:58 haran Exp haran $
+# $Id: mod29.pl,v 1.6 2001/04/19 16:30:59 haran Exp haran $
 
 #========================================================================
 # mod29.pl - grids MOD29 data
@@ -105,8 +105,11 @@ my @list;
 open_or_die("LISTFILE", "$listfile");
 print_stderr("contents of listfile:\n");
 while (<LISTFILE>) {
-    push(@list, $_);
-    print STDERR "$_";
+    my ($file) = /\s*(\S+)/;
+    if (defined($file)) {
+	push(@list, $file);
+	print STDERR "$file";
+    }
 }
 close(LISTFILE);
 
