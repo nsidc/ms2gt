@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod29.pl,v 1.13 2001/05/01 19:12:43 haran Exp haran $
+# $Id: mod29.pl,v 1.14 2001/05/14 14:43:31 haran Exp haran $
 
 #========================================================================
 # mod29.pl - grids MOD29 data
@@ -270,7 +270,8 @@ do_or_die("$lat_rm");
 do_or_die("$lon_rm");
 
 my $latlon_scans = $latlon_rows / $latlon_rows_per_scan;
-my $force = ($interp_factor == 1) ? "-r $rind" : "-f";
+#my $force = ($interp_factor == 1) ? "-r $rind" : "-f";
+my $force = "-f";
 my $filestem_cols = $tag . "_cols_";
 my $filestem_rows = $tag . "_rows_";
 do_or_die("rm -f $filestem_cols*");
@@ -313,16 +314,21 @@ my $cr_scan_first = $this_cols_scan_first;
 my $cr_rows_per_scan = $this_cols_rows_per_scan;
 
 if ($interp_factor > 1) {
-    my $col_min = -$rind;
-    my $col_max = $grid_cols + $rind - 1;
-    my $row_min = -$rind;
-    my $row_max = $grid_rows + $rind - 1;
+#    my $col_min = -$rind;
+#    my $col_max = $grid_cols + $rind - 1;
+#    my $row_min = -$rind;
+#   my $row_max = $grid_rows + $rind - 1;
 
+#    do_or_die("idl_sh.pl interp_colrow " .
+#	      "$interp_factor $cr_cols $cr_scans $cr_rows_per_scan " .
+#	      "\"'$cols_file'\" \"'$rows_file'\" " .
+#	      "$swath_cols \"'$tag'\" " .
+#	      "grid_check=[$col_min,$col_max,$row_min,$row_max] " .
+#	      "col_offset=$offset row_offset=$offset");
     do_or_die("idl_sh.pl interp_colrow " .
 	      "$interp_factor $cr_cols $cr_scans $cr_rows_per_scan " .
 	      "\"'$cols_file'\" \"'$rows_file'\" " .
 	      "$swath_cols \"'$tag'\" " .
-	      "grid_check=[$col_min,$col_max,$row_min,$row_max] " .
 	      "col_offset=$offset row_offset=$offset");
     do_or_die("rm -f $cols_file");
     do_or_die("rm -f $rows_file");
