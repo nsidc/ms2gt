@@ -4,7 +4,7 @@
 # 23-Nov-2004 Terry Haran tharan@colorado.edu 303-492-1847
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/haran/ms2gth/src/ll2cr/Makefile,v 1.7 2004/08/25 23:25:11 haran Exp $
+RCSID = $Header: /data/haran/ms2gth/src/utils/Makefile,v 1.1 2004/11/25 00:28:40 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -48,10 +48,10 @@ SYSTEM_LIBS = -lm
 CFLAGS = -I$(INCDIR) $(LOCAL_CFLAGS) $(CONFIG_CFLAGS)
 LIBS = -L$(LIBDIR) $(LOCAL_LIBS) $(SYSTEM_LIBS)
 
-SRCS = extract_region.c insert_region.c make_mask.c
+SRCS = extract_region.c insert_region.c make_mask.c apply_mask.c
 HDRS = 
 
-all: extract_region insert_region make_mask install
+all: extract_region insert_region make_mask apply_mask install
 
 extract_region: extract_region.o
 	cc $(CFLAGS) -o extract_region extract_region.o $(LIBS)
@@ -62,8 +62,11 @@ insert_region: insert_region.o
 make_mask: make_mask.o
 	cc $(CFLAGS) -o make_mask make_mask.o $(LIBS)
 
-install: extract_region insert_region make_mask
-	$(INSTALL) extract_region insert_region make_mask $(BINDIR)
+apply_mask: apply_mask.o
+	cc $(CFLAGS) -o apply_mask apply_mask.o $(LIBS)
+
+install: extract_region insert_region make_mask apply_mask
+	$(INSTALL) extract_region insert_region make_mask apply_mask $(BINDIR)
 
 clean:
 	- $(RM) $(OBJS) ll2cr
