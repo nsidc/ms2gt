@@ -8,7 +8,7 @@
  * 14-Mar-2001 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char call_grids_c_rcsid[] = "$Header: /export/data/modis/src/ll2cr/ll2cr.c,v 1.9 2001/03/06 23:12:03 haran Exp $";
+static const char call_grids_c_rcsid[] = "$Header: /export/data/modis/src/idl/grids/call_grids.c,v 1.1 2001/03/19 15:27:41 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -47,6 +47,7 @@ long call_init_grid(short argc, void *argv[])
 
   IDL_STRING *gpd_filename;
   grid_class_struct *gcs;
+  IDL_STRING *projection_name;
   
   /*
    * local parameters
@@ -59,21 +60,22 @@ long call_init_grid(short argc, void *argv[])
    * Check that correct number of parameters was passed
    */
   
-  if (argc != 2)
+  if (argc != 3)
     return 0;
 
   /*
    * Cast passed parameters to local vars
    */
   
-  gpd_filename = argv[0];
-  gcs = argv[1];
+  gpd_filename = (IDL_STRING *)argv[0];
+  gcs = (grid_class_struct *)argv[1];
+  projection_name = (IDL_STRING *)argv[2];
   
   /*
    * Call the function
    */
 
-  grid = grid_init(gpd_filename.s);
+  grid = init_grid(gpd_filename->s);
 
   /*
    * Check that the grid was initialized successfully
@@ -115,6 +117,9 @@ long call_init_grid(short argc, void *argv[])
   gcs->riv_detail = mapx->riv_detail;
   gcs->equatorial_radius = mapx->equatorial_radius;
   gcs->eccentricity = mapx->eccentricity;
+
+  projection_name->s = mapx->projection_name;
+  projection_name->slen = strlen(mapx->projection_name);
   
   return 1;
 }
