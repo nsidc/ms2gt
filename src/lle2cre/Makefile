@@ -4,7 +4,7 @@
 # 26-Nov-2001 T.Haran 303-492-1847  tharan@kryos.colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /home/haran/photoclin/src/lle2cre/Makefile,v 1.3 2004/07/30 19:54:57 haran Exp $
+RCSID = $Header: /data/haran/ms2gth/src/lle2cre/Makefile,v 1.4 2004/09/02 16:39:17 haran Exp haran $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -15,50 +15,71 @@ TOPDIR = ../..
 LIBDIR = $(TOPDIR)/lib
 INCDIR = $(TOPDIR)/include
 BINDIR = $(TOPDIR)/bin
+
 #
 #	commands
 #
 SHELL = /bin/sh
 CC = cc
-AR = ar
-RANLIB = touch
 CO = co
 MAKEDEPEND = makedepend
 INSTALL = cp
-CP = cp
 RM = rm -f
 TAR = tar
 COMPRESS = gzip
+
+#
+#	archive file name
+#
+TARFILE = lle2cre.tar
 
 #
 #	debug or optimization settings
 #
 CONFIG_CFLAGS = -O
 #CONFIG_CFLAGS = -DDEBUG -g
-#CONFIG_CFLAGS =
+LOCAL_CFLAGS =
 
 #
 #	libraries
 #
 LOCAL_LIBS = -lmapx
-SYSLIBS = -lm
+SYSTEM_LIBS = -lm 
 
 #
 # end configuration section
 #------------------------------------------------------------------------
 
-CFLAGS = -I$(INCDIR) $(CONFIG_CFLAGS)
-LIBS = -L$(LIBDIR) $(LOCAL_LIBS) $(SYSLIBS)
+CFLAGS = -I$(INCDIR) $(LOCAL_CFLAGS) $(CONFIG_CFLAGS)
+LIBS = -L$(LIBDIR) $(LOCAL_LIBS) $(SYSTEM_LIBS)
 
-all : lle2cre
+SRCS = lle2cre.c
+OBJS = lle2cre.o
+HDRS = 
 
-lle2cre: lle2cre.o
-	$(CC) $(CFLAGS) -o $(BINDIR)/lle2cre lle2cre.o $(LIBS)
+all: lle2cre install
+
+lle2cre: $(OBJS)
+	cc $(CFLAGS) -o lle2cre $(OBJS) $(LIBS)
+
+install: lle2cre
+	$(INSTALL) lle2cre $(BINDIR)
 
 clean:
-	$(RM) *.o
+	- $(RM) $(OBJS) lle2cre
 
-.SUFFIXES : .c,v .h,v
+tar:
+	- $(CO) Makefile $(SRCS) $(HDRS)
+	$(TAR) cvf $(TARFILE) Makefile $(SRCS) $(HDRS)
+	$(RM) $(TARFILE).gz
+	$(COMPRESS) $(TARFILE)
+
+depend:
+	- $(CO) $(SRCS) $(HDRS)
+	$(MAKEDEPEND) -I$(INCDIR) \
+		-- $(CFLAGS) -- $(SRCS)
+
+.SUFFIXES : .c,v .h,v .x .x,v
 
 .c,v.o :
 	$(CO) $<
@@ -70,6 +91,4 @@ clean:
 
 .h,v.h :
 	$(CO) $<
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.
 
