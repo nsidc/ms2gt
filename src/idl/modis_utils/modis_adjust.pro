@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.44 2004/11/29 22:10:28 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.45 2004/11/29 23:15:19 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -378,7 +378,7 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
   time_start = systime(/seconds)
 
-  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.44 2004/11/29 22:10:28 haran Exp haran $'
+  print, 'modis_adjust: $Header: /data/haran/ms2gth/src/idl/modis_utils/modis_adjust.pro,v 1.45 2004/11/29 23:15:19 haran Exp haran $'
   print, '  started:              ', systime(0, time_start)
   print, '  cols:                 ', cols
   print, '  scans:                ', scans
@@ -541,9 +541,6 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
   if data_type_in ne 'f4' then $
     swath = float(temporary(swath))
 
-  ;  make sure that values stay within valid range
-  ;  use le and ge so we can reset these min/max values at the end
-
   i_min_in = where(swath le min_in, count_min_in)
   if count_min_in gt 0 then $
     swath[i_min_in] = min_in
@@ -570,15 +567,18 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
       if count gt 0 then begin
           soze[i] = 1.0
           swath[i] = max_in
-          i_max_in = [temporary(i_max_in), i]
       endif
       i = 0
 
       ;  divide swath data by cos(soze)
 
       swath = temporary(swath) / soze
-  endif
 
+      i = where(swath ge max_in, count)
+      if count gt 0 then begin
+          swath[i] = max_in
+      endif
+  endif
 
   reg_slope = make_array(rows_per_scan, /float, value=1.0)
   reg_intcp = make_array(rows_per_scan, /float, value=0.0)
