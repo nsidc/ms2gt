@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.14 2003/08/01 22:02:46 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.15 2004/08/27 00:40:09 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -50,7 +50,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
         one line per parameter. The default is \"none\" indicating that no
         ancillary parameters should be gridded. Each line in ancilfile should
         consist of up to four fields:
-          param conversion weight_type fill
+          param conversion weight_type fill delete
             where the fields are defined as follows:
               param - a string that specifies an ancillary parameter to be
                 gridded, and must be one of the following 4 character strings:
@@ -79,6 +79,8 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                   max - use maximum weighting (default for Land/SeaMask and
                         gflags).
               fill - specifies the output fill value. Default is 0.
+              delete - 0:keep channel after fix250 is complete (default).
+                       1:delete channel after fix250 is complete.
   latlon_src: 1: use 5 km lat-lon data from MOD021KM or MYD021KM file
                  (default).
               3: use 1 km lat-lon data from MOD03 or MYD03 file.
