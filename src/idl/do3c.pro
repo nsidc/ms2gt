@@ -67,12 +67,15 @@ if n_elements(file_in) eq 1 then begin
       min_in = min(img_in)
     if n_elements(max_in) eq 0 then $
       max_in = max(img_in)
-    if histeq gt 0 then $
-      img_in = hist_equal(img_in, min=min, max=max) $
-    else $
-      img_in = bytscl(img_in, min=min_in, max=max_in)
+    if bytes_per_cell ne 1 then begin
+        if histeq gt 0 then $
+          img_in = hist_equal(img_in, min=min, max=max) $
+        else $
+          img_in = bytscl(img_in, min=min_in, max=max_in)
+    endif
     img_in = reverse(img_in, 2)
-    write_gif, file_out, img_in, rgb[*,0], rgb[*,1], rgb[*,2]
+    write_tiff, file_out, img_in, 0, $
+      red=rgb[*,0], green=rgb[*,1], blue=rgb[*,2]
 endif else begin
     img_out = bytarr(3, cols_out, rows_out)
     for i = 0, 2 do begin
