@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.49 2004/11/09 22:08:32 haran Exp haran $
+# $Id: mod02.pl,v 1.50 2004/11/10 22:47:45 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -764,10 +764,13 @@ for ($line = 0; $line < @list; $line++) {
 		$swath_rows += $this_swath_rows;
 	    }
 	    if ($ancil_interp_factor * $this_ancil_cols -
-		$ancil_col_extra != $this_swath_cols ||
-		$ancil_interp_factor * $this_ancil_rows != $this_swath_rows) {
+		$ancil_col_extra != $this_swath_cols) {
 		diemail("$script: FATAL: " .
 			"inconsistent number of columns in $ancil_file");
+	    }
+	    if ($ancil_interp_factor * $this_ancil_rows != $this_swath_rows) {
+		diemail("$script: FATAL: " .
+			"inconsistent number of rows in $ancil_file");
 	    }
 	    $ancil_cat[$i] .= "$ancil_file ";
 	}
