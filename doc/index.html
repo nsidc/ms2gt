@@ -265,14 +265,21 @@ from a single MOD02QKM file takes about three minutes on the above machine.
 <h2>
 <a NAME="obtaining"></a>Obtaining the Software</h2>
 The software and associated documentation can be downloaded from <a href="ftp://baikal.colorado.edu/pub/NSIDC/ms2gt0.3.tar.gz">ftp://baikal.colorado.edu/pub/NSIDC/ms2gt.0.3.tar.gz</a>,
-where 0.3 is the current version and release. Save this file in some directory
-and type:
-<p><b><tt>gunzip ms2gt0.3.tar.gz</tt></b>
-<br><b><tt>tar xvf ms2gt0.3.tar</tt></b>
+where 0.3 is the current version and release. Save this file in some directory,
+change to that directory, and then type:
+<p><b><tt>gunzip ms2gt0.3.tar.gz</tt></b><b><tt></tt></b>
+<p>If you have a previous version of MS2GT installed in the same directory,
+you should either remove it or rename it. For example:
+<p><b><tt>rm -fr ms2gt</tt></b>
+<p>or something like:
+<p><b><tt>mv ms2gt ms2gt.old</tt></b>
+<p>Then type:
+<p><b><tt>tar xvf ms2gt0.3.tar</tt></b>
 <p>This will create a directory in the current directory called ms2gt which
 will contain several subdirectories. Further instructions on the installation
 and use of MS2GT can be then found in html files in the ms2gt/doc subdirectory.
-Point your browser to ms2gt/doc/index.html (this document).
+At this point you can delete the tar file if you want. Point your browser
+to ms2gt/doc/index.html (this document).
 <h2>
 <a NAME="building"></a>Building the Executables</h2>
 Change the current working directory to the ms2gt directory and type:
@@ -350,7 +357,7 @@ of each perl script:
 [ancilfile [latlon_src [ancil_src [keep [rind]]]]]</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; defaults:&nbsp;&nbsp; none&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp; 50</tt><tt></tt>
+0&nbsp;&nbsp;&nbsp;&nbsp; 50</tt>
 <p><tt>&nbsp; dirinout: directory containing the input and output files.</tt>
 <br><tt>&nbsp; tag: string used as a prefix to output files.</tt>
 <br><tt>&nbsp; listfile: text file containing a list of MOD02 or MOD03
@@ -500,13 +507,13 @@ eliminate</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; holes in final grid.
 Default is 50.</tt>
 <h3>
-<a NAME="mod10_l2_usage"></a><tt>mod10_l2.pl</tt></h3>
+<a NAME="mod10_l2_usage"></a><tt>mod10_l2.pl</tt></h3>
 <tt>USAGE: mod10_l2.pl dirinout tag listfile gpdfile</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 [chanlist [latlonlistfile [keep [rind]]]]</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; defaults:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; none&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp; 50</tt><tt></tt>
+0&nbsp;&nbsp;&nbsp;&nbsp; 50</tt>
 <p><tt>&nbsp; dirinout: directory containing the input and output files.</tt>
 <br><tt>&nbsp; tag: string used as a prefix to output files.</tt>
 <br><tt>&nbsp; listfile: text file containing a list of MOD10_L2 files
@@ -543,8 +550,7 @@ Default is 50.</tt>
 <tt>USAGE: mod29.pl dirinout tag listfile gpdfile</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 [chanlist [latlonlistfile [keep [rind]]]]</tt>
-<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; defaults:&nbsp;&nbsp; 
-1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; defaults:&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 none&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;
 50</tt>
 <p><tt>&nbsp; dirinout: directory containing the input and output files.</tt>
