@@ -4,7 +4,7 @@
 ;*
 ;* 15-Apr-2002  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.7 2002/11/24 00:29:00 haran Exp haran $
+;$Header: /hosts/icemaker/temp/tharan/inst/modis_adjust.pro,v 1.8 2002/11/24 00:37:28 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -536,12 +536,17 @@ Pro modis_adjust, cols, scans, file_in, file_out, $
 
       ; apply slope and intercept corrections for each ds detector
 
-      for ds_det_ctr = 0, rows_per_ds_scan - 1 do begin
-          slope_this = slope[ds_det_ctr]
+      for ds_det = 0, rows_per_ds_scan - 1 do begin
+          slope_this = slope[ds_det]
+          intcp_this = intcp[ds_det]
+          print, 'ds_det: ', ds_det, $
+                 '  intcp: ', intcp_this, $
+                 '  slope: ', slope_this, $
+                 format='(a, i2.2, a, e12.5, a, f8.5)'
           if abs(slope_this) ge epsilon then begin
-              y = reform(swath[*, ds_det_ctr, *])
-              swath[*, ds_det_ctr, *] = $
-                (y - intcp[ds_det_ctr]) / slope_this
+              y = reform(swath[*, ds_det, *])
+              swath[*, ds_det, *] = $
+                (y - intcp_this) / slope_this
           endif
       endfor ; ds_det_ctr
 
