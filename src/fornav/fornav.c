@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.13 2001/01/12 18:25:32 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.14 2001/01/12 22:24:45 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -357,9 +357,9 @@ static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
   float *u_last_row_this_col;
   float *v_frst_row_this_col;
   float *v_last_row_this_col;
-  float *u_midl_row_this_col;
+  float *u_midl_row_prev_col;
   float *u_midl_row_next_col;
-  float *v_midl_row_this_col;
+  float *v_midl_row_prev_col;
   float *v_midl_row_next_col;
   ewa_parameters *this_ewap;
   double ux;
@@ -368,6 +368,7 @@ static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
   double vy;
   double f_scale;
   float qmax;
+  float distance_max;
   float a;
   float b;
   float c;
@@ -382,21 +383,26 @@ static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
   colsm1 = uimg->cols - 1;
   rowsov2 = uimg->rows / 2;
   qmax = ewaw->qmax;
-  u_frst_row_this_col = (float *)(uimg->buf[0]);
-  u_last_row_this_col = (float *)(uimg->buf[rowsm1]);
-  v_frst_row_this_col = (float *)(vimg->buf[0]);
-  v_last_row_this_col = (float *)(vimg->buf[rowsm1]);
-  u_midl_row_this_col = (float *)(uimg->buf[rowsov2]);
-  u_midl_row_next_col = u_midl_row_this_col + 1;
-  v_midl_row_this_col = (float *)(vimg->buf[rowsov2]);
-  v_midl_row_next_col = v_midl_row_this_col + 1;
-  for (col = 0, this_ewap = ewap;
+  distance_max = ewaw->distance_max;
+  u_frst_row_this_col = (float *)(uimg->buf[0]) + 1;
+  u_last_row_this_col = (float *)(uimg->buf[rowsm1]) + 1;
+  v_frst_row_this_col = (float *)(vimg->buf[0]) + 1;
+  v_last_row_this_col = (float *)(vimg->buf[rowsm1]) + 1;
+  u_midl_row_prev_col = (float *)(uimg->buf[rowsov2]);
+  u_midl_row_next_col = u_midl_row_prev_col + 2;
+  v_midl_row_prev_col = (float *)(vimg->buf[rowsov2]);
+  v_midl_row_next_col = v_midl_row_prev_col + 2;
+  for (col = 1, this_ewap = ewap + 1;
        col < colsm1;
        col++, this_ewap++) {
-    ux = *u_midl_row_next_col++ - *u_midl_row_this_col++;
-    vx = *v_midl_row_next_col++ - *v_midl_row_this_col++;
-    uy = (*u_last_row_this_col++ - *u_frst_row_this_col++) / rowsm1;
-    vy = (*v_last_row_this_col++ - *v_frst_row_this_col++) / rowsm1;
+    ux = (*u_midl_row_next_col++ - *u_midl_row_prev_col++) / 2 *
+      distance_max;
+    vx = (*v_midl_row_next_col++ - *v_midl_row_prev_col++) / 2 *
+      distance_max;;
+    uy = (*u_last_row_this_col++ - *u_frst_row_this_col++) / rowsm1 *
+      distance_max;
+    vy = (*v_last_row_this_col++ - *v_frst_row_this_col++) / rowsm1 *
+      distance_max;
 
     /*
      *  scale a, b, c, and f equally so that f = qmax
@@ -422,7 +428,7 @@ static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
     this_ewap->u_del = sqrt(c * d);
     this_ewap->v_del = sqrt(a * d);
     if (very_verbose &&
-	(col == 0 || col == uimg->cols / 2 || col == uimg->cols - 2))
+	(col == 1 || col == uimg->cols / 2 || col == uimg->cols - 2))
       fprintf(stderr,
 	      "%4d %13e %13e %13e %13e %13e %13e %13e %13e %13e\n",
 	      col, ux, vx, uy, vy, a, b, c,
@@ -438,6 +444,17 @@ static void ComputeEwaParameters(image *uimg, image *vimg, ewa_weight *ewaw,
   this_ewap->f = (this_ewap - 1)->f;
   this_ewap->u_del = (this_ewap - 1)->u_del;
   this_ewap->v_del = (this_ewap - 1)->v_del;
+
+  /*
+   *  Copy the parameters from the second column to the first column
+   */
+  this_ewap = ewap;
+  this_ewap->a = (this_ewap + 1)->a;
+  this_ewap->b = (this_ewap + 1)->b;
+  this_ewap->c = (this_ewap + 1)->c;
+  this_ewap->f = (this_ewap + 1)->f;
+  this_ewap->u_del = (this_ewap + 1)->u_del;
+  this_ewap->v_del = (this_ewap + 1)->v_del;
 }
 
 static bool ComputeEwa(image *uimg, image *vimg,
