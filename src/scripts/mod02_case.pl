@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
-# $Id: pfsetup.pl,v 1.170 2000/12/20 17:55:04 haran Exp $
+# $Id: mod02_case.pl,v 1.2 2001/02/19 23:57:02 haran Exp haran $
 
 #========================================================================
 # mod02_case.pl - determines case for mod02.pl
