@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.14 2001/01/12 22:24:45 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/fornav.c,v 1.15 2001/01/17 00:37:01 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -15,8 +15,10 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/for
 
 #define USAGE \
 "usage: fornav chan_count\n"\
-"              [-v] [-m] [-p]\n"\
-"              [-s swath_scan_first] [-S grid_col_start grid_row_start]\n"\
+"              [-v] [-m]\n"\
+"              [-s chan_scan_first colrow_scan_first]\n"\
+"       defaults:         0                 0\n"\
+"              [-S grid_col_start grid_row_start]\n"\
 "       defaults:         0                     0              0\n"\
 "              [-t swath_data_type_1 ... swath_data_type_chan_count]\n"\
 "       defaults:          s2                       s2\n"\
@@ -64,11 +66,9 @@ static const char fornav_c_rcsid[] = "$Header: /export/data/modis/src/fornav/for
 "             If -m is present, the swath cell having the maximum weight of all\n"\
 "             swath cells that map to a particular grid cell is used. The -m\n"\
 "             option should be used for coded data, i.e. snow cover.\n"\
-"         p: col and row files presubsetted. If -p is not present, then\n"\
-"             swath_scan_first (see below) applies to all swath input files.\n"\
-"             If -p is present, then swath_scan_first does not apply to\n"\
-"             swath_col_file and swath_row_file.\n"\
-"         s swath_scan_first: the first scan number to process. Default is 0.\n"\
+"         s chan_scan_first colrow_scan_first: the first scan number to process\n"\
+"             in the swath channel files and column and row files, respectively.\n"\
+"             Default is 0 for both.\n"\
 "         S grid_col_start grid_row_start: starting grid column number and row\n"\
 "             number to write to each output grid file. The defaults are 0.\n"\
 "         t swath_data_type_1 ... swath_data_type_chan_count: specifies the type\n"\
@@ -554,8 +554,16 @@ static bool ComputeEwa(image *uimg, image *vimg,
       iu2 = (int)(u0 + this_ewap->u_del);
       iv1 = (int)(v0 - this_ewap->v_del);
       iv2 = (int)(v0 + this_ewap->v_del);
-      if (iu1 >= 0 && iu2 < grid_cols &&
-	  iv1 >= 0 && iv2 < grid_rows) {
+      if (iu1 < 0)
+	iu1 = 0;
+      if (iu2 >= grid_cols)
+	iu2 = grid_cols - 1;
+      if (iv1 < 0)
+	iv1 = 0;
+      if (iv2 >= grid_rows)
+	iv2 = grid_rows - 1;
+      if (iu1 < grid_cols && iu2 >= 0 &&
+	  iv1 < grid_rows && iv2 >= 0) {
 	got_point = TRUE;
 	swath_offset = col + row * cols;
 	this_swath = swath_chan_image;
@@ -639,7 +647,7 @@ static bool ComputeEwa(image *uimg, image *vimg,
 	    dq += ddq;
 	  } /* for (iu = iu1; iu <= iu2; iu++) */
 	} /* for (iv = iv1; iv <= iv2; iv++) */
-      } /* if (u1 >= grid_col_start && u2 <= grid_col_end && */
+      } /* if (iu1 < grid_cols && iu2 >= 0 && */
     } /* for (col = 0, this_ewap = ewap; */
   } /* for (row = 0; row < rows; row++) */
   return(got_point);
@@ -761,11 +769,11 @@ main (int argc, char *argv[])
 {
   char  *option;
   int   chan_count;
-  int   swath_scan_first;
+  int   chan_scan_first;
+  int   colrow_scan_first;
   int   grid_col_start;
   int   grid_row_start;
   bool  maximum_weight_mode;
-  bool  col_row_presubsetted;
   bool  got_grid_data_type;
   bool  got_grid_fill;
   int   first_scan_with_data;
@@ -780,7 +788,6 @@ main (int argc, char *argv[])
   int   swath_rows_per_scan;
   int   grid_cols;
   int   grid_rows;
-  int   col_row_scan_first;
   int   fill_count;
 
   image  *swath_col_image;
@@ -795,7 +802,7 @@ main (int argc, char *argv[])
   ewa_weight     ewaw;
 
   int   i;
-  int   swath_scan_last;
+  int   chan_scan_last;
   int   scan;
   
   /*
@@ -804,8 +811,8 @@ main (int argc, char *argv[])
   verbose                = FALSE;
   very_verbose           = FALSE;
   maximum_weight_mode    = FALSE;
-  col_row_presubsetted   = FALSE;
-  swath_scan_first       = 0;
+  chan_scan_first        = 0;
+  colrow_scan_first      = 0;
   grid_col_start         = 0;
   grid_row_start         = 0;
   got_grid_data_type     = FALSE;
@@ -862,15 +869,17 @@ main (int argc, char *argv[])
       case 'm':
 	maximum_weight_mode = TRUE;
 	break;
-      case 'p':
-	col_row_presubsetted = TRUE;
-	break;
       case 's':
 	++argv; --argc;
 	if (argc <= 0)	  
-	  DisplayInvalidParameter("swath_scan_first");
-	if (sscanf(*argv, "%d", &swath_scan_first) != 1)
-	  DisplayInvalidParameter("swath_scan_first");
+	  DisplayInvalidParameter("chan_scan_first");
+	if (sscanf(*argv, "%d", &chan_scan_first) != 1)
+	  DisplayInvalidParameter("chan_scan_first");
+	++argv; --argc;
+	if (argc <= 0)	  
+	  DisplayInvalidParameter("colrow_scan_first");
+	if (sscanf(*argv, "%d", &colrow_scan_first) != 1)
+	  DisplayInvalidParameter("colrow_scan_first");
 	break;
       case 'S':
 	++argv; --argc;
@@ -1020,8 +1029,8 @@ main (int argc, char *argv[])
 	      grid_chan_io_image[i].file);
     fprintf(stderr, "\n");
     fprintf(stderr, "  maximum_weight_mode = %d\n", maximum_weight_mode);
-    fprintf(stderr, "  col_row_presubsetted= %d\n", col_row_presubsetted);
-    fprintf(stderr, "  swath_scan_first    = %d\n", swath_scan_first);
+    fprintf(stderr, "  chan_scan_first     = %d\n", chan_scan_first);
+    fprintf(stderr, "  colrow_scan_first   = %d\n", colrow_scan_first);
     fprintf(stderr, "  grid_col_start      = %d\n", grid_col_start);
     fprintf(stderr, "  grid_row_start      = %d\n", grid_row_start);
     for (i = 0; i < chan_count; i++)
@@ -1049,18 +1058,17 @@ main (int argc, char *argv[])
    */
   if (swath_rows_per_scan < 2)
     error_exit("fornav: swath_rows_per_scan must be at least 2");
-  col_row_scan_first = col_row_presubsetted ? 0 : swath_scan_first;
   InitializeImage(swath_col_image, "swath_col_image", "r", "f4",
-		  swath_cols, swath_rows_per_scan, col_row_scan_first);
+		  swath_cols, swath_rows_per_scan, colrow_scan_first);
 
   InitializeImage(swath_row_image, "swath_row_image", "r", "f4",
-		  swath_cols, swath_rows_per_scan, col_row_scan_first);
+		  swath_cols, swath_rows_per_scan, colrow_scan_first);
   for (i = 0; i < chan_count; i++) {
     char name[100];
     sprintf(name, "swath_chan_image %d", i); 
     InitializeImage(&swath_chan_image[i], name, "r",
 		    swath_chan_image[i].data_type_str,
-		    swath_cols, swath_rows_per_scan, swath_scan_first);
+		    swath_cols, swath_rows_per_scan, chan_scan_first);
     sprintf(name, "grid_chan_io_image %d", i); 
     InitializeImage(&grid_chan_io_image[i], name, "w",
 		    grid_chan_io_image[i].data_type_str,
@@ -1089,9 +1097,9 @@ main (int argc, char *argv[])
   /*
    *  Process each scan
    */
-  swath_scan_last = swath_scan_first + swath_scans - 1;
+  chan_scan_last = chan_scan_first + swath_scans - 1;
   first_scan_with_data = -1;
-  for (scan = swath_scan_first; scan <= swath_scan_last; scan++) {
+  for (scan = chan_scan_first; scan <= chan_scan_last; scan++) {
     if (very_verbose)
       fprintf(stderr, "Processing scan %d\n", scan);
 
@@ -1124,7 +1132,7 @@ main (int argc, char *argv[])
       last_scan_with_data = scan;
     }
 
-  } /* for (scan = swath_scan_first; scan <= swath_scan_last; scan++) */
+  } /* for (scan = chan_scan_first; scan <= chan_scan_last; scan++) */
 
   /*
    *  Write out gridded channel data for each channel
@@ -1169,11 +1177,13 @@ main (int argc, char *argv[])
     int scans_with_data;
 
     scans_with_data = last_scan_with_data - first_scan_with_data + 1;
-    if (swath_scan_first != first_scan_with_data ||
-	swath_scans      != scans_with_data) {
-      fprintf(stderr, "On next call to fornav, set:\n");
-      fprintf(stderr, "  swath_scan_first: %d\n", first_scan_with_data);
-      fprintf(stderr, "  swath_scans:      %d\n", scans_with_data);
+    if (chan_scan_first != first_scan_with_data ||
+	swath_scans     != scans_with_data) {
+      fprintf(stderr, "On next call to fornav, use:\n");
+      fprintf(stderr, "  chan_scan_first:   %d\n", first_scan_with_data);
+      fprintf(stderr, "  colrow_scan_first: %d\n",
+	      colrow_scan_first + first_scan_with_data - chan_scan_first);
+      fprintf(stderr, "  swath_scans:       %d\n", scans_with_data);
     }
   }
 }
