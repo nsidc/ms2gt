@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-# $Id: mod02_usage.pl,v 1.2 2001/02/19 23:56:31 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.3 2001/02/20 00:08:41 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -84,7 +84,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
   latlon_src: 1: use 5km latlon from MOD021KM hdf file (default).
               3: use 1km latlon from MOD03 hdf file.
               H: use 1km latlon from MOD02HKM hdf file.
-              Q: use 1km latlon form MOD02QKM hdf file.
+              Q: use 1km latlon from MOD02QKM hdf file.
   NOTE: if latlon_src is set to 3, then ancil_src is forced to 3.
   ancil_src: 1: use 5km ancillary data from MOD021KM hdf file (default).
              3: use 1km ancillary data from MOD03 hdf file.
