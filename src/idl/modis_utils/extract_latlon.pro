@@ -4,7 +4,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/extract_latlon.pro,v 1.5 2001/01/29 23:53:35 haran Exp haran $
+;$Header: /export/data/ms2gth/src/idl/modis_utils/extract_latlon.pro,v 1.6 2001/02/10 00:21:39 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -39,6 +39,7 @@ PRO extract_latlon, hdf_file, tag
 
   print, 'extract_latlon:'
   print, '  hdf_file:       ', hdf_file
+  print, '  tag:            ', tag
 
   ancillary = 'none'
   modis_ancillary_read, hdf_file, ancillary, image, $
