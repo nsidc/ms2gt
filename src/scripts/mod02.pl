@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.60 2004/12/02 18:55:30 haran Exp haran $
+# $Id: mod02.pl,v 1.61 2004/12/27 21:18:07 haran Exp haran $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -56,7 +56,7 @@ if (@ARGV < 4) {
     print $mod02_usage;
     exit 1;
 }
-if (@ARGV <= 20) {
+if (@ARGV <= 21) {
     $dirinout = shift(@ARGV);
     $tag = shift(@ARGV);
     $listfile = shift(@ARGV);
@@ -145,6 +145,13 @@ if (@ARGV <= 20) {
 	    print "invalid mask_factor\n$mod02_usage";
 	}
     }
+    if (@ARGV) {
+	$mask_keep = shift(@ARGV);
+	if ($mask_keep ne "0" && $mask_keep ne "1") {
+	    print "invalid mask_keep\n$mod02_usage";
+	    exit 1;
+	}
+    }
 } else {
     print $mod02_usage;
     exit 1;
@@ -171,7 +178,8 @@ print_stderr("\n".
              "> tile_rows        = $tile_rows\n".
              "> tile_overlap     = $tile_overlap\n".
              "> maskfile         = $maskfile\n".
-	     "> mask_factor      = $mask_factor\n");
+	     "> mask_factor      = $mask_factor\n".
+             "> mask_keep        = $mask_keep\n");
 
 if ($chanfile eq "none" && $ancilfile eq "none") {
     diemail("$script: FATAL: chanfile and ancilfile must not both be none");
@@ -1166,7 +1174,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		do_or_die("rm -f $ancil_file");
 	    }
 	}
-	if (!$keep && $mask_tile) {
+	if (!$mask_keep && $mask_tile) {
 	    do_or_die("rm -f $mask_tile");
 	}
     }

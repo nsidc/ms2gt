@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.20 2004/11/25 05:01:04 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.21 2005/01/11 22:18:26 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -17,8 +17,8 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
        defaults:    0        none         none         none         none
                 [tile_cols [tile_rows [tile_overlap
                      1          1          300
-                [maskfile [mask_factor]]]]]]]]]]]]]]]
-       defaults:   none        6
+                [maskfile [mask_factor [mask_keep]]]]]]]]]]]]]]]]
+       defaults:   none        6            0
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
@@ -141,7 +141,9 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
   maskfile: one byte per pixel image having 0 as the mask value.
   mask_factor: indicates the factor to use in expanding the mask file to
         match the dimensions of the grid defined by gpdfile. Must be greater
-        than 0. The default value is 6.\n\n";
+        than 0. The default value is 6.
+  mask_keep: 0 delete all created mask files after gridding (default).
+             1 do not delete any created mask files after gridding.\n\n";
 
 # this makes the routine work properly using require in other programs
 1
