@@ -127,6 +127,15 @@ endif else begin
         openr, lun, file_in[i], /get_lun
         readu, lun, img_in
         free_lun, lun
+        if (n_elements(file_in) eq 4) and (i eq 1) then begin
+            img_in2 = img_in
+            openr, lun, file_in[2], /get_lun
+            readu, lun, img_in
+            free_lun, lun
+            img_in = img_in / 2 + img_in2 / 2
+            img_in2 = 0
+            file_in[2] = file_in[3]
+        endif
         if n_elements(soze_in) eq 1 then begin
             img_in = img_in * soze
             if bytes_per_cell eq 1 then begin
