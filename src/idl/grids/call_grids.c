@@ -5,10 +5,13 @@
  * functions.
  * The functions contained here are:
  *   call_init_grid
+ *   call_forward_grid
+ *   call_inverse_grid
+ *   call_close_grid
  * 14-Mar-2001 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char call_grids_c_rcsid[] = "$Header: /export/data/modis/src/idl/grids/call_grids.c,v 1.4 2001/03/21 14:57:00 haran Exp haran $";
+static const char call_grids_c_rcsid[] = "$Header: /export/data/ms2gth/src/idl/grids/call_grids.c,v 1.5 2001/03/24 00:12:56 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
