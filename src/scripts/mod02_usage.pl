@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.7 2001/05/25 21:31:39 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.8 2001/05/29 23:11:27 haran Exp haran $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -69,7 +69,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                     Range is 16-bit unsigned integer and Land/SeaMask and
                     gflags are unsigned bytes) (default).
                   scaled - raw values multiplied by a parameter-specific
-                    scale factor (floating-point). Note that scaling factor
+                    scale factor (floating-point). Note that scale factor
                     for Height, Land/SeaMask, and gflags is 1.
               weight_type - a string that specifies the type of weighting
                 that should be perfomed on the channel. The string must be one
