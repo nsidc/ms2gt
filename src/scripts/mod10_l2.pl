@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod10_l2.pl,v 1.12 2001/04/23 20:39:58 haran Exp haran $
+# $Id: mod10_l2.pl,v 1.13 2001/04/26 20:26:15 haran Exp haran $
 
 #========================================================================
 # mod10_l2.pl - grids MOD10_L2 data
@@ -34,11 +34,11 @@ USAGE: mod10_l2.pl dirinout tag listfile gpdfile
   gpdfile: .gpd file that defines desired output grid.
   chanlist: string specifying channel numbers to be gridded. The default
             is 1, i.e. grid channel 1 only. The channel numbers are:
-              1: Snow Cover - 8-bit unsigned
-              2: Snow Cover PixelQA - 8-bit unsigned
+              1: snow Snow Cover - 8-bit unsigned
+              2: snqa Snow Cover PixelQA - 8-bit unsigned
   latlonlistfile: text file containing a list of MOD02 or MOD03 files whose
                   latitude and longitude data should be used in place of the
-                  latlon data in the corresponding MOD10_L2 file in listfile.
+                  latlon data in the corresponding MOD10_L2 files in listfile.
                   The default is \"none\" indicating that the latlon data in
                   each MOD10_L2 file should be used without substitution.
   keep: 0: delete intermediate chan, lat, lon, col, and row files (default).
@@ -104,6 +104,24 @@ print_stderr("\n".
 
 chdir_or_die($dirinout);
 
+my $chan_count = length($chanlist);
+my @chan_cat;
+my @chans;
+my $i;
+my @chan_names_table = ("snow", "snqa");
+my @chan_names;
+for ($i = 0; $i < $chan_count; $i++) {
+    $chan_cat[$i] = "cat ";
+    my $channum = substr($chanlist, $i, 1);
+    if ($channum ne "1" &&
+	$channum ne "2") {
+	print "invalid chanlist\n$Usage";
+	exit 1;
+    }
+    $chans[$i] = sprintf("%02d", $channum);
+    $chan_names[$i] = $chan_names_table[$channum - 1];
+}
+
 my @list;
 open_or_die("LISTFILE", "$listfile");
 print_stderr("contents of listfile:\n");
@@ -127,6 +145,19 @@ if ($latlonlistfile ne "none") {
     close(LATLONLISTFILE);
 }
 
+my @gridsize = `gridsize $gpdfile`;
+my ($grid_cols) = ($gridsize[0] =~ /cols:\s*(\d+)/);
+my ($grid_rows) = ($gridsize[1] =~ /rows:\s*(\d+)/);
+if (!defined($grid_cols) || $grid_cols == 0 ||
+    !defined($grid_rows) || $grid_rows == 0) {
+    diemail("$script: FATAL: " .
+	    "error opening gpdfile: $gpdfile\n");
+}
+$grid_cols = sprintf("%05d", $grid_cols);
+$grid_rows = sprintf("%05d", $grid_rows);
+print_stderr("$script: MESSAGE:\n" .
+	     "grid will contain $grid_cols cols and $grid_rows rows\n");
+
 my $hdf;
 my $swath_cols = 0;
 my $swath_rows = 0;
@@ -134,14 +165,6 @@ my $latlon_cols = 0;
 my $latlon_rows = 0;
 my $lat_cat = "cat ";
 my $lon_cat = "cat ";
-my $chan_count = length($chanlist);
-my @chan_cat;
-my @chans;
-my $i;
-for ($i = 0; $i < $chan_count; $i++) {
-    $chan_cat[$i] = "cat ";
-    $chans[$i] = sprintf("%02d", substr($chanlist, $i, 1));
-}
 my $swath_rows_per_scan = 20;
 my $this_swath_cols;
 my $this_swath_rows;
@@ -306,14 +329,6 @@ my $cr_scans = $this_cols_scans;
 my $cr_scan_first = $this_cols_scan_first;
 my $cr_rows_per_scan = $this_cols_rows_per_scan;
 
-open_or_die("GPDFILE", "$ENV{PATHMPP}/$gpdfile");
-my $line = <GPDFILE>;
-$line = <GPDFILE>;
-close(GPDFILE);
-my ($grid_cols, $grid_rows) = ($line =~ /(\S+)\s+(\S+)/);
-$grid_cols = sprintf("%05d", $grid_cols);
-$grid_rows = sprintf("%05d", $grid_rows);
-
 if ($interp_factor > 1) {
     my $col_min = -$rind;
     my $col_max = $grid_cols + $rind - 1;
@@ -378,9 +393,9 @@ my $t_option = "-t u1";
 my $f_option = "-f 255";
 for ($i = 0; $i < $chan_count; $i++) {
     my $chan_file = $chan_files[$i];
-    my $chan = $chans[$i];
+    my $chan_name = $chan_names[$i];
     my $tagext = "rawm";
-    my $grid_file = "$tag\_$tagext\_ch$chan\_$grid_cols\_$grid_rows.img";
+    my $grid_file = "$tag\_$tagext\_$chan_name\_$grid_cols\_$grid_rows.img";
     do_or_die("fornav 1 -v -m $t_option $f_option " .
 	      "-s $swath_scan_first 0 " .
 	      "-d $weight_distance_max " .
