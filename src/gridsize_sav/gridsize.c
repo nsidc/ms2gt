@@ -4,7 +4,7 @@
  * 6-Mar-2001 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char gridsize_c_rcsid[] = "$Header: /export/data/modis/src/gridsize/gridsize.c,v 1.7 2001/01/24 17:14:50 haran Exp $";
+static const char gridsize_c_rcsid[] = "$Header: /export/data/ms2gth/src/gridsize/gridsize.c,v 1.1 2001/03/06 23:26:32 haran Exp haran $";
 
 #include <stdio.h>
 #include <math.h>
@@ -99,4 +99,5 @@ main (int argc, char *argv[])
      */
     close_grid(grid_def);
   }
+  exit(EXIT_SUCCESS);
 }
