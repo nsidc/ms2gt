@@ -3,7 +3,7 @@
 ;*
 ;* 28-Feb-2001  Terry Haran  tharan@kryos.colorado.edu  303-492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/grids/grid_class__define.pro,v 1.1 2001/03/20 21:54:41 haran Exp haran $
+;$Header: /export/data/modis/src/idl/grids/grid_class__define.pro,v 1.2 2001/03/20 23:55:13 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -48,9 +48,9 @@ function grid_class::init, gpd_filename, help=help
                                  gpd_filename, gcs)
     self.gcs = gcs
     if help ne 0 then begin
-      help, self, /object, /full
-      help, self.gcs, /struct
-  endif
+        help, self, /object, /full
+        help, self.gcs, /struct
+    endif
     if not init_grid_ok then begin
         message, 'call_init_grid failed', /informational
         return_code = 0
@@ -111,7 +111,20 @@ end
 ;-----------------------------------------------------------------------------
 ; grid_class::cleanup
 ;
-pro grid_class::cleanup
+pro grid_class::cleanup, help=help
+    if n_elements(help) eq 0 then $
+      help = 0
+    gcs = self.gcs
+    close_grid_ok = call_external('call_grids.so', 'call_close_grid', $
+                                  gcs)
+    self.gcs = gcs
+    if help ne 0 then begin
+        help, self, /object, /full
+        help, self.gcs, /struct
+    endif
+    if not close_grid_ok then begin
+        message, 'call_close_grid failed', /informational
+    end
 end
 
 
