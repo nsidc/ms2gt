@@ -79,9 +79,11 @@ my $swath_rows = 0;
 my $chan_cat = "cat ";
 my $lat_cat = "cat ";
 my $lon_cat = "cat ";
+my $swath_rows_per_scan;
 foreach $hdf (@list) {
     chomp $hdf;
     my ($resolution) = ($hdf =~ /MOD02(.)/);
+    $swath_rows_per_scan = 10;
     if ($resolution eq "1") {
 	do_or_die("idl_sh.pl extract_chan \"'$hdf'\" $chan");
 	my $hdf_500 = $hdf;
@@ -89,7 +91,8 @@ foreach $hdf (@list) {
 	do_or_die("idl_sh.pl extract_latlon \"'$hdf_500'\" 1");
     } else {
 	my $interp_factor = ($resolution eq "H") ? 2 : 4;
-	do_or_die("idl_sh.pl extract_latlon \"'hdf'\" " .
+	$swath_rows_per_scan *= $interp_factor;
+	do_or_die("idl_sh.pl extract_latlon \"'$hdf'\" " .
 		  "$interp_factor channel=$chan");
     }
     my ($filestem) = ($hdf =~ /(.*)\.hdf/);
@@ -172,7 +175,6 @@ $line = <GPDFILE>;
 close(GPDFILE);
 my ($grid_cols, $grid_rows) = ($line =~ /(\S+)\s+(\S+)/);
 my $grid_file = "$tag\_grid\_$grid_cols\_$grid_rows.img";
-my $swath_rows_per_scan = 10;
 if ($swath_scans eq "0") {
     $swath_scans = $swath_rows / $swath_rows_per_scan;
 }
