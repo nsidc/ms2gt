@@ -3,7 +3,7 @@
 ;*
 ;* 23-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/fornav.pro,v 1.3 2000/10/25 23:58:29 haran Exp haran $
+;$Header: /export/data/modis/src/idl/fornav/fornav.pro,v 1.4 2000/12/09 22:32:44 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -33,6 +33,7 @@
 ;               [, weight_sum_min=weight_sum_min]
 ;               [, bytes_per_cell=bytes_per_cell]
 ;               [, fill=fill]
+;               [, /col_row_presubsetted]
 ;
 ; ARGUMENTS:
 ;    Inputs:
@@ -84,6 +85,10 @@
 ;         it must have the same number of elements as swath_chan_files.
 ;         If bytes_per_cell equals 1, then default value of fill is -1;
 ;         otherwise it is 0.
+;       col_row_presubsetted: if set, then it is assumed that
+;         swath_scan_first is 0 for swath_col_file and swath_row_file;
+;         if not set (the default), then swath_scan_first is used as is for
+;         swath_col_file and swath_row_file.
 ;
 ; EXAMPLE:
 ;         fornav, 1354, 203, 10, $
@@ -113,7 +118,8 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
             weight_factor=weight_factor, $
             weight_sum_min=weight_sum_min, $
             bytes_per_cell=bytes_per_cell, $
-            fill=fill
+            fill=fill, $
+            col_row_presubsetted=col_row_presubsetted
 
   usage = 'usage: fornav, swath_cols, swath_scans, swath_rows_per_scan, ' + $
           'swath_col_file, swath_row_file, swath_chan_files, ' + $
@@ -129,7 +135,8 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
           '[, weight_factor=weight_factor] ' + $
           '[, weight_sum_min=weight_sum_min] ' + $
           '[, bytes_per_cell=bytes_per_cell] ' + $
-          '[, fill=fill]'
+          '[, fill=fill] ' + $
+          '[, col_row_presubsetted=col_row_presubsetted]'
 
   if n_params() ne 9 then $
     message, usage
@@ -159,6 +166,8 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
       else $
         fill = 0B
   endif
+  if n_elements(col_row_presubsetted) eq 0 then $
+    col_row_presubsetted = 0
 
   print, 'fornav:'
   print, '  swath_cols:          ', swath_cols
@@ -181,6 +190,7 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
   print, '  weight_sum_min:      ', weight_sum_min
   print, '  bytes_per_cell:      ', bytes_per_cell
   print, '  fill:                ', fill
+  print, '  col_row_presubsetted:', col_row_presubsetted
 
   chan_count = n_elements(swath_chan_files)
   if chan_count ne n_elements(grid_chan_files) then begin
@@ -262,8 +272,10 @@ PRO fornav, swath_cols, swath_scans, swath_rows_per_scan, $
   if swath_scan_first gt 0 then begin
       first_element = long(swath_scan_first) * swath_rows_per_scan * $
                       swath_cols
-      point_lun, swath_col_lun, first_element * 4
-      point_lun, swath_row_lun, first_element * 4
+      if col_row_presubsetted eq 0 then begin
+          point_lun, swath_col_lun, first_element * 4
+          point_lun, swath_row_lun, first_element * 4
+      endif
       for i = 0, chan_count - 1 do $
         point_lun, swath_chan_lun[i], first_element * 2
   endif
