@@ -344,6 +344,17 @@ if ($interp_factor > 1) {
     $cr_rows_per_scan = $this_cols_rows_per_scan;
 }
 
+if ($cr_scans == 0) {
+    if (!$keep) {
+	for ($i = 0; $i < $chan_count; $i++) {
+	    do_or_die("rm -f $chan_files[$i]");
+	}
+	do_or_die("rm -f $cols_file");
+	do_or_die("rm -f $rows_file");
+    }
+    diemail("$script: FATAL: $tag: grid contains no data");
+}
+
 if ($swath_cols != $cr_cols) {
     diemail("$script: FATAL: " .
 	    "swath_cols: $swath_cols is not equal to cr_cols: $cr_cols");
