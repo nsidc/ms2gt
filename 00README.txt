@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.8 --  06 April 2004
+Readme for MODIS Swath-to-Grid Toolbox 0.9 --  25 August 2004
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -44,3 +44,7 @@ was modified to allow for fractional offsets. These modifications were
 implemented to fix geolocation problems arising from apparently incorrect
 row offsets that are specified in the HDF-EOS structural metadata for
 geolocation mappings.
+
+As of 0.9, the maps directory was replaced with the mapx directory
+containing the latest (as of 25 August 2004) unreleased version of the
+mapx library.
