@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.14 2003/03/18 17:43:50 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.15 2004/11/21 02:14:39 haran Exp haran $
 ;*========================================================================*/
 
 ;+
@@ -141,7 +141,7 @@ PRO extract_chan, hdf_file, tag, channel, $
   image_dimen = size(image, /dimensions)
   cols_string = string(image_dimen[0], format='(I5.5)')
   rows_string = string(image_dimen[1], format='(I5.5)')
-  if modis_type ne 'MOD35' then begin
+  if (modis_type ne 'MOD35') and (modis_type ne 'MYD35') then begin
       channel_string = string(channel, format='(I2.2)')
       conv_string = strmid(conversion, 0, 3)
       file_out = tag + '_ch' + channel_string + '_' + $
