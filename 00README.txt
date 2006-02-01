@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.13 --  04 August 2005
+Readme for MODIS Swath-to-Grid Toolbox 0.14 --  01 February 2006
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -74,3 +74,7 @@ modis_ancillary_read.pro so that it works with MOD021KM data.
 
 As of 0.13, a bug was fixed in mod02.pl that caused problems when
 tile_cols was equal to 1 but tile_rows was greater than 1.
+
+As of 0.14, a bug was fixed in extract_chan.pro that cause problems with
+processing MYD35 files using mod35_l2.pl (thanks to Ian Joughin who found
+and fixed this).
