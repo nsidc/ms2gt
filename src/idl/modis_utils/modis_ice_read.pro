@@ -71,7 +71,7 @@ PRO MODIS_ICE_READ, FILENAME, BAND, IMAGE, $
 ;    Based on modis_level1b_read from Liam Gumley.
 ;-
 
-rcs_id = '$Id: modis_ice_read.pro,v 1.2 2001/05/03 15:57:49 haran Exp haran $'
+rcs_id = '$Id: modis_ice_read.pro,v 1.3 2002/05/14 16:45:17 haran Exp tharan $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -112,34 +112,28 @@ sd_id = hdf_sd_start(fileinfo.name)
 varlist = hdf_sd_varlist(sd_id)
 hdf_sd_end, sd_id
 
-;- Locate image arrays
-index = where(varlist.varnames eq 'Ice Surface Temperature', count_temp)
-index = where(varlist.varnames eq 'Ice Surface Temperature PixelQA', count_tqa)
-index = where(varlist.varnames eq 'Sea Ice by IST', count_ice)
-if (count_temp ne 1) or (count_tqa ne 1) or (count_ice ne 1) then $
-  message, 'FILENAME is not MODIS Sea Ice HDF => ' + fileinfo.name
-
-;-------------------------------------------------------------------------------
-;- CHECK BAND NUMBER, AND KEYWORDS WHICH DEPEND ON BAND NUMBER
-;-------------------------------------------------------------------------------
-
-;- Check band number
-
-filetype = 'MOD29'
-if (band lt 1) or (band gt 6) then $
-    message, 'BAND range is 1-6 for this MODIS type => ' + filetype
-
 ;-------------------------------------------------------------------------------
 ;- SET VARIABLE NAME FOR IMAGE DATA
 ;-------------------------------------------------------------------------------
 case band of
-  1: sds_name = 'Sea Ice by Reflectance'
-  2: sds_name = 'Sea Ice by Reflectance PixelQA'
-  3: sds_name = 'Ice Surface Temperature'
-  4: sds_name = 'Ice Surface Temperature PixelQA'
-  5: sds_name = 'Sea Ice by IST'
-  6: sds_name = 'Combined Sea Ice'
+  1: sds_names = ['Sea Ice by Reflectance', 'Sea_Ice_by_Reflectance']
+  2: sds_names = ['Sea Ice by Reflectance PixelQA', $
+                  'Sea_Ice_by_Reflectance_Pixel_QA']
+  3: sds_names = ['Ice Surface Temperature', 'Ice_Surface_Temperature']
+  4: sds_names = ['Ice Surface Temperature PixelQA', $
+                  'Ice_Surface_Temperature_Pixel_QA']
+  5: sds_names = ['Sea Ice by IST']
+  6: sds_names = ['Combined Sea Ice']
 endcase
+for i = 0, n_elements(sds_names) - 1 do begin
+    sds_name = sds_names[i]
+    index = where(varlist.varnames eq sds_name, count_ice)
+    if (count_ice eq 1) then $
+      break
+endfor
+if (count_ice eq 0) and (band ge 3) and (band le 5) then $
+  message, $
+  'No ' + sds_name + ' sds found for file ' + fileinfo.name
 
 ;-------------------------------------------------------------------------------
 ;- OPEN THE FILE IN SDS MODE
@@ -148,12 +142,22 @@ endcase
 sd_id = hdf_sd_start(fileinfo.name)
 
 ;- Check to see that the sds exists
-index = where(varlist.varnames eq sds_name, count_exists)
-if count_exists eq 0 then begin
+if count_ice eq 0 then begin
 
-;- If the sds doesn't exist, then use channel 5 as a proxy to get the fill
+;- If the sds doesn't exist, and band is less than 3 or greater than 5, 
+;  then use band 4 as a proxy for band 1, 2, or 6 to get the fill
 ;  value and the size, print a message, and set the image to the fill value.
-    sds_name_fake = 'Sea Ice by IST'
+    sds_names_fake = ['Ice Surface Temperature PixelQA', $
+                      'Ice_Surface_Temperature_Pixel_QA']
+    for i = 0, n_elements(sds_names_fake) - 1 do begin
+        sds_name_fake = sds_names_fake[i]
+        index = where(varlist.varnames eq sds_name_fake, count_fake)
+        if (count_fake eq 1) then $
+          break
+    endfor
+    if (count_fake eq 0) then $
+      message, $
+      'No ' + sds_name_fake + ' sds found for file ' + fileinfo.name
     fill_struct = hdf_sd_attinfo(sd_id, sds_name_fake, '_FillValue')
     fill = fill_struct.data
     message, /informational, 'channel ' + string(band, format='(I1)') + $

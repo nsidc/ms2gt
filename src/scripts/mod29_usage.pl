@@ -1,4 +1,4 @@
-# $Id: mod29_usage.pl,v 1.2 2001/05/14 14:43:04 haran Exp haran $
+# $Id: mod29_usage.pl,v 1.3 2001/05/25 20:42:39 haran Exp tharan $
 
 #========================================================================
 # mod29_usage.pl - defines mod29.pl usage message
@@ -21,11 +21,13 @@ USAGE: mod29.pl dirinout tag listfile gpdfile
   chanlist: string specifying channel numbers to be gridded. The default
             is 1, i.e. grid channel 1 only. The channel numbers are:
               1: icer Sea Ice by Reflectance - 8-bit unsigned
-              2: irqa Sea Ice by Reflectance PixelQA - 8-bit unsigned
+              2: irqa Sea Ice by Reflectance Pixel QA - 8-bit unsigned
               3: temp Ice Surface Temperature - 16-bit unsigned (kelvin * 100)
-              4: itqa Ice Surface Temperature PixelQA - 8-bit unsigned
-              5: icet Sea Ice by IST - 8-bit unsigned
-              6: icrt Combined Sea Ice - 8-bit unsigned
+              4: itqa Ice Surface Temperature Pixel QA - 8-bit unsigned
+              5: icet Sea Ice by IST - 8-bit unsigned,
+                 available only for MODIS version 004 and earlier.
+              6: icrt Combined Sea Ice - 8-bit unsigned,
+                 available only for MODIS version 004 and earlier.
   latlonlistfile: text file containing a list of MOD02 or MOD03 files whose
             latitude and longitude data should be used in place of the latlon
             data in the corresponding MOD29 files in listfile. The default is
