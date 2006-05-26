@@ -22,6 +22,7 @@ PRO MODIS_SNOW_READ, FILENAME, BAND, IMAGE, $
 ;    FILENAME       Name of MODIS Level 1B HDF file
 ;    BAND           Band number to be read: 1 (snow cover), 2 (qa),
 ;                                           3 (snow cover reduced cloud)
+;                                           4 (fractional snow cover)
 ;
 ; OPTIONAL INPUTS:
 ;    None.
@@ -63,7 +64,7 @@ PRO MODIS_SNOW_READ, FILENAME, BAND, IMAGE, $
 ;    Based on modis_level1b_read from Liam Gumley.
 ;-
 
-rcs_id = '$Id: modis_snow_read.pro,v 1.2 2002/05/14 16:44:07 haran Exp haran $'
+rcs_id = '$Id: modis_snow_read.pro,v 1.3 2003/08/06 20:09:56 haran Exp tharan $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -104,31 +105,26 @@ sd_id = hdf_sd_start(fileinfo.name)
 varlist = hdf_sd_varlist(sd_id)
 hdf_sd_end, sd_id
 
-;- Locate image arrays
-index = where(varlist.varnames eq 'Snow Cover', count_snow)
-index = where(varlist.varnames eq 'Snow Cover PixelQA',    count_qa)
-if (count_snow ne 1) or (count_qa ne 1) then $
-  message, 'FILENAME is not MODIS L2 Snow Cover HDF => ' + fileinfo.name
-
-;-------------------------------------------------------------------------------
-;- CHECK BAND NUMBER, AND KEYWORDS WHICH DEPEND ON BAND NUMBER
-;-------------------------------------------------------------------------------
-
-;- Check band number
-
-filetype = 'MOD10_L2'
-if (band lt 1) or (band gt 3) then $
-    message, 'BAND range is 1-3 for this MODIS type => ' + filetype
-
 ;-------------------------------------------------------------------------------
 ;- SET VARIABLE NAME FOR IMAGE DATA
-;-------------------------------------------------------------------------------
-if band eq 1 then $
-  sds_name = 'Snow Cover' $
-else if band eq 2 then $
-  sds_name = 'Snow Cover PixelQA' $
-else $
-  sds_name = 'Snow Cover Reduced Cloud'
+;  -------------------------------------------------------------------------------
+
+case band of
+    1: sds_names = ['Snow Cover', 'Snow_Cover']
+    2: sds_names = ['Snow Cover PixelQA', 'Snow_Cover_Pixel_QA']
+    3: sds_names = ['Snow Cover Reduced Cloud']
+    4: sds_names = ['Fractional_Snow_Cover']
+    else: message, 'BAND range is not 1-4 for file ' + fileinfo.name 
+endcase
+for i = 0, n_elements(sds_names) - 1 do begin
+    sds_name = sds_names[i]
+    index = where(varlist.varnames eq sds_name, count_snow)
+    if (count_snow eq 1) then $
+      break
+endfor
+if (count_snow eq 0) then $
+  message, $
+  'No ' + sds_name + ' sds found for file ' + fileinfo.name
 
 ;-------------------------------------------------------------------------------
 ;- OPEN THE FILE IN SDS MODE
@@ -137,6 +133,7 @@ else $
 sd_id = hdf_sd_start(fileinfo.name)
 
 ;- Read the image array
+print, 'sds_name:', sds_name
 hdf_sd_varread, sd_id, sds_name, image
 
 ;- Read latitude and longitude arrays

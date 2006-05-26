@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod10_l2_usage.pl,v 1.2 2001/05/14 14:38:20 haran Exp haran $
+# $Id: mod10_l2_usage.pl,v 1.3 2003/08/06 20:10:15 haran Exp tharan $
 
 #========================================================================
 # mod10_l2_usage.pl - defines mod10_l2.pl usage message
@@ -23,9 +23,11 @@ USAGE: mod10_l2.pl dirinout tag listfile gpdfile
   chanlist: string specifying channel numbers to be gridded. The default
             is 1, i.e. grid channel 1 only. The channel numbers are:
               1: snow Snow Cover - 8-bit unsigned.
-              2: snqa Snow Cover PixelQA - 8-bit unsigned.
+              2: snqa Snow Cover Pixel QA - 8-bit unsigned.
               3: snrc Snow Cover Reduced Cloud - 8-bit unsigned,
-                 available only for MODIS version 004 and higher.
+                 available only for MODIS version 004.
+              4: snfr Fractional Snow Cover - 8-bit unsigned,
+                 available only for MODIS version 005.
   latlonlistfile: text file containing a list of MOD02 or MOD03 files whose
                   latitude and longitude data should be used in place of the
                   latlon data in the corresponding MOD10_L2 files in listfile.

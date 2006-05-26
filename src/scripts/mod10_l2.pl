@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod10_l2.pl,v 1.17 2003/08/06 20:10:31 haran Exp haran $
+# $Id: mod10_l2.pl,v 1.18 2004/04/05 23:41:40 haran Exp tharan $
 
 #========================================================================
 # mod10_l2.pl - grids MOD10_L2 data
@@ -86,14 +86,15 @@ my $chan_count = length($chanlist);
 my @chan_cat;
 my @chans;
 my $i;
-my @chan_names_table = ("snow", "snqa", "snrc");
+my @chan_names_table = ("snow", "snqa", "snrc", "snfr");
 my @chan_names;
 for ($i = 0; $i < $chan_count; $i++) {
     $chan_cat[$i] = "cat ";
     my $channum = substr($chanlist, $i, 1);
     if ($channum ne "1" &&
 	$channum ne "2" &&
-	$channum ne "3") {
+	$channum ne "3" &&
+        $channum ne "4") {
 	print "invalid chanlist\n$mod10_l2_usage";
 	exit 1;
     }
