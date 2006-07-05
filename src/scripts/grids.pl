@@ -7,7 +7,7 @@
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
 
-# $Header: /home/haran/navdir/src/scripts/grids.pl,v 1.6 2003/10/17 18:25:10 haran Exp $
+# $Header: /data/haran/ms2gth/src/scripts/grids.pl,v 1.1 2006/07/05 17:27:07 tharan Exp tharan $
 
 #========================================================================
 # grid_convert_open - open a pipe for sending input to grid_convert
@@ -20,7 +20,7 @@
 #========================================================================
 #
 #
-#    input:  hemisphere - "north" or "south" or gpd_file
+#    input:  gpd_file
 #
 #    return: 3-element array consisting of:
 #              pipehandle - string containing name of pipe handle
@@ -29,53 +29,40 @@
 #                 grid_convert
 #
 
-if (!defined($ENV{PATH_NAVDIR_SRC})) {
-    print STDERR "PHOTOCLIN: FATAL:\n" .
-	"environment variable PATH_NAVDIR_SRC is not defined\n";
+if (!defined($ENV{PATH_MS2GT_SRC})) {
+    print STDERR "GRIDS: FATAL:\n" .
+	"environment variable PATH_MS2GT_SRC is not defined\n";
     exit 1;
 }
-$path_navdir_src = $ENV{PATH_NAVDIR_SRC};
-$source_navdir = "$path_navdir_src/scripts";
+$path_ms2gt_src = $ENV{PATH_MS2GT_SRC};
+$source_ms2gt = "$path_ms2gt_src/scripts";
 
-require("$source_navdir/pfsetup.pl");
-require("$source_navdir/error_mail.pl");
+require("$source_ms2gt/error_mail.pl");
 
-# globals from pfsetup.pl
+$false = 0;
+$true  = 1;
 
-$junk = $GridParamsNorth;
-$junk = $GridParamsSouth;
-$junk = $false;
-$junk = $true;
-
-if (!defined($ENV{PATH_NAVDIR_RUN})) {
-    print STDERR "PHOTOCLIN: FATAL:\n" .
-	"environment variable PATH_NAVDIR_RUN is not defined\n";
+if (!defined($ENV{HOME})) {
+    print STDERR "GRIDS: FATAL:\n" .
+	"environment variable PATH_HOME is not defined\n";
     exit 1;
 }
-$path_navdir_run = $ENV{PATH_NAVDIR_RUN};
-$GridParamsDir = "$path_navdir_run/grids";
+$home = $ENV{HOME};
+$GridParamsDir = "$home/tmp";
 
 sub grid_convert_open {
-    my ($hemisphere) = @_;
+    my ($gpd_file) = @_;
 
     my $pipehandle = "GRIDPIPE";
     my @dir = `pwd`;
     my $dir_save = $dir[0];
     chomp $dir_save;
     chdir $GridParamsDir;
-    my $gpd_file;
-    if ($hemisphere eq "north") {
-	$gpd_file = $GridParamsNorth;
-    } elsif ($hemisphere eq "south") {
-	$gpd_file = $GridParamsSouth;
-    } else {
-	$gpd_file = $hemisphere;
-    }
     my $time = time();
     my $output_file =
 	"$GridParamsDir/grid_convert_output_" . "$time";
     my $pid = open($pipehandle,
-		   "| $path_navdir_src/../bin/grid_convert $gpd_file >$output_file");
+		   "| $path_ms2gt_src/../bin/grid_convert $gpd_file >$output_file");
     chdir $dir_save;
     return($pipehandle, $pid, $output_file);
 }
