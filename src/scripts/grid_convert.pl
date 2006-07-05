@@ -8,7 +8,7 @@
 # Boulder, CO  80309-0449
 #==============================================================================
 #
-# $Header: /data/haran/ms2gth/src/scripts/grid_convert.pl,v 1.2 2006/07/05 17:42:46 tharan Exp tharan $
+# $Header: /data/haran/ms2gth/src/scripts/grid_convert.pl,v 1.3 2006/07/05 18:06:10 tharan Exp tharan $
 #
 # forward: reads lat/lon pairs from stdin
 #          writes col/row pairs to stdout
@@ -123,7 +123,7 @@ do  {
 	$status_out = $output_arrays[$i];
 	$param1_out = $output_arrays[$i + $count] - $col_offset;
 	$param2_out = $output_arrays[$i + 2 * $count] - $row_offset;
-	printf("%12.7f %12.7f %s\n",
+	printf("%12.5f %12.5f %s\n",
 	       $param1_out, $param2_out, $whatever_array[$i]);
     }
     $total_count += $count;
