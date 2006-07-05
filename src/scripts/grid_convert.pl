@@ -8,7 +8,7 @@
 # Boulder, CO  80309-0449
 #==============================================================================
 #
-# $Header: /home/haran/ms2gt/src/scripts/grid_convert.pl,v 1.15 2004/07/13 20:49:37 haran Exp $
+# $Header: /data/haran/ms2gth/src/scripts/grid_convert.pl,v 1.1 2006/07/05 17:25:15 tharan Exp tharan $
 #
 # forward: reads lat/lon pairs from stdin
 #          writes col/row pairs to stdout
@@ -52,7 +52,7 @@ USAGE: grid_convert.pl gpdfile [direction [col_start [row_start]]]
    input is from stdin
    output is to stdout\n\n";
 
-#The following symbols are defined in pfsetup.pl and were used only once in
+#The following symbols are defined in setup.pl and were used only once in
 #this module. They appear here to suppress warning messages.
 
 # set command line defaults 
