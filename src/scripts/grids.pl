@@ -7,7 +7,7 @@
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
 
-# $Header: /data/haran/ms2gth/src/scripts/grids.pl,v 1.1 2006/07/05 17:27:07 tharan Exp tharan $
+# $Header: /data/haran/ms2gth/src/scripts/grids.pl,v 1.2 2006/07/05 18:02:30 tharan Exp tharan $
 
 #========================================================================
 # grid_convert_open - open a pipe for sending input to grid_convert
@@ -62,7 +62,7 @@ sub grid_convert_open {
     my $output_file =
 	"$GridParamsDir/grid_convert_output_" . "$time";
     my $pid = open($pipehandle,
-		   "| $path_ms2gt_src/../bin/grid_convert $gpd_file >$output_file");
+		   "| grid_convert $gpd_file >$output_file");
     chdir $dir_save;
     return($pipehandle, $pid, $output_file);
 }
