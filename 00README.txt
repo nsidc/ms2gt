@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.15 --  08 June 2006
+Readme for MODIS Swath-to-Grid Toolbox 0.16 --  05 July 2006
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -19,11 +19,11 @@ files. All four Perl programs can optionally read MOD03 files for
 geolocation and/or ancillary data.
 
 The software and associated documentation can be downloaded
-from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.15.tar.gz.
+from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.16.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.15.tar.gz
-tar xvf ms2gt0.15.tar 
+gunzip ms2gt0.16.tar.gz
+tar xvf ms2gt0.16.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
@@ -81,3 +81,8 @@ and fixed this).
 
 As of 0.15, mod10_l2.pl and mod29.pl have been updated for MODIS
 collection 5 products.
+
+As of 0.16, grid_convert.pl (which calls grids.pl and C program
+grid_convert) can be used to convert lat-lon or col-row pairs to col-row
+or lat-lon pairs, respectively. Type grid_convert.pl without any
+parameters to get the syntax.
