@@ -4,7 +4,7 @@
 # 5-Jul-2006 Terry Haran tharan@colorado.edu 303-492-1847
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/haran/ms2gth/src/gridsize/Makefile,v 1.2 2004/08/25 23:22:24 haran Exp $
+RCSID = $Header: /data/haran/ms2gth/src/grid_convert/Makefile,v 1.1 2006/07/05 17:15:15 tharan Exp tharan $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -31,7 +31,7 @@ COMPRESS = gzip
 #
 #	archive file name
 #
-TARFILE = gridsize.tar
+TARFILE = grid_convert.tar
 
 #
 #	debug or optimization settings
@@ -53,8 +53,8 @@ SYSTEM_LIBS = -lm
 CFLAGS = -I$(INCDIR) $(LOCAL_CFLAGS) $(CONFIG_CFLAGS)
 LIBS = -L$(LIBDIR) $(LOCAL_LIBS) $(SYSTEM_LIBS)
 
-SRCS = gridsize.c
-OBJS = gridsize.o
+SRCS = grid_convert.c
+OBJS = grid_convert.o
 HDRS = 
 
 all: grid_convert install
