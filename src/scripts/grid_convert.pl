@@ -8,7 +8,7 @@
 # Boulder, CO  80309-0449
 #==============================================================================
 #
-# $Header: /data/haran/ms2gth/src/scripts/grid_convert.pl,v 1.1 2006/07/05 17:25:15 tharan Exp tharan $
+# $Header: /data/haran/ms2gth/src/scripts/grid_convert.pl,v 1.2 2006/07/05 17:42:46 tharan Exp tharan $
 #
 # forward: reads lat/lon pairs from stdin
 #          writes col/row pairs to stdout
@@ -23,14 +23,13 @@ $|=1;
 # Set source directory so that we can find required files
 
 if (!defined($ENV{PATH_MS2GT_SRC})) {
-    print STDERR "PHOTOCLIN: FATAL:\n" .
+    print STDERR "GRID_CONVERT: FATAL:\n" .
 	"environment variable PATH_MS2GT_SRC is not defined\n";
     exit 1;
 }
 $path_ms2gt_src = $ENV{PATH_MS2GT_SRC};
 $source_ms2gt = "$path_ms2gt_src/scripts";
 
-require("$source_ms2gt/setup.pl");
 require("$source_ms2gt/error_mail.pl");
 require("$source_ms2gt/grids.pl");
 
@@ -99,8 +98,6 @@ do  {
 
     while (<STDIN>) {
 	chomp $_;
-#	my ($whatever, $param1_in, $param2_in) = /^(\S+\s+\S+\s+\S+)\s+(\S+)\s+(\S+)$/;
-#	my ($whatever, $param1_in, $param2_in) = /^(\S+\s+\S+)\s+(\S+)\s+(\S+)$/;
 	my ($param1_in, $param2_in, $whatever) = /^\s*(\S+)\s+(\S+)\s*(\S*)/;
 	$whatever_array[$i] = defined($whatever) ? $whatever : "";
 	$param1_in_array[$i] = $param1_in;
@@ -126,19 +123,8 @@ do  {
 	$status_out = $output_arrays[$i];
 	$param1_out = $output_arrays[$i + $count] - $col_offset;
 	$param2_out = $output_arrays[$i + 2 * $count] - $row_offset;
-	if ($direction eq "forward") {
-	    printf("%-8s %12.6f %12.6f %10.4f %10.4f\n",
-		   $whatever_array[$i],
-		   $param1_in_array[$i], $param2_in_array[$i],
-		   $param1_out, $param2_out);
-	} else {
-	    printf("%-8s %12.6f %12.6f %10.4f %10.4f\n",
-		   $whatever_array[$i],
-		   $param1_out, $param2_out,
-		   $param1_in_array[$i], $param2_in_array[$i]);
-#	    printf("%12.7f %12.7f %s\n",
-#		   $param1_out, $param2_out, $whatever_array[$i]);
-	}
+	printf("%12.7f %12.7f %s\n",
+	       $param1_out, $param2_out, $whatever_array[$i]);
     }
     $total_count += $count;
 } until ($count == 0);
