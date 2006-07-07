@@ -7,7 +7,7 @@
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
 
-# $Header: /data/haran/ms2gth/src/scripts/grids.pl,v 1.2 2006/07/05 18:02:30 tharan Exp tharan $
+# $Header: /data/haran/ms2gth/src/scripts/grids.pl,v 1.3 2006/07/05 19:24:15 tharan Exp tharan $
 
 #========================================================================
 # grid_convert_open - open a pipe for sending input to grid_convert
@@ -42,28 +42,15 @@ require("$source_ms2gt/error_mail.pl");
 $false = 0;
 $true  = 1;
 
-if (!defined($ENV{HOME})) {
-    print STDERR "GRIDS: FATAL:\n" .
-	"environment variable PATH_HOME is not defined\n";
-    exit 1;
-}
-$home = $ENV{HOME};
-$GridParamsDir = "$home/tmp";
-
 sub grid_convert_open {
     my ($gpd_file) = @_;
 
     my $pipehandle = "GRIDPIPE";
-    my @dir = `pwd`;
-    my $dir_save = $dir[0];
-    chomp $dir_save;
-    chdir $GridParamsDir;
     my $time = time();
     my $output_file =
-	"$GridParamsDir/grid_convert_output_" . "$time";
+	"grid_convert_output_" . "$time";
     my $pid = open($pipehandle,
 		   "| grid_convert $gpd_file >$output_file");
-    chdir $dir_save;
     return($pipehandle, $pid, $output_file);
 }
 
