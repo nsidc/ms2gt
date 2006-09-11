@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.16 --  07 July 2006
+Readme for MODIS Swath-to-Grid Toolbox 0.17 --  11 September 2006
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -19,11 +19,11 @@ files. All four Perl programs can optionally read MOD03 files for
 geolocation and/or ancillary data.
 
 The software and associated documentation can be downloaded
-from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.16.tar.gz.
+from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.17.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.16.tar.gz
-tar xvf ms2gt0.16.tar 
+gunzip ms2gt0.17.tar.gz
+tar xvf ms2gt0.17.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
@@ -86,3 +86,11 @@ As of 0.16, grid_convert.pl (which calls grids.pl and C program
 grid_convert) can be used to convert lat-lon or col-row pairs to col-row
 or lat-lon pairs, respectively. Type grid_convert.pl without any
 parameters to get the syntax.
+
+As of 0.17, mod02.pl has been modified to include support for outputting
+the sine and cosine of sensor azimuth and solar azimuth angles as either
+floating-point values or as signed integers scaled by 30000. This required
+additional changes to extract_ancil.pro. Type mod02.pl without any
+parameters for the syntax. Also, modis_ancillary_read.pro was modified so
+that 360 is no longer added to scaled ancillary values that are less than
+0.
