@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.21 2005/01/11 22:18:26 haran Exp haran $
+# $Id: mod02_usage.pl,v 1.22 2005/01/11 22:38:00 haran Exp tharan $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -63,20 +63,27 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                   hght - Height
                   seze - SensorZenith
                   seaz - SensorAzimuth
+                  ssea - sine of SensorAzimuth
+                  csea - cosine of SensorAziuth
                   rang - Range
                   soze - SolarZenith
                   soaz - SolarAzimuth
+                  ssoa - sine of SolarAzimuth
+                  csoa - cosine of SolarAziuth
                   lmsk - Land/SeaMask (available in MOD03 or MYD03 only)
                   gflg - gflags
               conversion - a string that specifies the type of conversion
                 that should be performed on the channel. The string must be
                 one of the following:
                   raw - raw HDF values (16-bit signed integers except that
-                    Range is 16-bit unsigned integer and Land/SeaMask and
-                    gflags are unsigned bytes) (default).
+                    Range is 16-bit unsigned integer, Land/SeaMask and
+                    gflags are unsigned bytes, and ssea, csea, ssoa, and
+                    csoa are floating-point) (default).
                   scaled - raw values multiplied by a parameter-specific
-                    scale factor (floating-point). Note that scale factor
-                    for Height, Land/SeaMask, and gflags is 1.
+                    scale factor (floating-point except that ssea, csea,
+                    ssoa, and csoa are 16-bit signed integers). Note that
+                    scale factor for Height, Land/SeaMask, and gflags is 1;
+                    scale factor for ssea, csea, ssoa, and csoa is 30000.
               weight_type - a string that specifies the type of weighting
                 that should be perfomed on the channel. The string must be one
                 of the following:
