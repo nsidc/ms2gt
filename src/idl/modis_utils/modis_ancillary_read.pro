@@ -4,7 +4,7 @@
 ;*
 ;* 7-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.6 2004/11/21 02:35:57 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.7 2005/03/15 01:02:43 haran Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -103,7 +103,7 @@ PRO modis_ancillary_read, filename, ancillary, image, mirror=mirror, $
                           conversion=conversion, area=area, $
                           latitude=latitude, longitude=longitude
 
-rcs_id = '$Id: modis_ancillary_read.pro,v 1.6 2004/11/21 02:35:57 haran Exp haran $'
+rcs_id = '$Id: modis_ancillary_read.pro,v 1.7 2005/03/15 01:02:43 haran Exp tharan $'
 
 ;-----------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -274,9 +274,6 @@ if (ancillary ne 'none') then begin
         attinfo = hdf_sd_attinfo(sd_id, sds_name, attname)
         if (attinfo.name eq attname) then begin
             image = float(temporary(image) * attinfo.data[0])
-            j = where(image lt 0.0, zcount)
-            if zcount gt 0 then $
-              image[j] = image[j] + 360.0
         endif else $
           image = temporary(image) * 1.0
 
