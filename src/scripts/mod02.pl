@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.66 2005/03/18 23:26:04 haran Exp haran $
+# $Id: mod02.pl,v 1.67 2005/08/04 16:19:10 haran Exp tharan $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -281,7 +281,12 @@ if ($ancilfile ne "none") {
 	    $delete = 0;
 	}
 	my $data_type = "f4";
-	if ($conversion eq "raw") {
+	if ($ancil eq "ssea" || $ancil eq "csea" ||
+	    $ancil eq "ssoa" || $ancil eq "csoa") {
+	    if ($conversion eq "scaled") {
+		$data_type = "s2";
+	    }
+	} elsif ($conversion eq "raw") {
 	    $data_type = "s2";
 	    if ($ancil eq "rang") {
 		$data_type = "u2";
@@ -301,9 +306,13 @@ if ($ancilfile ne "none") {
 	if ($ancil ne "hght" &&
 	    $ancil ne "seze" &&
 	    $ancil ne "seaz" &&
+	    $ancil ne "ssea" &&
+	    $ancil ne "csea" &&
 	    $ancil ne "rang" &&
 	    $ancil ne "soze" &&
 	    $ancil ne "soaz" &&
+	    $ancil ne "ssoa" &&
+	    $ancil ne "csoa" &&
 	    $ancil ne "lmsk" &&
 	    $ancil ne "gflg") {
 	    diemail("$script: FATAL: " .
