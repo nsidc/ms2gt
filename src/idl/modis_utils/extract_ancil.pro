@@ -3,7 +3,7 @@
 ;*
 ;* 8-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_ancil.pro,v 1.3 2002/05/15 16:42:03 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_ancil.pro,v 1.4 2004/10/23 17:41:14 haran Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -64,17 +64,27 @@ PRO extract_ancil, hdf_file, tag, ancillary, $
   print, '  swath_row_first:', swath_row_first
 
   area = [0L, swath_row_first, 999999L, swath_rows]
+  ancil = ancillary
+  conv  = conversion
+  if (ancillary eq 'ssea') or (ancillary eq 'csea') or $
+     (ancillary eq 'ssoa') or (ancillary eq 'csoa') then begin
+      if (ancillary eq 'ssea') or (ancillary eq 'csea') then $
+        ancil = 'seaz' $
+      else $
+        ancil = 'soaz'
+      conv = 'scaled'
+  endif
   if get_latlon ne 0 then begin
       if swath_rows gt 0 then $
-          modis_ancillary_read, hdf_file, ancillary, image, mirror=mirror, $
-                                conversion=conversion, area=area, $
-                                latitude=lat, longitude=lon, $
-                                lat_dimen = size(lat, /dimensions) $
+        modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
+        conversion=conv, area=area, $
+        latitude=lat, longitude=lon, $
+        lat_dimen = size(lat, /dimensions) $
       else $
-          modis_ancillary_read, hdf_file, ancillary, image, mirror=mirror, $
-                                conversion=conversion, $
-                               latitude=lat, longitude=lon, $
-                               lat_dimen = size(lat, /dimensions)
+        modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
+        conversion=conv, $
+        latitude=lat, longitude=lon, $
+        lat_dimen = size(lat, /dimensions)
       cols = lat_dimen[0]
       rows = lat_dimen[1]
       cols_string = string(cols, format='(I5.5)')
@@ -91,22 +101,35 @@ PRO extract_ancil, hdf_file, tag, ancillary, $
       free_lun, lon_lun
   endif else begin
       if swath_rows gt 0 then $
-          modis_ancillary_read, hdf_file, ancillary, image, mirror=mirror, $
-                                conversion=conversion, area=area $
+        modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
+        conversion=conv, area=area $
       else $
-          modis_ancillary_read, hdf_file, ancillary, image, mirror=mirror, $
-                                conversion=conversion
+        modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
+        conversion=conv
   endelse
+
+  if (ancillary eq 'ssea') or (ancillary eq 'ssoa') then begin
+      image = sin(temporary(image) * !dtor)
+      if conversion eq 'scaled' then $
+        image = fix(round(temporary(image) * 30000))
+  endif
+
+  if (ancillary eq 'csea') or (ancillary eq 'csoa') then begin
+      image = cos(temporary(image) * !dtor)
+      if conversion eq 'scaled' then $
+        image = fix(round(temporary(image) * 30000))
+  endif
+
   image_dimen = size(image, /dimensions)
   conv_string = strmid(conversion, 0, 3)
   cols_string = string(image_dimen[0], format='(I5.5)')
   rows_string = string(image_dimen[1], format='(I5.5)')
   mirror_string = string(mirror[0], format='(I1)')
   file_out = tag + '_' + ancillary + '_' + $
-             conv_string + '_' + mirror_string + '_' + $
-             cols_string + '_' + rows_string + '.img'
+    conv_string + '_' + mirror_string + '_' + $
+    cols_string + '_' + rows_string + '.img'
   openw, lun, file_out, /get_lun
   writeu, lun, image
   free_lun, lun
-
+  
 END ; extract_ancil
