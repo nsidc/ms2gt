@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.17 --  11 September 2006
+Readme for MODIS Swath-to-Grid Toolbox 0.18 --  29 January 2007
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -19,11 +19,11 @@ files. All four Perl programs can optionally read MOD03 files for
 geolocation and/or ancillary data.
 
 The software and associated documentation can be downloaded
-from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.17.tar.gz.
+from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.18.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.17.tar.gz
-tar xvf ms2gt0.17.tar 
+gunzip ms2gt0.18.tar.gz
+tar xvf ms2gt0.18.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
@@ -94,3 +94,12 @@ additional changes to extract_ancil.pro. Type mod02.pl without any
 parameters for the syntax. Also, modis_ancillary_read.pro was modified so
 that 360 is no longer added to scaled ancillary values that are less than
 0.
+
+As of 0.18, a bug in mod35_l2.pl has been fixed to handle the case of
+using lat-lon data in the MxD35_L2 hdf file rather than from a MxD03 file.
+This also required changes in interp_colrow.pro including the addition of
+a fill keyword, allowing colsout > interp_factor * colsin, and filling the
+excess colsout columns of output row and column values with the fill
+value. The bug arose because apparently the 5km latitude and longitude
+arrays in a MxD35_L2 hdf file have one column less than the same arrays in
+a corresponding MxD021KM hdf file.
