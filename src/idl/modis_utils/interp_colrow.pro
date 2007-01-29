@@ -3,7 +3,7 @@
 ;*
 ;* 10-Jan-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/modis/src/idl/fornav/interp_colrow.pro,v 1.3 2001/01/19 01:15:44 haran Exp haran $
+;$Header: /data/haran/ms2gth/src/idl/modis_utils/interp_colrow.pro,v 1.4 2001/01/24 17:50:27 haran Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -22,6 +22,7 @@
 ;               [, grid_check=[col_min, col_max, row_min, row_max]]
 ;               [, col_offset=col_offset]
 ;               [, row_offset=row_offset]
+;               [, fill=fill]
 ;
 ; ARGUMENTS:
 ;    Inputs:
@@ -37,8 +38,10 @@
 ;         cell and consisting of cols x rows x rowsperscanin of 4 byte
 ;         floating-point numbers. 
 ;    Outputs:
-;       colsout: number of columns in each output file. Must be less than
-;         or equal to colsin * interp_factor.
+;       colsout: number of columns in each output file. If colsout is
+;         greater than interp_factor * colsin = the valid interpolation/
+;         extrapolation extent, then the column and row values for these
+;         excess columns are set to the fill value.
 ;       tag: string used to construct output filenames:
 ;         colfileout = tag_cols_colsout_scansout_scanfirst_rowsperscanout.img
 ;         rowfileout = tag_rows_colsout_scansout_scanfirst_rowsperscanout.img
@@ -73,6 +76,9 @@
 ;         first column in the input grid is to be mapped. The default is 0.
 ;       row_offset: the row number in the output grid to which the
 ;         first column in the input grid is to be mapped. The default is 0.
+;       fill: value to use for column and row values that extend beyond
+;         the valid interpolation/extrapolation extent. The default value
+;         of fill is -9999.0.
 ;
 ; EXAMPLE:
 ;         interp_colrow, 4, 1354, 203, 10, $
@@ -91,14 +97,16 @@ forward_function congridx
 Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
                    colfilein, rowfilein, colsout, tag, $
                    grid_check=grid_check, $
-                   col_offset=col_offset, row_offset=row_offset
+                   col_offset=col_offset, row_offset=row_offset, $
+                   fill=fill
 
   usage = 'usage: interp_colrow, ' + $
                   'interp_factor, colsin, scansin, rowsperscanin, ' + $
                   'colfilein, rowfilein, colsout, tag' + $
                   '[, grid_check=[col_min, col_max, row_min, row_max]]' + $
                   '[, col_offset=col_offset]' + $
-                  '[, row_offset=row_offset]'
+                  '[, row_offset=row_offset]' + $
+                  '[, fill=fill]'
 
   if n_params() ne 8 then $
     message, usage
@@ -117,6 +125,8 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
     col_offset = 0
   if n_elements(row_offset) eq 0 then $
     row_offset = 0
+  if n_elements(fill) eq 0 then $
+    fill = -9999.0
 
   print, 'interp_colrow:'
   print, '  interp_factor: ', interp_factor
@@ -131,13 +141,26 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
   print, '  col_offset:    ', col_offset
   print, '  row_offset:    ', row_offset
 
-  if colsout gt colsin * interp_factor then $
-    message, 'colsout must be less than or equal to colsin * interp_factor'
+  colsout_fill = colsout - colsin * interp_factor
+  if colsout_fill gt 0 then begin
+      message, /informational, $
+        'WARNING: colsout - colsin * interp_factor = ' + string(colsout_fill)
+      message, /informational, $
+        '  filling excess columns with ' + string(fill)
+  endif else begin
+      colsout_fill = 0
+  endelse
+  colsout_nonfill = colsout - colsout_fill
 
   ; allocate arrays
 
   scan_of_cols_in = fltarr(colsin, rowsperscanin)
   scan_of_rows_in = fltarr(colsin, rowsperscanin)
+
+  rowsperscanout   = rowsperscanin * interp_factor
+  if colsout_fill gt 0 then $
+    scan_of_fill_out = make_array(colsout_fill, rowsperscanout, $
+                                  /float, value=fill)
 
   ; open input files
 
@@ -151,7 +174,6 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
 
   scansout = scansin
   scanfirst = 0
-  rowsperscanout = rowsperscanin * interp_factor
 
   suffix = string(colsout, format='(I5.5)') + '_' + $
            string(scansout, format='(I5.5)') + '_' + $
@@ -183,27 +205,32 @@ Pro interp_colrow, interp_factor, colsin, scansin, rowsperscanin, $
 
       if rowsperscanin le 4 then begin
           scan_of_cols_out = congridx(scan_of_cols_in, interp_factor, $
-                                      colsout, rowsperscanout, $
+                                      colsout_nonfill, rowsperscanout, $
                                       col_offset=col_offset, $
                                       row_offset=row_offset, $
                                       /interp)
           scan_of_rows_out = congridx(scan_of_rows_in, interp_factor, $
-                                      colsout, rowsperscanout, $
+                                      colsout_nonfill, rowsperscanout, $
                                       col_offset=col_offset, $
                                       row_offset=row_offset, $
                                       /interp)
       endif else begin
           scan_of_cols_out = congridx(scan_of_cols_in, interp_factor, $
-                                      colsout, rowsperscanout, $
+                                      colsout_nonfill, rowsperscanout, $
                                       col_offset=col_offset, $
                                       row_offset=row_offset, $
                                       cubic=-0.5)
           scan_of_rows_out = congridx(scan_of_rows_in, interp_factor, $
-                                      colsout, rowsperscanout, $
+                                      colsout_nonfill, rowsperscanout, $
                                       col_offset=col_offset, $
                                       row_offset=row_offset, $
                                       cubic=-0.5)
       endelse
+
+      if colsout_fill gt 0 then begin
+          scan_of_cols_out = [temporary(scan_of_cols_out), scan_of_fill_out]
+          scan_of_rows_out = [temporary(scan_of_rows_out), scan_of_fill_out]
+      endif
 
       if check_grid eq 1 then begin
           i = where((scan_of_cols_out ge col_min) and $
