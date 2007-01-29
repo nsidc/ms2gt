@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod35_l2.pl,v 1.2 2003/08/01 22:00:55 haran Exp haran $
+# $Id: mod35_l2.pl,v 1.3 2004/10/23 18:18:37 haran Exp tharan $
 
 #========================================================================
 # mod35_l2.pl - grids MOD35_L2 data
@@ -243,6 +243,7 @@ my $this_ancil_mirror = 2;
 my $ancil_mirror_expected = 2;
 my $interp_factor;
 my $offset = 0;
+my $missing_latlon_col = 0;
 my $extra_latlon_col = 0;
 my $latlon_rows_per_scan = 2;
 my $ancil_rows_per_scan = $latlon_rows_per_scan;
@@ -271,6 +272,7 @@ foreach $hdf (@list) {
     if (scalar(@latlonlist) == 0) {
 	$interp_factor = 5;
 	$offset = 2;
+	$missing_latlon_col = 1;
 	$extra_latlon_col = 1;
     } else {
 	$latlon_rows_per_scan = 10;
@@ -324,7 +326,7 @@ foreach $hdf (@list) {
 	($lat_file =~ /$filestem_lat(.....)_(.....)/);
     print "$lat_file contains $this_lat_cols cols and " .
 	  "$this_lat_rows rows\n";
-    if ($interp_factor * $this_lat_cols -
+    if ($interp_factor * ($this_lat_cols + $missing_latlon_col) -
 	$extra_latlon_col != $this_swath_cols ||
 	$interp_factor * $this_lat_rows != $this_swath_rows) {
 	diemail("$script: FATAL: " .
@@ -340,7 +342,7 @@ foreach $hdf (@list) {
 	($lon_file =~ /$filestem_lon(.....)_(.....)/);
     print "$lon_file contains $this_lon_cols cols and " .
 	  "$this_lon_rows rows\n";
-    if ($interp_factor * $this_lon_cols -
+    if ($interp_factor * ($this_lon_cols + $missing_latlon_col) -
 	$extra_latlon_col != $this_swath_cols ||
 	$interp_factor * $this_lon_rows != $this_swath_rows) {
 	diemail("$script: FATAL: " .
