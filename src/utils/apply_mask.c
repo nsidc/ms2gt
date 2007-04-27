@@ -5,8 +5,9 @@
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *======================================================================*/
 
-static const char apply_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/apply_mask.c,v 1.1 2004/11/25 22:58:40 haran Exp haran $";
+static const char apply_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/apply_mask.c,v 1.2 2004/12/02 05:09:14 haran Exp tharan $";
 
+#define _LARGEFILE64_SOURCE
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -385,8 +386,8 @@ int main(int argc, char *argv[])
     /*
      *     seek to row containing input region in input mask file
      */
-    if (lseek(fd_mask_in,
-	      row_start_in * bytes_per_mask_row_in,
+    if (lseek64(fd_mask_in,
+	      (off64_t)row_start_in * bytes_per_mask_row_in,
 	      SEEK_SET) == -1) {
       fprintf(stderr, "error seeking to row %d in %s\n",
 	      row_start_in, mask_file_in);
@@ -401,8 +402,8 @@ int main(int argc, char *argv[])
     if (very_very_verbose)
       fprintf(stderr, "row_start_in: %d  bytes_per_row_in: %d\n",
 	      row_start_in, bytes_per_row_in);
-    if (lseek(fd_in,
-	      row_start_in * bytes_per_row_in,
+    if (lseek64(fd_in,
+	      (off64_t)row_start_in * bytes_per_row_in,
 	      SEEK_SET) == -1) {
       fprintf(stderr, "error seeking to row %d in %s\n",
 	      row_start_in, file_in);
