@@ -5,7 +5,7 @@
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *======================================================================*/
 
-static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/make_mask.c,v 1.4 2004/11/25 22:01:38 haran Exp tharan $";
+static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/make_mask.c,v 1.5 2007/04/27 18:45:42 tharan Exp tharan $";
 
 #define _LARGEFILE64_SOURCE
 #include <stdio.h>
@@ -18,6 +18,7 @@ static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/m
 #include "matrix.h"
 
 #define USAGE \
+"$Revision$\n" \
 "usage: make_mask [-v] [-d] [-b] [-s] [-f] [-F factor] [-i mask_file_in]\n"\
 "                 [-m mask_value_in] [-M mask_value_out] [-U unmask_value_out]\n"\
 "          bytes_per_cell cols_in rows_in\n"\
@@ -115,13 +116,12 @@ int main(int argc, char *argv[])
   byte1 **buf_mask_out = NULL;
   byte1 *bufp_in;
   byte1 *bufp_mask_in;
-  byte1 *bufp_mask_out;
   int fd_in  = -1;
   int fd_mask_in = -1;
   int fd_mask_out = -1;
   bool there_were_errors;
   int row, col;
-  int cols_out, rows_out;
+  int cols_out;
   int col_out;
   int rows_per_mask_buf_out;
   int bytes_per_row_in;
@@ -169,6 +169,9 @@ int main(int argc, char *argv[])
 	if (verbose)
 	  very_verbose = TRUE;
 	verbose = TRUE;
+	break;
+      case 'V':
+	fprintf(stderr,"%s\n", make_mask_c_rcsid);
 	break;
       case 'd':
 	delete_if_all_masked = TRUE;
@@ -330,7 +333,6 @@ int main(int argc, char *argv[])
      *     check for a valid region
      */
     cols_out = cols_in_region * factor;
-    rows_out = rows_in_region * factor;
     if (col_start_in + cols_in_region > cols_in) {
       fprintf(stderr,
 	      "make_mask: col_start_in + cols_in_region must be <= cols_in\n");
