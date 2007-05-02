@@ -5,7 +5,7 @@
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *======================================================================*/
 
-static const char apply_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/apply_mask.c,v 1.2 2004/12/02 05:09:14 haran Exp tharan $";
+static const char apply_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/apply_mask.c,v 1.3 2007/04/27 18:46:11 tharan Exp tharan $";
 
 #define _LARGEFILE64_SOURCE
 #include <stdio.h>
@@ -17,6 +17,7 @@ static const char apply_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/
 #include "define.h"
 
 #define USAGE \
+"$Revision$\n" \
 "usage: apply_mask [-v] [-d] [-b] [-B] [-s] [-f]\n"\
 "                  [-m mask_value_in] [-M mask_value_out]\n"\
 "          bytes_per_cell cols_in rows_in\n"\
@@ -111,7 +112,7 @@ int main(int argc, char *argv[])
   int fd_out = -1;
   bool there_were_errors;
   int row, col;
-  int cols_out, rows_out;
+  int cols_out;
   int bytes_per_row_in;
   int bytes_per_mask_row_in;
   int bytes_per_row_out;
@@ -152,6 +153,9 @@ int main(int argc, char *argv[])
 	if (verbose)
 	  very_verbose = TRUE;
 	verbose = TRUE;
+	break;
+      case 'V':
+	fprintf(stderr,"%s\n", apply_mask_c_rcsid);
 	break;
       case 'd':
 	delete_if_all_masked = TRUE;
@@ -287,7 +291,6 @@ int main(int argc, char *argv[])
      *     check for a valid region
      */
     cols_out = cols_in_region;
-    rows_out = rows_in_region;
     if (col_start_in + cols_in_region > cols_in) {
       fprintf(stderr,
 	      "apply_mask: col_start_in + cols_in_region must be <= cols_in\n");
