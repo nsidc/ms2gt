@@ -4,7 +4,9 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /data/haran/ms2gth/src/fornav/fornav.c,v 1.27 2003/08/04 17:41:36 haran Exp haran $";
+static const char fornav_c_rcsid[] = "$Header: /data/haran/ms2gth/src/fornav/fornav.c,v 1.28 2004/10/31 03:19:59 haran Exp tharan $";
+
+#define _LARGEFILE64_SOURCE
 
 #include <stdio.h>
 #include <math.h>
@@ -250,13 +252,13 @@ static void InitializeImage(image *ip, char *name, char *open_type_str,
   }
   
   if (!strcmp(ip->open_type_str, "r")) {
-    int offset;
-    offset = ip->bytes_per_row * ip->rows * swath_scan_first;
+    off64_t offset;
+    offset = ip->bytes_per_row * (off64_t)ip->rows * swath_scan_first;
     if (very_verbose)
-      fprintf(stderr, "seeking to byte %d in %s\n", offset, ip->file);
-    if (fseek(ip->fp, offset, 0) != 0) {
+      fprintf(stderr, "seeking to byte %lld in %s\n", offset, ip->file);
+    if (lseek64(fileno(ip->fp), offset, SEEK_SET) != 0) {
       fprintf(stderr,
-	      "fornav: InitializeImage: error seeking to byte %d in %s\n",
+	      "fornav: InitializeImage: error seeking to byte %lld in %s\n",
 	      offset, ip->file);
       perror("fornav");
       exit(ABORT);
@@ -830,7 +832,7 @@ int WriteGridImage(image *ip, image *wp,
   return(fill_count);
 }
 
-main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {
   char  *option;
   int   chan_count;
