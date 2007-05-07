@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /data/haran/ms2gth/src/fornav/fornav.c,v 1.28 2004/10/31 03:19:59 haran Exp tharan $";
+static const char fornav_c_rcsid[] = "$Header: /data/haran/ms2gth/src/fornav/fornav.c,v 1.29 2007/05/07 16:28:23 tharan Exp tharan $";
 
 #define _LARGEFILE64_SOURCE
 
@@ -16,6 +16,7 @@ static const char fornav_c_rcsid[] = "$Header: /data/haran/ms2gth/src/fornav/for
 #include "matrix.h"
 
 #define USAGE \
+"$Revision$\n" \
 "usage: fornav chan_count\n"\
 "              [-v] [-m]\n"\
 "              [-s chan_scan_first colrow_scan_first]\n"\
@@ -1122,7 +1123,7 @@ int main (int argc, char *argv[])
     grid_chan_io_image[i].file = *argv++;
 
   if (verbose) {
-    fprintf(stderr, "fornav:\n");
+    fprintf(stderr, "fornav: %s\n", fornav_c_rcsid);
     fprintf(stderr, "  chan_count          = %d\n", chan_count);
     fprintf(stderr, "  swath_cols          = %d\n", swath_cols);
     fprintf(stderr, "  swath_scans         = %d\n", swath_scans);
