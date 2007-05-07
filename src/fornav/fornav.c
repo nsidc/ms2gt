@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /data/haran/ms2gth/src/fornav/fornav.c,v 1.29 2007/05/07 16:28:23 tharan Exp tharan $";
+static const char fornav_c_rcsid[] = "$Header: /data/haran/ms2gth/src/fornav/fornav.c,v 1.30 2007/05/07 17:42:22 tharan Exp tharan $";
 
 #define _LARGEFILE64_SOURCE
 
@@ -12,11 +12,13 @@ static const char fornav_c_rcsid[] = "$Header: /data/haran/ms2gth/src/fornav/for
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "define.h"
 #include "matrix.h"
 
 #define USAGE \
-"$Revision$\n" \
+"$Revision: 1.30 $\n" \
 "usage: fornav chan_count\n"\
 "              [-v] [-m]\n"\
 "              [-s chan_scan_first colrow_scan_first]\n"\
