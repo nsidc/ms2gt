@@ -4,7 +4,7 @@
 # 27-Dec-2000 T.Haran 303-492-1847  tharan@kryos.colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/haran/ms2gth/src/fornav/Makefile,v 1.4 2001/02/20 17:46:50 haran Exp haran $
+RCSID = $Header: /data/haran/ms2gth/src/fornav/Makefile,v 1.5 2004/08/25 23:24:08 haran Exp tharan $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -42,6 +42,7 @@ TARFILE = fornav.tar
 #	add -DLSB1ST option to enable byteswapping of cdb files
 #
 CONFIG_CFLAGS = -O
+#CONFIG_CFLAGS = -O -Wall
 #CONFIG_CFLAGS = -DDEBUG -g
 
 #
