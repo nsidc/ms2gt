@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.18 --  29 January 2007
+Readme for MODIS Swath-to-Grid Toolbox 0.19 --  23 September 2008
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -103,3 +103,7 @@ excess colsout columns of output row and column values with the fill
 value. The bug arose because apparently the 5km latitude and longitude
 arrays in a MxD35_L2 hdf file have one column less than the same arrays in
 a corresponding MxD021KM hdf file.
+
+As of 0.19, a bug in src/utils/Makefile has been fixed such that "make
+clean" now removes all *.o files in the src/utils/ directory (thanks to
+Jesse Allen for finding this problem).
