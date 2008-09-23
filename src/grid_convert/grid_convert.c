@@ -17,7 +17,7 @@
  *
  * 29-Jan-1993 K.Knowles knowles@kryos.colorado.edu 303-492-0644
  *========================================================================*/
-static const char grid_convert_c_rcsid[] = "$Header: /home/haran/navdir/src/grid_convert/grid_convert.c,v 1.3 2003/08/21 14:49:12 haran Exp $";
+static const char grid_convert_c_rcsid[] = "$Header: /data/haran/ms2gth/src/grid_convert/grid_convert.c,v 1.1 2006/07/05 17:10:59 tharan Exp tharan $";
 
 #include <stdio.h>
 #include <string.h>
@@ -50,7 +50,10 @@ int main(int argc, char *argv[])
    */
   setlinebuf(stdout);
 
-  if (argc < 2) { printf("FAILURE\n"); error_exit(usage); }
+  if (argc < 2)
+  { printf("%s\nFAILURE\n",  grid_convert_c_rcsid);
+    error_exit(usage);
+  }
 
   grid = init_grid(argv[1]); 
   if (grid == NULL) { printf("FAILURE\n"); error_exit(usage); }
