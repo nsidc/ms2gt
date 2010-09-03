@@ -140,7 +140,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; MODIFICATION HISTORY:
 ; Liam.Gumley@ssec.wisc.edu
 ; http://cimss.ssec.wisc.edu/~gumley
-; $Id: modis_level1b_read.pro,v 1.9 2005/03/13 02:00:28 haran Exp tharan $
+; $Id: modis_level1b_read.pro,v 1.10 2010/09/03 21:06:36 tharan Exp tharan $
 ;
 ; Copyright (C) 1999, 2000 Liam E. Gumley
 ;
@@ -159,7 +159,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ;-
 
-rcs_id = '$Id: modis_level1b_read.pro,v 1.9 2005/03/13 02:00:28 haran Exp tharan $'
+rcs_id = '$Id: modis_level1b_read.pro,v 1.10 2010/09/03 21:06:36 tharan Exp tharan $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -185,7 +185,7 @@ endif
 
 if (n_elements(swath_width_fraction) eq 0) then $
    swath_width_fraction = 1.0
-if (swath_width_fraction < 0.0) or (swath_width_fraction > 1.0) then $
+if (swath_width_fraction lt 0.0) or (swath_width_fraction gt 1.0) then $
    message, 'SWATH_WIDTH_FRACTION must be in the range 0.0 to 1.0'
 
 ;-------------------------------------------------------------------------------
