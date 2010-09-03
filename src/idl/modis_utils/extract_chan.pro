@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.18 2010/09/03 21:13:36 tharan Exp tharan $
+;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.19 2010/09/03 21:16:19 tharan Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -76,18 +76,20 @@ PRO extract_chan, hdf_file, tag, channel, $
   modis_type = strmid(hdf_file, 0, 5)
 
   print, 'extract_chan:'
-  print, '  hdf_file:       ', hdf_file
-  print, '  tag:            ', tag
-  print, '  channel:        ', channel
-  print, '  get_latlon:     ', get_latlon
-  print, '  conversion:     ', conversion
+  print, '  hdf_file:             ', hdf_file
+  print, '  tag:                  ', tag
+  print, '  channel:              ', channel
+  print, '  get_latlon:           ', get_latlon
+  print, '  conversion:           ', conversion
+  area = [0L, swath_row_first, 999999L, swath_rows]
   if (modis_type eq 'MOD02') or (modis_type eq 'MYD02') then begin
-      print, '  swath_rows:     ', swath_rows
-      print, '  swath_row_first:', swath_row_first
+      print, '  swath_rows:           ', swath_rows
+      print, '  swath_row_first:      ', swath_row_first
+      print, '  area:                 ', area
+      print, '  swath_width_fraction: ', swath_width_fraction
   endif
 
   ; NOTE -- area and swath_width_fraction only supported for mod02 for now
-  area = [0L, swath_row_first, 999999L, swath_rows]
   if get_latlon ne 0 then begin
       if (modis_type eq 'MOD02') or (modis_type eq 'MYD02') then begin
           modis_level1b_read, hdf_file, channel, image, $
