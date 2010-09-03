@@ -4,7 +4,7 @@
 # 12-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/haran/ms2gth/Makefile,v 1.33 2007/01/29 23:49:16 tharan Exp tharan $
+RCSID = $Header: /data/tharan/ms2gth/Makefile,v 1.34 2007/04/30 23:51:22 tharan Exp tharan $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -13,7 +13,7 @@ RCSID = $Header: /data/haran/ms2gth/Makefile,v 1.33 2007/01/29 23:49:16 tharan E
 #       define current version and release
 #
 VERSION = 0
-RELEASE = 19
+RELEASE = 20
 
 #
 #	installation directories
@@ -37,6 +37,7 @@ IDLDIR = $(SRCDIR)/idl
 LL2DIR = $(SRCDIR)/ll2cr
 LE2DIR = $(SRCDIR)/lle2cre
 MAPDIR = $(SRCDIR)/mapx
+PRJDIR = $(SRCDIR)/projection
 SCTDIR = $(SRCDIR)/scripts
 UTSDIR = $(SRCDIR)/utils
 
@@ -65,6 +66,7 @@ TIDLDIR = $(TSRCDIR)/idl
 TLL2DIR = $(TSRCDIR)/ll2cr
 TLE2DIR = $(TSRCDIR)/lle2cre
 TMAPDIR = $(TSRCDIR)/mapx
+TPRJDIR = $(TSRCDIR)/projection
 TSCTDIR = $(TSRCDIR)/scripts
 TUTSDIR = $(TSRCDIR)/utils
 
@@ -118,6 +120,7 @@ GSZMAKE = $(GSZDIR)/Makefile
 LL2MAKE = $(LL2DIR)/Makefile
 LE2MAKE = $(LE2DIR)/Makefile
 MAPMAKE = $(MAPDIR)/Makefile.ms2gt
+PRJMAKE = $(PRJDIR)/Makefile
 UTSMAKE = $(UTSDIR)/Makefile
 
 GPDSRCS = $(GRDDIR)/*.gpd
@@ -133,6 +136,7 @@ IDLSRCS = $(L1BSRCS) $(UTLSRCS)
 LL2SRCS = $(LL2MAKE) $(LL2DIR)/*.c
 LE2SRCS = $(LE2MAKE) $(LE2DIR)/*.c
 MAPSRCS = $(MAPMAKE) $(MAPDIR)/*.c $(MAPDIR)/*.h $(MAPDIR)/*.mpp
+PRJSRCS = $(PRJMAKE) $(PRJDIR)/*.c
 SCTSRCS = $(SCTDIR)/*.pl
 UTSSRCS = $(UTSMAKE) $(UTSDIR)/*.c
 
@@ -163,7 +167,7 @@ tar:
 	$(MKDIR) $(TBINDIR) $(TDOCDIR) $(TGRDDIR) $(TINCDIR) $(TLIBDIR)
 	$(MKDIR) $(TSRCDIR)
 	$(MKDIR) $(TNAVDIR) $(TGCNDIR) $(TGSZDIR) $(TLL2DIR) $(TLE2DIR) \
-                 $(TMAPDIR) \
+                 $(TMAPDIR) $(TPRJDIR) \
                  $(TSCTDIR) $(TUTSDIR)
 	$(MKDIR) $(TIDLDIR) $(TL1BDIR) $(TUTLDIR)
 	$(MKDIR) $(TTU1DIR) $(TTU2DIR) $(TTU3DIR) $(TTU4DIR)
@@ -180,6 +184,7 @@ tar:
 	$(CP) $(LL2SRCS) $(TLL2DIR)
 	$(CP) $(LE2SRCS) $(TLE2DIR)
 	$(CP) $(MAPSRCS) $(TMAPDIR)
+	$(CP) $(PRJSRCS) $(TPRJDIR)
 	$(CP) $(SCTSRCS) $(TSCTDIR)
 	$(CP) $(UTSSRCS) $(TUTSDIR)
 	$(CP) $(TU1S) $(TTU1DIR)
