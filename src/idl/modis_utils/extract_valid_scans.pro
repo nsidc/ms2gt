@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.17 2005/03/15 01:00:32 haran Exp tharan $
+;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.18 2010/09/03 20:13:24 tharan Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -59,9 +59,13 @@ FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
 
   if n_elements(invalid_fraction_max) eq 0 then $
     invalid_fraction_max = 0.5
+  if (invalid_fraction_max < 0.0) or (invalid_fraction_max > 1.0) then $
+     message, 'INVALID_FRACTION_MAX must be in the range 0.0 to 1.0'
 
   if n_elements(swath_width_fraction) eq 0 then $
      swath_width_fraction = 1.0
+  if (swath_width_fraction < 0.0) or (swath_width_fraction > 1.0) then $
+     message, 'SWATH_WIDTH_FRACTION must be in the range 0.0 to 1.0'
 
   got_mirror = 0
   if sds_name_img eq 'Mirror side' then begin
