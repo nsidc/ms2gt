@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.20 2010/09/03 21:59:14 tharan Exp tharan $
+;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.21 2010/09/03 22:25:46 tharan Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -268,7 +268,7 @@ FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
             start = lonarr(2)
             last  = lonarr(2)
             cols_to_remove = $
-               long((1.0 - swath_width_fraction) * 0.5 * n_pixels_across_img)
+               long((1.0 - swath_width_fraction) * 0.5 * npixels_across_img)
             col_left  = cols_to_remove
             col_right = npixels_across_img - cols_to_remove - 1L
             if n_elements(area) eq 4 then begin
