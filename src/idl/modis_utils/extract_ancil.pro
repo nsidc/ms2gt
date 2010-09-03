@@ -3,7 +3,7 @@
 ;*
 ;* 8-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/haran/ms2gth/src/idl/modis_utils/extract_ancil.pro,v 1.4 2004/10/23 17:41:14 haran Exp tharan $
+;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_ancil.pro,v 1.5 2006/09/11 22:40:02 tharan Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -19,7 +19,8 @@
 ;       extract_ancil, hdf_file, tag, ancillary, $
 ;                      /get_latlon, conversion=conversion, $
 ;                      swath_rows=swath_rows, $
-;                      swath_row_first=swath_row_first
+;                      swath_row_first=swath_row_first, $
+;                      swath_width_fraction=swath_width_fraction
 ;
 ; ARGUMENTS:         
 ;
@@ -35,13 +36,15 @@
 PRO extract_ancil, hdf_file, tag, ancillary, $
                    get_latlon=get_latlon, conversion=conversion, $
                    swath_rows=swath_rows, $
-                   swath_row_first=swath_row_first
-
+                   swath_row_first=swath_row_first, $
+                   swath_width_fraction=swath_width_fraction
+  
   usage = 'usage: extract_ancil, hdf_file, tag, ancillary ' + $
           '[, /get_latlon]' + $
           '[, conversion=conversion]' + $
           '[, swath_rows=swath_rows]' + $
-          '[, swath_row_first=swath_row_first]'
+          '[, swath_row_first=swath_row_first]' + $
+          '[, swath_width_fraction=swath_width_fraction]
 
   if n_params() ne 3 then $
     message, usage
@@ -53,17 +56,21 @@ PRO extract_ancil, hdf_file, tag, ancillary, $
     swath_rows = 0
   if n_elements(swath_row_first) eq 0 then $
     swath_row_first = 0
+  if n_elements(swath_width_fraction) eq 0 then $
+     swath_width_first = 1.0
 
   print, 'extract_ancil:'
-  print, '  hdf_file:       ', hdf_file
-  print, '  tag:            ', tag
-  print, '  ancillary:      ', ancillary
-  print, '  get_latlon:     ', get_latlon
-  print, '  conversion:     ', conversion
-  print, '  swath_rows:     ', swath_rows
-  print, '  swath_row_first:', swath_row_first
-
+  print, '  hdf_file:             ', hdf_file
+  print, '  tag:                  ', tag
+  print, '  ancillary:            ', ancillary
+  print, '  get_latlon:           ', get_latlon
+  print, '  conversion:           ', conversion
+  print, '  swath_rows:           ', swath_rows
+  print, '  swath_row_first:      ', swath_row_first
   area = [0L, swath_row_first, 999999L, swath_rows]
+  print, '  area:                 ', area
+  print, '  swath_width_fraction: ', swath_width_fraction
+
   ancil = ancillary
   conv  = conversion
   if (ancillary eq 'ssea') or (ancillary eq 'csea') or $
@@ -76,15 +83,17 @@ PRO extract_ancil, hdf_file, tag, ancillary, $
   endif
   if get_latlon ne 0 then begin
       if swath_rows gt 0 then $
-        modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
-        conversion=conv, area=area, $
-        latitude=lat, longitude=lon, $
-        lat_dimen = size(lat, /dimensions) $
+         modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
+                               conversion=conv, area=area, $
+                               swath_width_fraction=swath_width_fraction, $
+                               latitude=lat, longitude=lon, $
+                               lat_dimen = size(lat, /dimensions) $
       else $
-        modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
-        conversion=conv, $
-        latitude=lat, longitude=lon, $
-        lat_dimen = size(lat, /dimensions)
+         modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
+                               conversion=conv, $
+                               swath_width_fraction=swath_width_fraction, $
+                               latitude=lat, longitude=lon, $
+                               lat_dimen = size(lat, /dimensions)
       cols = lat_dimen[0]
       rows = lat_dimen[1]
       cols_string = string(cols, format='(I5.5)')
@@ -101,11 +110,13 @@ PRO extract_ancil, hdf_file, tag, ancillary, $
       free_lun, lon_lun
   endif else begin
       if swath_rows gt 0 then $
-        modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
-        conversion=conv, area=area $
+         modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
+                               conversion=conv, area=area, $
+                               swath_width_fraction=swath_width_fraction $
       else $
-        modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
-        conversion=conv
+         modis_ancillary_read, hdf_file, ancil, image, mirror=mirror, $
+                               conversion=conv, $
+                               swath_width_fraction=swath_width_fraction
   endelse
 
   if (ancillary eq 'ssea') or (ancillary eq 'ssoa') then begin
