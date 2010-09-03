@@ -3,7 +3,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.19 2010/09/03 21:16:19 tharan Exp tharan $
+;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_chan.pro,v 1.20 2010/09/03 21:21:07 tharan Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -57,7 +57,7 @@ PRO extract_chan, hdf_file, tag, channel, $
   if n_elements(swath_row_first) eq 0 then $
     swath_row_first = 0
   if n_elements(swath_width_fraction) eq 0 then $
-     swath_width_first = 1.0
+     swath_width_fraction = 1.0
 
   raw = 0
   corrected = 0
