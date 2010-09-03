@@ -1,6 +1,8 @@
 PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
   RAW=RAW, CORRECTED=CORRECTED, REFLECTANCE=REFLECTANCE, TEMPERATURE=TEMPERATURE, $
-  AREA=AREA, UNITS=UNITS, PARAMETER=PARAMETER, $
+  AREA=AREA, $
+  SWATH_WIDTH_FRACTION=SWATH_WIDTH_FRACTION, $
+  UNITS=UNITS, PARAMETER=PARAMETER, $
   SCANTIME=SCANTIME, LATITUDE=LATITUDE, LONGITUDE=LONGITUDE, $
   VALID_INDEX=VALID_INDEX, VALID_COUNT=VALID_COUNT, $
   INVALID_INDEX=INVALID_INDEX, INVALID_COUNT=INVALID_COUNT, $
@@ -53,6 +55,9 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ;    AREA           A four element vector specifying the area to be read,
 ;                   in the format [X0,Y0,NX,NY]
 ;                   (default is to read the entire image).
+;    SWATH_WIDTH_FRACTION
+;                   Specifies the central fraction of the swath to
+;                   extract. The default value is 1.0.
 ;    UNITS          On return, a string describing the image units.
 ;    PARAMETER      On return, a string describing the image (e.g. 'Radiance').
 ;    SCANTIME       On return, a vector containing the start time of each scan
@@ -135,7 +140,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; MODIFICATION HISTORY:
 ; Liam.Gumley@ssec.wisc.edu
 ; http://cimss.ssec.wisc.edu/~gumley
-; $Id: modis_level1b_read.pro,v 1.8 2004/11/23 18:45:23 haran Exp haran $
+; $Id: modis_level1b_read.pro,v 1.9 2005/03/13 02:00:28 haran Exp tharan $
 ;
 ; Copyright (C) 1999, 2000 Liam E. Gumley
 ;
@@ -154,7 +159,7 @@ PRO MODIS_LEVEL1B_READ, FILENAME, BAND, IMAGE, $
 ; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ;-
 
-rcs_id = '$Id: modis_level1b_read.pro,v 1.8 2004/11/23 18:45:23 haran Exp haran $'
+rcs_id = '$Id: modis_level1b_read.pro,v 1.9 2005/03/13 02:00:28 haran Exp tharan $'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -177,6 +182,11 @@ if (n_elements(area) gt 0) then begin
   if (n_elements(area) ne 4) then $
     message, 'AREA must be a 4-element vector of the form [X0,Y0,NX,NY]'
 endif
+
+if (n_elements(swath_width_fraction) eq 0) then $
+   swath_width_fraction = 1.0
+if (swath_width_fraction < 0.0) or (swath_width_fraction > 1.0) then $
+   message, 'SWATH_WIDTH_FRACTION must be in the range 0.0 to 1.0'
 
 ;-------------------------------------------------------------------------------
 ;- CHECK FOR VALID MODIS L1B HDF FILE, AND GET FILE TYPE (1km, 500 m, or 250 m)
@@ -355,7 +365,8 @@ endelse
 
 ;- Get valid scans for the channel data
 image = extract_valid_scans(sd_id, sds_name, lines_per_scan, band_index, $
-                            area=area)
+                            area=area, $
+                            swath_width_fraction=swath_width_fraction)
 
 if band eq 26 then $
   band_index = 0
@@ -388,9 +399,11 @@ valid_range = att_info.data
 ;- Read latitude and longitude arrays
 area10 = (area * 10) / lines_per_scan
 if arg_present(latitude) then $
-      latitude = extract_valid_scans(sd_id, 'Latitude', 10, -1, area=area10)
+   latitude = extract_valid_scans(sd_id, 'Latitude', 10, -1, area=area10, $
+                                  swath_width_fraction=swath_width_fraction)
 if arg_present(longitude) then $
-      latitude = extract_valid_scans(sd_id, 'Longitude', 10, -1, area=area10)
+   latitude = extract_valid_scans(sd_id, 'Longitude', 10, -1, area=area10, $
+                                  swath_width_fraction=swath_width_fraction)
 
 ;-------------------------------------------------------------------------------
 ;- CLOSE THE FILE IN SDS MODE
