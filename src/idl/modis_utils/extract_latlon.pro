@@ -4,7 +4,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /export/data/ms2gth/src/idl/modis_utils/extract_latlon.pro,v 1.6 2001/02/10 00:21:39 haran Exp haran $
+;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_latlon.pro,v 1.7 2001/04/19 20:05:57 haran Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -17,11 +17,13 @@
 ;	Modis.
 ;
 ; CALLING SEQUENCE:
-;       extract_latlon, hdf_file, tag
+;       extract_latlon, hdf_file, tag [, swath_width_factor=swath_width_factor]
 ;
 ; ARGUMENTS:
 ;
 ; KEYWORDS:
+;       swath_width_factor: specifies the central fraction of the swath to
+;         extract. The default value is 1.0.
 ;
 ; EXAMPLE:
 ;
@@ -30,20 +32,26 @@
 ; REFERENCE:
 ;-
 
-PRO extract_latlon, hdf_file, tag
+PRO extract_latlon, hdf_file, tag, swath_width_factor=swath_width_factor
 
-  usage = 'usage: extract_latlon, hdf_file, tag'
+  usage = 'usage: extract_latlon, hdf_file, tag ' + $
+          '[, swath_width_factor=swath_width_factor]'
 
   if n_params() ne 2 then $
     message, usage
 
+  if n_elements(swath_width_factor) eq 0 then $
+     swath_width_factor = 1.0
+
   print, 'extract_latlon:'
-  print, '  hdf_file:       ', hdf_file
-  print, '  tag:            ', tag
+  print, '  hdf_file:           ', hdf_file
+  print, '  tag:                ', tag
+  print, '  swath_width_factor: ', swath_width_factor
 
   ancillary = 'none'
   modis_ancillary_read, hdf_file, ancillary, image, $
-                        latitude=lat, longitude=lon
+                        latitude=lat, longitude=lon, $
+                        swath_width_factor=swath_width_factor
   lat_dimen = size(lat, /dimensions)
   cols = lat_dimen[0]
   rows = lat_dimen[1]
