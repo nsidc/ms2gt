@@ -4,7 +4,7 @@
 ;*
 ;* 7-Feb-2001  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/tharan/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.8 2006/09/11 22:02:10 tharan Exp tharan $
+;$Header: /data/tharan/ms2gth/src/idl/modis_utils/modis_ancillary_read.pro,v 1.9 2010/09/03 19:23:13 tharan Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -69,7 +69,7 @@
 ;                   mirror-side of each scan. If mirror contains the
 ;                   single element 2, then the mirror-side is undefined
 ;                   for the given hdf file.
-;    SWATH_WIDTH_FACTOR
+;    SWATH_WIDTH_FRACTION
 ;                   Specifies the central fraction of the swath to
 ;                   extract. The default value is 1.0.
 ;    
@@ -105,9 +105,9 @@
 PRO modis_ancillary_read, filename, ancillary, image, mirror=mirror, $
                           conversion=conversion, area=area, $
                           latitude=latitude, longitude=longitude, $
-                          swath_width_factor=swath_width_factor
+                          swath_width_fraction=swath_width_fraction
 
-rcs_id = '$Id: modis_ancillary_read.pro,v 1.8 2006/09/11 22:02:10 tharan Exp tharan $'
+rcs_id = '$Id: modis_ancillary_read.pro,v 1.9 2010/09/03 19:23:13 tharan Exp tharan $'
 
 ;-----------------------------------------------------------------------------
 ;- CHECK INPUT
@@ -141,10 +141,10 @@ conversion = strlowcase(conversion)
 if (conversion ne 'raw') and (conversion ne 'scaled') then $
   message, 'CONVERSION option must be set to either RAW or SCALED'
 
-if (n_elements(swath_width_factor) eq 0) then $
-   swath_width_factor = 1.0
-if (swath_width_factor lt 0.0) or (swath_width_factor gt 1.0) then $
-   message, 'SWATH_WIDTH_FACTOR must be in the range 0.0 to 1.0'
+if (n_elements(swath_width_fraction) eq 0) then $
+   swath_width_fraction = 1.0
+if (swath_width_fraction lt 0.0) or (swath_width_fraction gt 1.0) then $
+   message, 'SWATH_WIDTH_FRACTION must be in the range 0.0 to 1.0'
 
 ;-----------------------------------------------------------------------------
 ;- CHECK FOR VALID MODIS L1B HDF FILE, AND GET FILE TYPE
@@ -264,7 +264,7 @@ if (ancillary ne 'none') then begin
     band_index = -1
     image = extract_valid_scans(sd_id, sds_name, lines_per_scan, band_index, $
                                 area=area, $
-                                swath_width_factor=swath_width_factor)
+                                swath_width_fraction=swath_width_fraction)
 
     if conversion eq 'scaled' then begin
 
@@ -299,11 +299,11 @@ endif
 if arg_present(latitude) then $
       latitude = extract_valid_scans(sd_id, 'Latitude', lines_per_scan, $
                                      -1, area=area, $
-                                     swath_width_factor=swath_width_factor)
+                                     swath_width_fraction=swath_width_fraction)
 if arg_present(longitude) then $
       longitude = extract_valid_scans(sd_id, 'Longitude', lines_per_scan, $
                                       -1, area=area, $
-                                     swath_width_factor=swath_width_factor)
+                                     swath_width_fraction=swath_width_fraction)
 
 ;-----------------------------------------------------------------------------
 ;- PROCESS MIRROR SIDE DATA
@@ -316,7 +316,7 @@ if arg_present(mirror) then begin
       ;- Read mirror-side data
         mirror = extract_valid_scans(sd_id, 'Mirror side', lines_per_scan, $
                                      -1, area=area, $
-                                    swath_width_factor=swath_width_factor)
+                                    swath_width_fraction=swath_width_fraction)
     endif
 endif
 
