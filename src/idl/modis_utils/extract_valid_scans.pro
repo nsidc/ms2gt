@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.18 2010/09/03 20:13:24 tharan Exp tharan $
+;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.19 2010/09/03 21:02:48 tharan Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -21,7 +21,7 @@
 ;       image = extract_valid_scans(sd_id, sds_name_img, lines_per_scan_img,
 ;                                   band_index, area=area,
 ;                                   invalid_fraction_max=invalid_fraction_max,
-;                                   swath_width_factor=swath_width_factor)
+;                                   swath_width_fraction=swath_width_fraction)
 ;
 ; ARGUMENTS:
 ;
@@ -47,7 +47,7 @@ FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
                               band_index, $
                               area=area, $
                               invalid_fraction_max=invalid_fraction_max, $
-                              swath_width_factor=swath_width_factor
+                              swath_width_fraction=swath_width_fraction
 
   usage = 'usage: image = extract_valid_scans(sd_id, sds_name, ' + $
           'lines_per_scan, band_index, [area=area, ' + $
