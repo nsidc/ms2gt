@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.19 --  23 September 2008
+Readme for MODIS Swath-to-Grid Toolbox 0.20 --  4 September 2010
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -22,8 +22,8 @@ The software and associated documentation can be downloaded
 from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.18.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.18.tar.gz
-tar xvf ms2gt0.18.tar 
+gunzip ms2gt0.20.tar.gz
+tar xvf ms2gt0.20.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
@@ -107,3 +107,16 @@ a corresponding MxD021KM hdf file.
 As of 0.19, a bug in src/utils/Makefile has been fixed such that "make
 clean" now removes all *.o files in the src/utils/ directory (thanks to
 Jesse Allen for finding this problem).
+
+As of 0.20, the swath_width_fraction parameter has been added to mod02.pl
+in order to fix a problem seen in the use of Universal Transverse Mercator
+(UTM) whereby anamalous streaks would appear in the output grids. The problem
+was due to the fact that UTM is unique in that accuracy of forward and
+inverse mappings decreases rapidly for regions outside of the specified
+UTM zone. This had the effect of introducing noise into the output image
+when retrieving pixels from the edges of the swath. This has been fixed by
+restricting the swath center fraction used to 0.95 of the total swath
+width when a UTM projection is specified in gpdfile. A new program called
+"projection" was written to retrieve the standard projection name string
+from a gpd file so that mod02.pl can determine when a UTM projection has
+been specified.
