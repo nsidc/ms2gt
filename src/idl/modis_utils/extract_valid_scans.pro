@@ -4,7 +4,7 @@
 ;*
 ;* 19-Nov-2004  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.21 2010/09/03 22:25:46 tharan Exp tharan $
+;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_valid_scans.pro,v 1.22 2010/09/03 22:31:50 tharan Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -20,8 +20,7 @@
 ; CALLING SEQUENCE:
 ;       image = extract_valid_scans(sd_id, sds_name_img, lines_per_scan_img,
 ;                                   band_index, area=area,
-;                                   invalid_fraction_max=invalid_fraction_max,
-;                                   swath_width_fraction=swath_width_fraction)
+;                                   invalid_fraction_max=invalid_fraction_max)
 ;
 ; ARGUMENTS:
 ;
@@ -32,9 +31,6 @@
 ;    INVALID_FRACTION_MAX
 ;                   Specifies the maximum fraction of invalid pixels to
 ;                   tolerate. The default value is 0.5.
-;    SWATH_WIDTH_FRACTION
-;                   Specifies the central fraction of the swath to
-;                   extract. The default value is 1.0.
 ;
 ; EXAMPLE:
 ;
@@ -46,13 +42,11 @@
 FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
                               band_index, $
                               area=area, $
-                              invalid_fraction_max=invalid_fraction_max, $
-                              swath_width_fraction=swath_width_fraction
+                              invalid_fraction_max=invalid_fraction_max
 
   usage = 'usage: image = extract_valid_scans(sd_id, sds_name, ' + $
           'lines_per_scan, band_index, [area=area, ' + $
-          'invalid_fraction_max=invalid_fraction_max, ' + $
-          'swath_width_fraction=swath_width_fraction]'
+          'invalid_fraction_max=invalid_fraction_max'
 
   if n_params() ne 4 then $
     message, usage
@@ -61,11 +55,6 @@ FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
     invalid_fraction_max = 0.5
   if (invalid_fraction_max lt 0.0) or (invalid_fraction_max gt 1.0) then $
      message, 'INVALID_FRACTION_MAX must be in the range 0.0 to 1.0'
-
-  if n_elements(swath_width_fraction) eq 0 then $
-     swath_width_fraction = 1.0
-  if (swath_width_fraction lt 0.0) or (swath_width_fraction gt 1.0) then $
-     message, 'SWATH_WIDTH_FRACTION must be in the range 0.0 to 1.0'
 
   got_mirror = 0
   if sds_name_img eq 'Mirror side' then begin
@@ -263,27 +252,16 @@ FUNCTION extract_valid_scans, sd_id, sds_name_img, lines_per_scan_img, $
             
     endif else begin
 
-    ;- Use AREA keyword or SWATH_WIDTH_FRACTION if either were supplied
-        if (n_elements(area) eq 4) or (swath_width_fraction ne 1.0) then begin
+    ;- Use AREA keyword if supplied
+        if (n_elements(area) eq 4) then begin
             start = lonarr(2)
             last  = lonarr(2)
-            cols_to_remove = $
-               long((1.0 - swath_width_fraction) * 0.5 * npixels_across_img)
-            col_left  = cols_to_remove
-            col_right = npixels_across_img - cols_to_remove - 1L
-            if n_elements(area) eq 4 then begin
-                start[0] = (long(area[0]) > col_left) < col_right
-                start[1] = (long(area[1]) > 0L) < (npixels_along_img  - 1L)
-                last[0]  = (long(area[2] + start[0] - 1L) > col_left) < $
-                           col_right
-                last[1]  = (long(area[3] + start[1] - 1L) > 0L) < $
-                           (npixels_along_img  - 1L)
-            endif else begin
-                start[0] = col_left
-                start[1] = 0L
-                last[0]  = col_right
-                last[1]  = npixels_along_img - 1L
-            endelse
+            start[0] = (long(area[0]) > 0L) < (npixels_across_img - 1L)
+            start[1] = (long(area[1]) > 0L) < (npixels_along_img  - 1L)
+            last[0]  = (long(area[2] + start[0] - 1L) > 0L) < $
+                       (npixels_across_img - 1L)
+            last[1]  = (long(area[3] + start[1] - 1L) > 0L) < $
+                       (npixels_along_img  - 1L)
             img = img[start[0]:last[0], start[1]:last[1]]
         endif
     endelse
