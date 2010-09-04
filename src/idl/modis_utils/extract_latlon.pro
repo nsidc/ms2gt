@@ -4,7 +4,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_latlon.pro,v 1.9 2010/09/03 19:31:25 tharan Exp tharan $
+;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_latlon.pro,v 1.10 2010/09/04 18:32:37 tharan Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -22,8 +22,6 @@
 ; ARGUMENTS:
 ;
 ; KEYWORDS:
-;       swath_width_fraction: specifies the central fraction of the swath to
-;         extract. The default value is 1.0.
 ;
 ; EXAMPLE:
 ;
