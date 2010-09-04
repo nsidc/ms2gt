@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.22 2005/01/11 22:38:00 haran Exp tharan $
+# $Id: mod02_usage.pl,v 1.23 2006/09/11 17:36:54 tharan Exp tharan $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -17,8 +17,10 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
        defaults:    0        none         none         none         none
                 [tile_cols [tile_rows [tile_overlap
                      1          1          300
-                [maskfile [mask_factor [mask_keep]]]]]]]]]]]]]]]]
+                [maskfile [mask_factor [mask_keep
        defaults:   none        6            0
+                {swath_width_fraction]]]]]]]]]]]]]]]]]
+       defaults: 1.0 (0.95 for UTM)
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
@@ -55,7 +57,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
   ancilfile: text file containing a list of ancillary parameters to be gridded,
         one line per parameter. The default is \"none\" indicating that no
         ancillary parameters should be gridded. Each line in ancilfile should
-        consist of up to four fields:
+        consist of up to five fields:
           param conversion weight_type fill delete
             where the fields are defined as follows:
               param - a string that specifies an ancillary parameter to be
@@ -150,7 +152,10 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
         match the dimensions of the grid defined by gpdfile. Must be greater
         than 0. The default value is 6.
   mask_keep: 0 delete all created mask files after gridding (default).
-             1 do not delete any created mask files after gridding.\n\n";
+             1 do not delete any created mask files after gridding.
+  swath_width_fraction: the central fraction of swath width to use.
+             The default value is 1.0 except for Universal Transverse Mercator
+             (UTM) projections where the default is 0.95.\n\n";
 
 # this makes the routine work properly using require in other programs
 1

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.67 2005/08/04 16:19:10 haran Exp tharan $
+# $Id: mod02.pl,v 1.68 2006/09/11 22:40:30 tharan Exp tharan $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -52,16 +52,22 @@ my $tile_overlap = 300;
 my $maskfile = "none";
 my $mask_factor = 6;
 my $mask_keep = 0;
+my $swath_width_fraction = 1.0;
 
 if (@ARGV < 4) {
     print $mod02_usage;
     exit 1;
 }
-if (@ARGV <= 21) {
+if (@ARGV <= 22) {
     $dirinout = shift(@ARGV);
     $tag = shift(@ARGV);
     $listfile = shift(@ARGV);
     $gpdfile = shift(@ARGV);
+    my $projection = `projection $gpdfile`;
+    chomp $projection;
+    if ($projection eq "UNIVERSALTRANSVERSEMERCATOR") {
+	$swath_width_fraction = 0.95;
+    }
     if (@ARGV) {
         $chanfile = shift(@ARGV);
     }
@@ -153,6 +159,13 @@ if (@ARGV <= 21) {
 	    exit 1;
 	}
     }
+    if (@ARGV) {
+	$swath_width_fraction = shift(@ARGV);
+	if ($swath_width_fraction < 0.0 || $swath_width_fraction > 1.0) {
+	    print "swath_width_fraction must be in the range 0 to 1\n$mod02_usage";
+	    exit 1;
+	}
+    }
 } else {
     print $mod02_usage;
     exit 1;
@@ -160,27 +173,28 @@ if (@ARGV <= 21) {
 
 print_stderr("\n".
 	     "$script: MESSAGE:\n".
-	     "> dirinout         = $dirinout\n".
-	     "> tag              = $tag\n".
-	     "> listfile         = $listfile\n".
-	     "> gpdfile          = $gpdfile\n".
-	     "> chanfile         = $chanfile\n".
-	     "> ancilfile        = $ancilfile\n".
-	     "> latlon_src       = $latlon_src\n".
-	     "> ancil_src        = $ancil_src\n".
-	     "> keep             = $keep\n".
-	     "> rind             = $rind\n".
-	     "> fix250           = $fix250\n".
-	     "> fixcolfile1      = $fixcolfile1\n".
-	     "> fixcolfile2      = $fixcolfile2\n".
-	     "> fixrowfile1      = $fixrowfile1\n".
-	     "> fixrowfile2      = $fixrowfile2\n".
-             "> tile_cols        = $tile_cols\n".
-             "> tile_rows        = $tile_rows\n".
-             "> tile_overlap     = $tile_overlap\n".
-             "> maskfile         = $maskfile\n".
-	     "> mask_factor      = $mask_factor\n".
-             "> mask_keep        = $mask_keep\n");
+	     "> dirinout             = $dirinout\n".
+	     "> tag                  = $tag\n".
+	     "> listfile             = $listfile\n".
+	     "> gpdfile              = $gpdfile\n".
+	     "> chanfile             = $chanfile\n".
+	     "> ancilfile            = $ancilfile\n".
+	     "> latlon_src           = $latlon_src\n".
+	     "> ancil_src            = $ancil_src\n".
+	     "> keep                 = $keep\n".
+	     "> rind                 = $rind\n".
+	     "> fix250               = $fix250\n".
+	     "> fixcolfile1          = $fixcolfile1\n".
+	     "> fixcolfile2          = $fixcolfile2\n".
+	     "> fixrowfile1          = $fixrowfile1\n".
+	     "> fixrowfile2          = $fixrowfile2\n".
+             "> tile_cols            = $tile_cols\n".
+             "> tile_rows            = $tile_rows\n".
+             "> tile_overlap         = $tile_overlap\n".
+             "> maskfile             = $maskfile\n".
+	     "> mask_factor          = $mask_factor\n".
+             "> mask_keep            = $mask_keep\n".
+             "> swath_width_fraction = $swath_width_fraction\n");
 
 if ($chanfile eq "none" && $ancilfile eq "none") {
     diemail("$script: FATAL: chanfile and ancilfile must not both be none");
@@ -694,11 +708,11 @@ if ($cr_scans == 0) {
 
 my $swath_scans = $cr_scans;
 my $swath_scan_first = $cr_scan_first;
-
 my $this_swath_rows_max = $swath_scans * $swath_rows_per_scan;
 my $this_swath_row_first = $swath_scan_first * $swath_rows_per_scan;
 my $this_ancil_rows_max = $swath_scans * $ancil_rows_per_scan;
 my $this_ancil_row_first = $swath_scan_first * $ancil_rows_per_scan;
+
 for ($line = 0; $line < @list; $line++) {
     my $swath_rows_expected =
 	$latlon_scans_as_read[$line] * $swath_rows_per_scan;
@@ -756,11 +770,14 @@ for ($line = 0; $line < @list; $line++) {
 		diemail("$script: FATAL: $ancil_filestem*.hdf not found");
 	    }
 	    my $hdf_ancil = $ancil_glob[0];
-	    do_or_die("idl_sh.pl extract_ancil \"'$hdf_ancil'\" " .
-		      "\"'$ancil_filestem'\" \"'$ancil'\" " .
-		      "conversion=\"'$conversion'\" " .
-		      "swath_rows=$this_ancil_rows_max " .
-		      "swath_row_first=$this_ancil_row_first");
+	    my $extract_command =
+		"idl_sh.pl extract_ancil \"'$hdf_ancil'\" " .
+		"\"'$ancil_filestem'\" \"'$ancil'\" " .
+		"conversion=\"'$conversion'\" " .
+		"swath_rows=$this_ancil_rows_max " .
+		"swath_row_first=$this_ancil_row_first";
+	    print_stderr($extract_command);
+	    do_or_die($extract_command);
 	    @ancil_glob = glob("$filestem_ancil_conv*");
 	    if (@ancil_glob == 0) {
 		diemail("$script: FATAL: $filestem_ancil_conv* not found");
@@ -816,6 +833,37 @@ for ($line = 0; $line < @list; $line++) {
 	$this_ancil_row_first -= $ancil_rows_expected;
     }
 }
+my $swath_col_start = 0;
+my $swath_cols_new = $swath_cols;
+my $swath_cols_s;
+my $swath_cols_new_s;
+if ($swath_width_fraction != 1.0) {
+    $swath_col_start = int((1.0 - $swath_width_fraction) * 0.5 * $swath_cols);
+    $swath_cols_new = $swath_cols - 2 * $swath_col_start;
+    $swath_cols_s     = sprintf("_%05d_", $swath_cols);
+    $swath_cols_new_s = sprintf("_%05d_", $swath_cols_new);
+
+    my $cols_file_fixed = $cols_file;
+    $cols_file_fixed =~ s/$swath_cols_s/$swath_cols_new_s/;
+    do_or_die("extract_region -v 4 $swath_cols $swath_rows " .
+	      "$swath_col_start 0 $swath_cols_new $swath_rows " .
+	      "$cols_file $cols_file_fixed");
+
+    my $rows_file_fixed = $rows_file;
+    $rows_file_fixed =~ s/$swath_cols_s/$swath_cols_new_s/;
+    do_or_die("extract_region -v 4 $swath_cols $swath_rows " .
+	      "$swath_col_start 0 $swath_cols_new $swath_rows " .
+	      "$rows_file $rows_file_fixed");
+
+    if (!$keep) {
+	do_or_die("rm -f $cols_file");
+	do_or_die("rm -f $rows_file");
+    }
+
+    $cols_file = $cols_file_fixed;
+    $rows_file = $rows_file_fixed;
+}
+
 $swath_cols = sprintf("%05d", $swath_cols);
 $swath_rows = sprintf("%05d", $swath_rows);
 $ancil_cols = sprintf("%05d", $ancil_cols);
@@ -1102,6 +1150,19 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		    $f_option = "-f 65535.0";
 		    $bytes_per_cell = 4;
 		}
+		if ($swath_width_fraction != 1.0) {
+		    my $chan_file_fixed = $chan_file;
+		    $chan_file_fixed =~ s/$swath_cols_s/$swath_cols_new_s/;
+		    do_or_die("extract_region -v $bytes_per_cell " .
+			      "$swath_cols $swath_rows " .
+			      "$swath_col_start 0 $swath_cols_new " .
+			      "$swath_rows " .
+			      "$chan_file $chan_file_fixed");
+		    if (!$keep) {
+			do_or_die("rm -f $chan_file");
+		    }
+		    $chan_file = $chan_file_fixed;
+		}
 		my $fill = $chan_fills[$i];
 		my $F_option = "-F $fill";
 		my $C_option = "-C $tile_col_offset_this";
@@ -1109,7 +1170,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		do_or_die("fornav 1 -v $t_option $f_option " .
 			  "$m_option $F_option " .
 			  "-d $weight_distance_max $C_option $R_option " .
-			  "$swath_cols $swath_scans $swath_rows_per_scan " .
+			  "$swath_cols_new $swath_scans $swath_rows_per_scan " .
 			  "$cols_file $rows_file $chan_file " .
 			  "$tile_grid_cols_this $tile_grid_rows_this " .
 			  "$grid_file");
@@ -1170,6 +1231,19 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		    $fill_in = -999.0;
 		    $bytes_per_cell = 4;
 		}
+		if ($swath_width_fraction != 1.0) {
+		    my $ancil_file_fixed = $ancil_file;
+		    $ancil_file_fixed =~ s/$swath_cols_s/$swath_cols_new_s/;
+		    do_or_die("extract_region -v $bytes_per_cell " .
+			      "$swath_cols $swath_rows " .
+			      "$swath_col_start 0 $swath_cols_new " .
+			      "$swath_rows " .
+			      "$ancil_file $ancil_file_fixed");
+		    if (!$keep) {
+			do_or_die("rm -f $ancil_file");
+		    }
+		    $ancil_file = $ancil_file_fixed;
+		}
 		my $f_option = "-f $fill_in";
 		my $fill_out = $ancil_fills[$i];
 		my $F_option = "-F $fill_out";
@@ -1178,7 +1252,7 @@ for ($tile_row = 0; $tile_row < $tile_rows; $tile_row++) {
 		do_or_die("fornav 1 -v $t_option $f_option " .
 			  "$m_option $F_option " .
 			  "-d $weight_distance_max $C_option $R_option " .
-			  "$swath_cols $swath_scans $swath_rows_per_scan " .
+			  "$swath_cols_new $swath_scans $swath_rows_per_scan " .
 			  "$cols_file $rows_file $ancil_file " .
 			  "$tile_grid_cols_this $tile_grid_rows_this " .
 			  "$grid_file");
