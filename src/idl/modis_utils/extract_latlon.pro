@@ -4,7 +4,7 @@
 ;*
 ;* 25-Oct-2000  Terry Haran  tharan@colorado.edu  492-1847
 ;* National Snow & Ice Data Center, University of Colorado, Boulder
-;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_latlon.pro,v 1.8 2010/09/03 19:07:39 tharan Exp tharan $
+;$Header: /data/tharan/ms2gth/src/idl/modis_utils/extract_latlon.pro,v 1.9 2010/09/03 19:31:25 tharan Exp tharan $
 ;*========================================================================*/
 
 ;+
@@ -18,7 +18,6 @@
 ;
 ; CALLING SEQUENCE:
 ;       extract_latlon, hdf_file, tag
-;                       [, swath_width_fraction=swath_width_fraction]
 ;
 ; ARGUMENTS:
 ;
@@ -35,24 +34,18 @@
 
 PRO extract_latlon, hdf_file, tag, swath_width_fraction=swath_width_fraction
 
-  usage = 'usage: extract_latlon, hdf_file, tag ' + $
-          '[, swath_width_fraction=swath_width_fraction]'
+  usage = 'usage: extract_latlon, hdf_file, tag'
 
   if n_params() ne 2 then $
     message, usage
 
-  if n_elements(swath_width_fraction) eq 0 then $
-     swath_width_fraction = 1.0
-
   print, 'extract_latlon:'
   print, '  hdf_file:             ', hdf_file
   print, '  tag:                  ', tag
-  print, '  swath_width_fraction: ', swath_width_fraction
 
   ancillary = 'none'
   modis_ancillary_read, hdf_file, ancillary, image, $
-                        latitude=lat, longitude=lon, $
-                        swath_width_fraction=swath_width_fraction
+                        latitude=lat, longitude=lon
   lat_dimen = size(lat, /dimensions)
   cols = lat_dimen[0]
   rows = lat_dimen[1]
@@ -70,5 +63,3 @@ PRO extract_latlon, hdf_file, tag, swath_width_fraction=swath_width_fraction
   free_lun, lon_lun
 
 END ; extract_latlon
-;       swath_width_factor: specifies the central fraction of the swath to
-;         extract. The default value is 1.0.
