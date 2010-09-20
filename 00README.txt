@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.20 --  4 September 2010
+Readme for MODIS Swath-to-Grid Toolbox 0.20 --  20 September 2010
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -119,4 +119,7 @@ restricting the swath center fraction used to 0.95 of the total swath
 width when a UTM projection is specified in gpdfile. A new program called
 "projection" was written to retrieve the standard projection name string
 from a gpd file so that mod02.pl can determine when a UTM projection has
-been specified.
+been specified. The utility program apply_mask was modified to accept the
+-S option to allow a mask file to be in the same format specified for the
+input file, and to print an error if bytes_per_cell is 8 and either the
+-b or -B byte_swap options are specified.
