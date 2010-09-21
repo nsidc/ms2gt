@@ -5,7 +5,7 @@
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *======================================================================*/
 
-static const char apply_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/apply_mask.c,v 1.3 2007/04/27 18:46:11 tharan Exp tharan $";
+static const char apply_mask_c_rcsid[] = "$Header: /data/tharan/ms2gth/src/utils/apply_mask.c,v 1.4 2007/05/02 22:09:58 tharan Exp tharan $";
 
 #define _LARGEFILE64_SOURCE
 #include <stdio.h>
@@ -17,15 +17,16 @@ static const char apply_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/
 #include "define.h"
 
 #define USAGE \
-"$Revision$\n" \
-"usage: apply_mask [-v] [-d] [-b] [-B] [-s] [-f]\n"\
+"$Revision: 1.4 $\n" \
+"usage: apply_mask [-v] [-d] [-b] [-B] [-s] [-f] [-S]\n"\
 "                  [-m mask_value_in] [-M mask_value_out]\n"\
 "          bytes_per_cell cols_in rows_in\n"\
 "          col_start_in row_start_in cols_in_region rows_in_region\n"\
 "          mask_file_in file_in file_out\n"\
 "  input : bytes_per_cell - the number of bytes per single grid location\n"\
 "            in file_in and file_out. Must be 1, 2, 4, or 8.\n"\
-"            NOTE: If bytes_per_cell is 8, then -f must be specified.\n"\
+"            NOTE: If bytes_per_cell is 8, then -f must be specified and\n"\
+"                  neither -b nor -B may be specified.\n"\
 "          cols_in - the number of columns in the input files.\n"\
 "          rows_in - the number of rows in the input files.\n"\
 "          col_start_in - the zero-based column number in the input files\n"\
@@ -48,9 +49,12 @@ static const char apply_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/
 "          s - specifies signed input and output data.\n"\
 "          f - specifies floating-point input and output data. Requires that\n"\
 "            bytes_per_cell be equal to 4 or 8.\n"\
+"          S - specifies that the mask file is in the same format as that\n"\
+"              specified for the input file."\
+"              The default is that the mask file is 1 byte per cell.\n"\
 "            NOTE: If -f is set then -s is ignored.\n"\
 "          m mask_value_in - specifies the mask value in mask_file_in.\n"\
-"            Must be between 0 and 255. The default is 0.\n"\
+"            Must be between 0 and 255 unless -S is specified. The default is 0.\n"\
 "          M mask_value_out - specifies the value in the output file to which\n"\
 "            all occurrences of mask_value_in in mask_file_in will be mapped.\n"\
 "            The default is 0.\n"
@@ -98,7 +102,8 @@ int main(int argc, char *argv[])
   bool byte_swap_output;
   bool signed_data;
   bool floating_point_data;
-  int mask_value_in;
+  bool mask_same_as_input;
+  double mask_value_in;
   double mask_value_out;
 
   byte1 *buf_mask_in = NULL;
@@ -113,6 +118,7 @@ int main(int argc, char *argv[])
   bool there_were_errors;
   int row, col;
   int cols_out;
+  int bytes_per_mask;
   int bytes_per_row_in;
   int bytes_per_mask_row_in;
   int bytes_per_row_out;
@@ -124,7 +130,7 @@ int main(int argc, char *argv[])
   byte2 t2;
   byte2 *p2;
   double mask_test;
-  byte1 mask;
+  double mask;
   bool got_unmasked;
   char command[MAX_STRING];
 
@@ -137,6 +143,7 @@ int main(int argc, char *argv[])
   byte_swap_output = FALSE;
   signed_data = FALSE;
   floating_point_data = FALSE;
+  mask_same_as_input = FALSE;
   mask_value_in = 0;
   mask_value_out = 0;
   there_were_errors = FALSE;
@@ -172,11 +179,14 @@ int main(int argc, char *argv[])
       case 'f':
 	floating_point_data = TRUE;
 	break;
+      case 'S':
+	mask_same_as_input = TRUE;
+	break;
       case 'm':
 	++argv; --argc;
 	if (argc <= 0)
 	  DisplayInvalidParameter("mask_value_in");
-	if (sscanf(*argv, "%d", &mask_value_in) != 1)
+	if (sscanf(*argv, "%lf", &mask_value_in) != 1)
 	  DisplayInvalidParameter("mask_value_in");
 	break;
       case 'M':
@@ -240,7 +250,8 @@ int main(int argc, char *argv[])
     fprintf(stderr, "  byte_swap_output:     %d\n", byte_swap_output);
     fprintf(stderr, "  signed_data:          %d\n", signed_data);
     fprintf(stderr, "  floating_point_data:  %d\n", floating_point_data);
-    fprintf(stderr, "  mask_value_in:        %d\n", mask_value_in);
+    fprintf(stderr, "  mask_same_as_input:   %d\n", mask_same_as_input);
+    fprintf(stderr, "  mask_value_in:        %lf\n", mask_value_in);
     fprintf(stderr, "  mask_value_out:       %lf\n", mask_value_out);
   }
 
@@ -279,10 +290,16 @@ int main(int argc, char *argv[])
     }
     
     if (floating_point_data && bytes_per_cell != 4 && bytes_per_cell != 8) {
-      fprintf(stderr, "if -f is specified, then bytes_per_cell must be 4 or 8\n");
+      fprintf(stderr,
+	      "if -f is specified, then bytes_per_cell must be 4 or 8\n");
       there_were_errors = TRUE;
     }
-    if (mask_value_in < 0 || mask_value_in > 255) {
+    if (bytes_per_cell == 8 && (byte_swap_input || byte_swap_output)) {
+      fprintf(stderr,
+	   "if bytes_per_cell is 8 then neither -b nor -B may be specified.\n");
+      there_were_errors = TRUE;
+    }
+    if (!mask_same_as_input && (mask_value_in < 0 || mask_value_in > 255)) {
       fprintf(stderr, "mask_value_in must be between 0 and 255\n");
       there_were_errors = TRUE;
     }
@@ -307,9 +324,10 @@ int main(int argc, char *argv[])
     /*
      *    initialize buffer sizes for i/o
      */
-    bytes_per_mask_row_in = cols_in;
-    bytes_per_row_in  = cols_in  * bytes_per_cell;
-    bytes_per_row_out = cols_out * bytes_per_cell;
+    bytes_per_mask = mask_same_as_input ? bytes_per_cell : 1;
+    bytes_per_mask_row_in = cols_in  * bytes_per_mask;
+    bytes_per_row_in      = cols_in  * bytes_per_cell;
+    bytes_per_row_out     = cols_out * bytes_per_cell;
 
     /*
      *    allocate a buffer for each input and output grid file.
@@ -454,10 +472,68 @@ int main(int argc, char *argv[])
       /*
        *  process the row
        */
-      bufp_mask_in = buf_mask_in + col_start_in;
-      bufp_in = buf_in + col_start_in * bytes_per_cell;
-      bufp_out = buf_out;
+      bufp_mask_in = buf_mask_in + col_start_in * bytes_per_mask;
+      bufp_in      = buf_in      + col_start_in * bytes_per_cell;
+      bufp_out     = buf_out;
       for (col = col_start_in; col <= last_col_in_region; col++) {
+
+	/*
+	 *  get the value from mask_file_in
+	 */
+
+	if (mask_same_as_input) {
+	  if (byte_swap_input) {
+
+	    /*
+	     *  byte swap the mask
+	     */
+	    if (bytes_per_cell == 4) {
+	      p4 = (byte4 *)bufp_mask_in;
+	      t4 = *p4;
+	      t4 = ((t4 >> 24) & 0xff) | ((t4 >> 8) & 0xff00) |
+		((t4 << 8) & 0xff0000) | (t4 << 24);
+	      *p4 = t4;
+	    } else {
+	      p2 = (byte2 *)bufp_mask_in;
+	      t2 = *p2;
+	      t2 = ((t2 >> 8) & 0xff) | (t2 << 8);
+	      *p2 = t2;
+	    }
+	  }
+
+	  /*
+	   *  get the mask value
+	   */
+	  switch (data_type) {
+	  case MM_UNSIGNED_CHAR:
+	    mask = *((byte1 *)bufp_mask_in);
+	    break;
+	  case MM_SIGNED_CHAR:
+	    mask = *((char *)bufp_mask_in);
+	    break;
+	  case MM_UNSIGNED_SHORT:
+	    mask = *((byte2 *)bufp_mask_in);
+	    break;
+	  case MM_SIGNED_SHORT:
+	    mask = *((short *)bufp_mask_in);
+	    break;
+	  case MM_UNSIGNED_INT:
+	    mask = *((byte4 *)bufp_mask_in);
+	    break;
+	  case MM_SIGNED_INT:
+	    mask = *((int *)bufp_mask_in);
+	    break;
+	  case MM_FLOAT:
+	    mask = *((float *)bufp_mask_in);
+	    break;
+	  case MM_DOUBLE:
+	    mask = *((double *)bufp_mask_in);
+	    break;
+	  }
+	  bufp_mask_in += bytes_per_mask;
+	} else {
+	  mask = *bufp_mask_in++;
+	}
 
 	if (byte_swap_input) {
 
@@ -478,11 +554,6 @@ int main(int argc, char *argv[])
 	  }
 	}
 	
-	/*
-	 *  get the value from mask_file_in
-	 */
-	mask = *bufp_mask_in++;
-
 	/*
 	 *  check the input value
 	 */
