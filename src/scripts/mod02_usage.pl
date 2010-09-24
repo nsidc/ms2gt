@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.24 2010/09/04 19:28:56 tharan Exp tharan $
+# $Id: mod02_usage.pl,v 1.25 2010/09/24 00:57:47 tharan Exp tharan $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -155,7 +155,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
              1 do not delete any created mask files after gridding.
   swath_width_fraction: the central fraction of swath width to use.
              The default value is 1.0 except for Universal Transverse Mercator
-             (UTM) projections where the default is 0.95.\n\n";
+             (UTM) projections where the default is 0.75.\n\n";
 
 # this makes the routine work properly using require in other programs
 1

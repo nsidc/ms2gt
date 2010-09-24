@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: mod02.pl,v 1.68 2006/09/11 22:40:30 tharan Exp tharan $
+# $Id: mod02.pl,v 1.69 2010/09/04 19:29:24 tharan Exp tharan $
 
 #========================================================================
 # mod02.pl - grids MOD02 and MOD03 data
@@ -66,7 +66,7 @@ if (@ARGV <= 22) {
     my $projection = `projection $gpdfile`;
     chomp $projection;
     if ($projection eq "UNIVERSALTRANSVERSEMERCATOR") {
-	$swath_width_fraction = 0.95;
+	$swath_width_fraction = 0.75;
     }
     if (@ARGV) {
         $chanfile = shift(@ARGV);
