@@ -1,4 +1,4 @@
-# $Id: mod02_usage.pl,v 1.23 2006/09/11 17:36:54 tharan Exp tharan $
+# $Id: mod02_usage.pl,v 1.24 2010/09/04 19:28:56 tharan Exp tharan $
 
 #========================================================================
 # mod02_usage.pl - defines mod02.pl usage message
@@ -20,7 +20,7 @@ USAGE: mod02.pl dirinout tag listfile gpdfile chanfile
                 [maskfile [mask_factor [mask_keep
        defaults:   none        6            0
                 {swath_width_fraction]]]]]]]]]]]]]]]]]
-       defaults: 1.0 (0.95 for UTM)
+       defaults: 1.0 (0.75 for UTM)
 
   dirinout: directory containing the input and output files.
   tag: string used as a prefix to output files.
