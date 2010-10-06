@@ -5,7 +5,7 @@
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *======================================================================*/
 
-static const char apply_mask_c_rcsid[] = "$Header: /data/tharan/ms2gth/src/utils/apply_mask.c,v 1.4 2007/05/02 22:09:58 tharan Exp tharan $";
+static const char apply_mask_c_rcsid[] = "$Header: /data/tharan/ms2gth/src/utils/apply_mask.c,v 1.5 2010/09/21 00:00:55 tharan Exp tharan $";
 
 #define _LARGEFILE64_SOURCE
 #include <stdio.h>
@@ -17,7 +17,7 @@ static const char apply_mask_c_rcsid[] = "$Header: /data/tharan/ms2gth/src/utils
 #include "define.h"
 
 #define USAGE \
-"$Revision: 1.4 $\n" \
+"$Revision: 1.5 $\n" \
 "usage: apply_mask [-v] [-d] [-b] [-B] [-s] [-f] [-S]\n"\
 "                  [-m mask_value_in] [-M mask_value_out]\n"\
 "          bytes_per_cell cols_in rows_in\n"\
@@ -50,7 +50,7 @@ static const char apply_mask_c_rcsid[] = "$Header: /data/tharan/ms2gth/src/utils
 "          f - specifies floating-point input and output data. Requires that\n"\
 "            bytes_per_cell be equal to 4 or 8.\n"\
 "          S - specifies that the mask file is in the same format as that\n"\
-"              specified for the input file."\
+"              specified for the input file.\n"\
 "              The default is that the mask file is 1 byte per cell.\n"\
 "            NOTE: If -f is set then -s is ignored.\n"\
 "          m mask_value_in - specifies the mask value in mask_file_in.\n"\
