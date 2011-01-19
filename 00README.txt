@@ -127,7 +127,7 @@ bytes_per_cell is 8 and either the -b or -B byte_swap options are
 specified.
 
 As of 0.21, the mapx library used in MS2GT has been changed to use the
-current subversion-controlled release 0.9. This appears to have fixed a
+current subversion-controlled mapx release 0.10. This appears to have fixed a
 problem on some installations whereby certain programs that use the mapx
 library such as "gridsize" and "projection" caused "Segmentation fault"
 errors on some installations.
