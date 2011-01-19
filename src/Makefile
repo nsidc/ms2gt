@@ -4,7 +4,7 @@
 # 13-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/tharan/ms2gth/src/Makefile,v 1.10 2007/04/30 23:53:13 tharan Exp tharan $
+RCSID = $Header: /data/tharan/ms2gth/src/Makefile,v 1.11 2010/09/03 18:13:47 tharan Exp tharan $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -26,7 +26,7 @@ GSZDIR = $(SRCDIR)/gridsize
 IDLDIR = $(SRCDIR)/idl
 LL2DIR = $(SRCDIR)/ll2cr
 LE2DIR = $(SRCDIR)/lle2cre
-MAPDIR = $(SRCDIR)/mapx
+MAPDIR = $(SRCDIR)/mapx/trunk
 MAPMAK = -f Makefile.ms2gt
 PRJDIR = $(SRCDIR)/projection
 SCTDIR = $(SRCDIR)/scripts

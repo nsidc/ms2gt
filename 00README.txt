@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.20 --  23 September 2010
+Readme for MODIS Swath-to-Grid Toolbox 0.21 --  19 January 2011
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -118,10 +118,16 @@ when retrieving pixels from the edges of the swath. This has been fixed by
 restricting the swath center fraction used to 0.75 of the total swath
 width when a UTM projection is specified in gpdfile.
 
-As of 0.20, A new program called "projection" was written to retrieve the
+As of 0.20, a new program called "projection" was written to retrieve the
 standard projection name string from a gpd file so that mod02.pl can
 determine when a UTM projection has been specified. The utility program
 apply_mask was modified to accept the -S option to allow a mask file to be
 in the same format specified for the input file, and to print an error if
 bytes_per_cell is 8 and either the -b or -B byte_swap options are
 specified.
+
+As of 0.21, the mapx library used in MS2GT has been changed to use the
+current subversion-controlled release 0.9. This appears to have fixed a
+problem on some installations whereby certain programs that use the mapx
+library such as "gridsize" and "projection" caused "Segmentation fault"
+errors on some installations.
