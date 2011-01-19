@@ -19,11 +19,11 @@ files. All four Perl programs can optionally read MOD03 files for
 geolocation and/or ancillary data.
 
 The software and associated documentation can be downloaded
-from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.18.tar.gz.
+from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.21.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.20.tar.gz
-tar xvf ms2gt0.20.tar 
+gunzip ms2gt0.21.tar.gz
+tar xvf ms2gt0.21.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
@@ -130,4 +130,4 @@ As of 0.21, the mapx library used in MS2GT has been changed to use the
 current subversion-controlled mapx release 0.10. This appears to have fixed a
 problem on some installations whereby certain programs that use the mapx
 library such as "gridsize" and "projection" caused "Segmentation fault"
-errors on some installations.
+errors.
