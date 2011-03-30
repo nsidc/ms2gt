@@ -4,7 +4,7 @@
 # 13-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/tharan/ms2gth/src/Makefile,v 1.11 2010/09/03 18:13:47 tharan Exp tharan $
+RCSID = $Header: /data/tharan/ms2gth/src/Makefile,v 1.12 2011/01/19 01:05:48 tharan Exp tharan $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -31,7 +31,7 @@ MAPMAK = -f Makefile.ms2gt
 PRJDIR = $(SRCDIR)/projection
 SCTDIR = $(SRCDIR)/scripts
 UTSDIR = $(SRCDIR)/utils
-
+XY2DIR = $(SRCDIR)/xy2ll
 L1BDIR = $(IDLDIR)/level1b_read
 UTLDIR = $(IDLDIR)/modis_utils
 
@@ -78,6 +78,7 @@ srcs:
 	$(CD) $(NAVDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
 	$(CD) $(PRJDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
 	$(CD) $(UTSDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
+	$(CD) $(XY2DIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
 
 clean:
 	$(CD) $(MAPDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) $(MAPMAK) cleanall
@@ -88,6 +89,7 @@ clean:
 	$(CD) $(NAVDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
 	$(CD) $(PRJDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
 	$(CD) $(UTSDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
+	$(CD) $(XY2DIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
 
 depend:
 	- $(CO) $(SRCS) $(HDRS)

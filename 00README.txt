@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.21 --  19 January 2011
+Readme for MODIS Swath-to-Grid Toolbox 0.22 --  30 March 2011
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -19,11 +19,11 @@ files. All four Perl programs can optionally read MOD03 files for
 geolocation and/or ancillary data.
 
 The software and associated documentation can be downloaded
-from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.21.tar.gz.
+from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.22.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.21.tar.gz
-tar xvf ms2gt0.21.tar 
+gunzip ms2gt0.22.tar.gz
+tar xvf ms2gt0.22.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
@@ -131,3 +131,6 @@ current subversion-controlled mapx release 0.10. This appears to have fixed a
 problem on some installations whereby certain programs that use the mapx
 library such as "gridsize" and "projection" caused "Segmentation fault"
 errors.
+
+As if 0.22, the utility xy2ll has been added which converts ascii x-y pairs
+to latitude-longitude pairs.
