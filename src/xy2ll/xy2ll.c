@@ -4,7 +4,7 @@
  * 30-Mar-2011 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char xy2ll_c_rcsid[] = "$Header: /data/tharan/ms2gth/src/xy2ll/xy2ll.c,v 1.1 2011/03/30 19:16:35 tharan Exp tharan $";
+static const char xy2ll_c_rcsid[] = "$Header: /data/tharan/ms2gth/src/xy2ll/xy2ll.c,v 1.2 2011/03/30 19:42:28 tharan Exp tharan $";
 
 #include <stdio.h>
 #include <math.h>
@@ -73,6 +73,8 @@ main (int argc, char *argv[])
   if (argc != 1)
     DisplayUsage();
 
+  mppfile = *argv++;
+
   if (verbose) {
     fprintf(stderr, "  mppfile       = %s\n", mppfile);
     fprintf(stderr, "  xy2ll_c_rcsid = %s\n", xy2ll_c_rcsid);
@@ -89,30 +91,33 @@ main (int argc, char *argv[])
   /*
    * keep reading lines until eof
    */
-  gets(readln);
-  if (!feof(stdin)) {
-    
-    /*
-     * get x-y pair
-     */
-    sscanf(readln, "%lf %lf", &x, &y);
-    
-    /*
-     *  convert x-y pair to latitude-longitude pair
-     */
-    status = inverse_xy_mapx(the_map, x, y, &lat, &lon);
-    
-    /*
-     *  print x, y, lat, lon, and status
-     */
-    printf("%17.7lf %17.7lf %11.7lf %12.7lf %2d\n", x, y, lat, lon, status);
+  for (;;) {
+    gets(readln);
+    if (!feof(stdin)) {
+      
+      /*
+       * get x-y pair
+       */
+      sscanf(readln, "%lf %lf", &x, &y);
+      
+      /*
+       *  convert x-y pair to latitude-longitude pair
+       */
+      status = inverse_xy_mapx(the_map, x, y, &lat, &lon);
+      
+      /*
+       *  print x, y, lat, lon, and status
+       */
+      printf("%17.7lf %17.7lf %11.7lf %12.7lf %2d\n", x, y, lat, lon, status);
+    } else {
+      
+      /*
+       *  close the map
+       */
+      close_mapx(the_map);
+      break;
+    }
   }
-
-
-  /*
-   *  close the map
-   */
-  close_mapx(the_map);
-
+    
   exit(EXIT_SUCCESS);
 }
