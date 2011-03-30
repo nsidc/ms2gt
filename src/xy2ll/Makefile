@@ -1,10 +1,10 @@
 #========================================================================
 # makefile for xy2ll
 #
-# 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
+# 30-Mar-2011 Terry Haran tharan@colorado.edu 303-492-1847
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/tharan/ms2gth/src/xy2ll/Makefile,v 1.7 2004/08/25 23:25:11 haran Exp $
+RCSID = $Header: /data/tharan/ms2gth/src/xy2ll/Makefile,v 1.1 2011/03/30 19:16:20 tharan Exp tharan $
 
 #------------------------------------------------------------------------
 # configuration section
