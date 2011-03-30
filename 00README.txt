@@ -133,4 +133,5 @@ library such as "gridsize" and "projection" caused "Segmentation fault"
 errors.
 
 As if 0.22, the utility xy2ll has been added which converts ascii x-y pairs
-to latitude-longitude pairs.
+to latitude-longitude pairs; and the utility ll2xy has been added which
+converts latitude-longitude pairs to x-y pairs.

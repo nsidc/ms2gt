@@ -1,10 +1,10 @@
 #========================================================================
-# makefile for xy2ll
+# makefile for ll2xy
 #
-# 23-Oct-2000 Terry Haran tharan@colorado.edu 303-492-1847
+# 30-Mar-2011 Terry Haran tharan@colorado.edu 303-492-1847
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/tharan/ms2gth/src/xy2ll/Makefile,v 1.1 2011/03/30 19:16:20 tharan Exp $
+RCSID = $Header: /data/tharan/ms2gth/src/ll2xy/Makefile,v 1.1 2011/03/30 20:44:01 tharan Exp tharan $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -31,7 +31,7 @@ COMPRESS = gzip
 #
 #	archive file name
 #
-TARFILE = xy2ll.tar
+TARFILE = ll2xy.tar
 
 #
 #	debug or optimization settings
@@ -53,20 +53,20 @@ SYSTEM_LIBS = -lm
 CFLAGS = -I$(INCDIR) $(LOCAL_CFLAGS) $(CONFIG_CFLAGS)
 LIBS = -L$(LIBDIR) $(LOCAL_LIBS) $(SYSTEM_LIBS)
 
-SRCS = xy2ll.c
-OBJS = xy2ll.o
+SRCS = ll2xy.c
+OBJS = ll2xy.o
 HDRS = 
 
-all: xy2ll install
+all: ll2xy install
 
-xy2ll: $(OBJS)
-	cc $(CFLAGS) -o xy2ll $(OBJS) $(LIBS)
+ll2xy: $(OBJS)
+	cc $(CFLAGS) -o ll2xy $(OBJS) $(LIBS)
 
-install: xy2ll
-	$(INSTALL) xy2ll $(BINDIR)
+install: ll2xy
+	$(INSTALL) ll2xy $(BINDIR)
 
 clean:
-	- $(RM) $(OBJS) xy2ll
+	- $(RM) $(OBJS) ll2xy
 
 tar:
 	- $(CO) Makefile $(SRCS) $(HDRS)

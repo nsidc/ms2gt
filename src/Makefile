@@ -4,7 +4,7 @@
 # 13-Apr-2001 T.Haran 303-492-1847  tharan@colorado.edu
 # National Snow & Ice Data Center, University of Colorado, Boulder
 #========================================================================
-RCSID = $Header: /data/tharan/ms2gth/src/Makefile,v 1.12 2011/01/19 01:05:48 tharan Exp tharan $
+RCSID = $Header: /data/tharan/ms2gth/src/Makefile,v 1.13 2011/03/30 19:15:52 tharan Exp tharan $
 
 #------------------------------------------------------------------------
 # configuration section
@@ -25,6 +25,7 @@ GCNDIR = $(SRCDIR)/grid_convert
 GSZDIR = $(SRCDIR)/gridsize
 IDLDIR = $(SRCDIR)/idl
 LL2DIR = $(SRCDIR)/ll2cr
+LLXDIR = $(SRCDIR)/ll2xy
 LE2DIR = $(SRCDIR)/lle2cre
 MAPDIR = $(SRCDIR)/mapx/trunk
 MAPMAK = -f Makefile.ms2gt
@@ -74,6 +75,7 @@ srcs:
 	$(CD) $(GCNDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
 	$(CD) $(GSZDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
 	$(CD) $(LL2DIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
+	$(CD) $(LLXDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
 	$(CD) $(LE2DIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
 	$(CD) $(NAVDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
 	$(CD) $(PRJDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) all
@@ -85,6 +87,7 @@ clean:
 	$(CD) $(GCNDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
 	$(CD) $(GSZDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
 	$(CD) $(LL2DIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
+	$(CD) $(LLXDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
 	$(CD) $(LE2DIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
 	$(CD) $(NAVDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
 	$(CD) $(PRJDIR); $(MAKE) $(MAKEFLAGS) $(CONFIG_FLAGS) clean
