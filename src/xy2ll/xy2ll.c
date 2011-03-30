@@ -4,7 +4,7 @@
  * 30-Mar-2011 Terry Haran tharan@colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char xy2ll_c_rcsid[] = "$Header: /data/tharan/ms2gth/src/xy2ll/xy2ll.c,v 1.14 2003/05/19 21:13:36 haran Exp $";
+static const char xy2ll_c_rcsid[] = "$Header: /data/tharan/ms2gth/src/xy2ll/xy2ll.c,v 1.1 2011/03/30 19:16:35 tharan Exp tharan $";
 
 #include <stdio.h>
 #include <math.h>
@@ -70,7 +70,7 @@ main (int argc, char *argv[])
 /*
  *	get command line arguments
  */
-  if (argc != 0)
+  if (argc != 1)
     DisplayUsage();
 
   if (verbose) {
