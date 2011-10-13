@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.22 --  30 March 2011
+Readme for MODIS Swath-to-Grid Toolbox 0.23 --  13 October 2011
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -19,11 +19,11 @@ files. All four Perl programs can optionally read MOD03 files for
 geolocation and/or ancillary data.
 
 The software and associated documentation can be downloaded
-from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.22.tar.gz.
+from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.23.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.22.tar.gz
-tar xvf ms2gt0.22.tar 
+gunzip ms2gt0.23.tar.gz
+tar xvf ms2gt0.23.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
@@ -132,6 +132,22 @@ problem on some installations whereby certain programs that use the mapx
 library such as "gridsize" and "projection" caused "Segmentation fault"
 errors.
 
-As if 0.22, the utility xy2ll has been added which converts ascii x-y pairs
+As of 0.22, the utility xy2ll has been added which converts ascii x-y pairs
 to latitude-longitude pairs; and the utility ll2xy has been added which
 converts latitude-longitude pairs to x-y pairs.
+
+As of 0.23, grids.c and grids.h were modified such that for certain
+projections, new members of the mapx grid_class stucture, namely u_min
+and u_max, are initialized to minus and plus the scaled earth radius
+times pi, respectively. The projections for which this initialization
+is performed include Cylindrical Equal Area (both spherical and
+ellipsoidal), Mercator, Mollweide, Sinusoidal, Cylindrical
+Equidistant, Interrupted Homolosine Equal Area, and Integerized
+Sinusoidal; for all other projections, u_min and u_max are initialized
+to 0. Then for both forward and inverse transformations: if the
+computed u value is greater than u_max, then 2 * u_max is subtracted
+from u; and if the computed u value is less than u_min, then 2 * u_min
+is added to u. This effectively allows associated column values to be
+monotonic across the +180/-180 longitude boundary, and avoids "holes"
+and "garbage" from appearing in gridded output images created by
+mod02.pl for grids that include or are close to the boundary.
