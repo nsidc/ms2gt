@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /data/haran/ms2gth/src/fornav/fornav.c,v 1.30 2007/05/07 17:42:22 tharan Exp tharan $";
+static const char fornav_c_rcsid[] = "$Header: /disks/megadune/data/tharan/ms2gth/src/fornav/fornav.c,v 1.31 2007/05/07 17:58:44 tharan Exp tharan $";
 
 #define _LARGEFILE64_SOURCE
 
@@ -18,7 +18,7 @@ static const char fornav_c_rcsid[] = "$Header: /data/haran/ms2gth/src/fornav/for
 #include "matrix.h"
 
 #define USAGE \
-"$Revision: 1.30 $\n" \
+"$Revision: 1.31 $\n" \
 "usage: fornav chan_count\n"\
 "              [-v] [-m]\n"\
 "              [-s chan_scan_first colrow_scan_first]\n"\
@@ -1197,7 +1197,15 @@ int main (int argc, char *argv[])
     fptr =&(**((float **)grid_chan_image[i].buf));
     fill = grid_chan_io_image[i].fill;
     for (j = 0; j < n; j++)
-      *fptr++ = fill;
+      /*
+       * Filling with a non-zero fill value here produces garbage output
+       * when averaging, but filling with zero is ok and still produces
+       * the desired grid fill value wherever the swath fill value is
+       * encountered.
+       *
+       *  fptr++ = fill;
+       */
+      *fptr++ = 0.0;
   }
 
   InitializeImage(grid_weight_image, "grid_weight_image", "", "f4",
