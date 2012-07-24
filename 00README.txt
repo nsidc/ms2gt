@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.23 --  14 October 2011
+Readme for MODIS Swath-to-Grid Toolbox 0.24 --  24 July 2012
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -151,3 +151,8 @@ is added to u. This effectively allows associated column values to be
 monotonic across the +180/-180 longitude boundary, and avoids "holes"
 and "garbage" from appearing in gridded output images created by
 mod02.pl for grids that include or are close to the boundary.
+
+As of 0.24, fornav.c was modified to fix a bug such that garbage output
+was produced when both averaging and a non-zero fill value were specified
+in chanfile of the mod02.pl script. Thanks to Yinghui Liu of SSEC U. of
+Wisconsin for reporting this bug.
