@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.24 --  24 July 2012
+Readme for MODIS Swath-to-Grid Toolbox 0.24 --  01 August 2012
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -19,11 +19,11 @@ files. All four Perl programs can optionally read MOD03 files for
 geolocation and/or ancillary data.
 
 The software and associated documentation can be downloaded
-from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.23.tar.gz.
+from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.24.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.23.tar.gz
-tar xvf ms2gt0.23.tar 
+gunzip ms2gt0.24.tar.gz
+tar xvf ms2gt0.24.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
