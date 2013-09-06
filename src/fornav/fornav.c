@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /disks/megadune/data/tharan/ms2gth/src/fornav/fornav.c,v 1.32 2012/07/24 21:42:17 tharan Exp tharan $";
+static const char fornav_c_rcsid[] = "$Header: /disks/megadune/data/tharan/ms2gth/src/fornav/fornav.c,v 1.33 2013/09/06 16:19:32 tharan Exp tharan $";
 
 #define _LARGEFILE64_SOURCE
 
@@ -18,7 +18,7 @@ static const char fornav_c_rcsid[] = "$Header: /disks/megadune/data/tharan/ms2gt
 #include "matrix.h"
 
 #define USAGE \
-"$Revision: 1.32 $\n" \
+"$Revision: 1.33 $\n" \
 "usage: fornav chan_count\n"\
 "              [-v] [-m]\n"\
 "              [-s chan_scan_first colrow_scan_first]\n"\
@@ -259,7 +259,7 @@ static void InitializeImage(image *ip, char *name, char *open_type_str,
     offset = ip->bytes_per_row * (off64_t)ip->rows * swath_scan_first;
     if (very_verbose)
       fprintf(stderr, "seeking to byte %lld in %s\n", offset, ip->file);
-    if (lseek64(fileno(ip->fp), offset, SEEK_SET) != offset) {
+    if (lseek64(fileno(ip->fp), offset, SEEK_SET) == -1) {
       fprintf(stderr,
 	      "fornav: InitializeImage: error seeking to byte %lld in %s\n",
 	      offset, ip->file);
