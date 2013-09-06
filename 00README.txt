@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.24 --  01 August 2012
+Readme for MODIS Swath-to-Grid Toolbox 0.25 --  06 September 2013
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -156,3 +156,8 @@ As of 0.24, fornav.c was modified to fix a bug such that garbage output
 was produced when both averaging and a non-zero fill value were specified
 in chanfile of the mod02.pl script. Thanks to Yinghui Liu of SSEC U. of
 Wisconsin for reporting this bug.
+
+As of 0.25, fornav.c was modified to fix a bug such that the -s option
+was not working correctly due to incorrect testing of the return value
+from lseek64. Thanks to Peter Keehn, NOAA Affiliate, for reporting this
+bug.
