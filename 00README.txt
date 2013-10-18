@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.25 --  06 September 2013
+Readme for MODIS Swath-to-Grid Toolbox 0.26 --  16 October 2013
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -19,11 +19,11 @@ files. All four Perl programs can optionally read MOD03 files for
 geolocation and/or ancillary data.
 
 The software and associated documentation can be downloaded
-from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.24.tar.gz.
+from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.26.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.24.tar.gz
-tar xvf ms2gt0.24.tar 
+gunzip ms2gt0.26.tar.gz
+tar xvf ms2gt0.26.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
@@ -161,3 +161,9 @@ As of 0.25, fornav.c was modified to fix a bug such that the -s option
 was not working correctly due to incorrect testing of the return value
 from lseek64. Thanks to Peter Keehn, NOAA Affiliate, for reporting this
 bug.
+
+As of 0.26, grids.c was modified such that the modifications described
+in the 0.23 note above were confined to the Cylindrical Equidistant
+projection only. The modifications to grids.c in 0.23 caused problems
+with the other projections, particularly to the Cylindrical Equal Area
+Ellipsoidal projection.
