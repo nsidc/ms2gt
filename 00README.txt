@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.26 --  18 October 2013
+Readme for MODIS Swath-to-Grid Toolbox 0.27 --  3 November 2014
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -22,8 +22,8 @@ The software and associated documentation can be downloaded
 from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.26.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.26.tar.gz
-tar xvf ms2gt0.26.tar 
+gunzip ms2gt0.27.tar.gz
+tar xvf ms2gt0.27.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
@@ -167,3 +167,8 @@ in the 0.23 note above were confined to the Cylindrical Equidistant
 projection only. The modifications to grids.c in 0.23 caused problems
 with the other projections, particularly to the Cylindrical Equal Area
 Ellipsoidal projection.
+
+As of 0.27, wdbpltc.c routine ufree(), changed return to return(0) since
+ufree() is defined as returning an int. Thanks to Jack Saba of NASA Goddard
+who reported this bug which was preventing successful compilation under Mac
+OSX 10.8.
