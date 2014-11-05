@@ -5,9 +5,12 @@
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *======================================================================*/
 
-static const char apply_mask_c_rcsid[] = "$Header: /data/tharan/ms2gth/src/utils/apply_mask.c,v 1.5 2010/09/21 00:00:55 tharan Exp tharan $";
+static const char apply_mask_c_rcsid[] = "$Header: /disks/megadune/data/tharan/ms2gth/src/utils/apply_mask.c,v 1.6 2010/10/06 17:15:31 tharan Exp tharan $";
 
+#ifndef MAC
 #define _LARGEFILE64_SOURCE
+#endif
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -16,8 +19,16 @@ static const char apply_mask_c_rcsid[] = "$Header: /data/tharan/ms2gth/src/utils
 #include <stdlib.h>
 #include "define.h"
 
+#ifdef MAC
+typedef off_t  off64_t;
+off64_t lseek64(int fd, off64_t offset, int whence)
+{
+  return(lseek(fd, offset, whence));
+}
+#endif
+
 #define USAGE \
-"$Revision: 1.5 $\n" \
+"$Revision: 1.6 $\n" \
 "usage: apply_mask [-v] [-d] [-b] [-B] [-s] [-f] [-S]\n"\
 "                  [-m mask_value_in] [-M mask_value_out]\n"\
 "          bytes_per_cell cols_in rows_in\n"\
@@ -642,7 +653,7 @@ int main(int argc, char *argv[])
 	
 	if (very_very_verbose)
 	  fprintf(stderr,
-		 "row:%d   col:%d   mask: %d   mask_test: %lf\n",
+		 "row:%d   col:%d   mask: %lf   mask_test: %lf\n",
 		  row, col, mask, mask_test);
 
       }

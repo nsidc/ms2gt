@@ -5,9 +5,12 @@
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *======================================================================*/
 
-static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/make_mask.c,v 1.5 2007/04/27 18:45:42 tharan Exp tharan $";
+static const char make_mask_c_rcsid[] = "$Header: /disks/megadune/data/tharan/ms2gth/src/utils/make_mask.c,v 1.6 2007/05/02 22:04:01 tharan Exp tharan $";
 
+#ifndef MAC
 #define _LARGEFILE64_SOURCE
+#endif
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -17,8 +20,16 @@ static const char make_mask_c_rcsid[] = "$Header: /data/haran/ms2gth/src/utils/m
 #include "define.h"
 #include "matrix.h"
 
+#ifdef MAC
+typedef off_t  off64_t;
+off64_t lseek64(int fd, off64_t offset, int whence)
+{
+  return(lseek(fd, offset, whence));
+}
+#endif
+
 #define USAGE \
-"$Revision$\n" \
+"$Revision: 1.6 $\n" \
 "usage: make_mask [-v] [-d] [-b] [-s] [-f] [-F factor] [-i mask_file_in]\n"\
 "                 [-m mask_value_in] [-M mask_value_out] [-U unmask_value_out]\n"\
 "          bytes_per_cell cols_in rows_in\n"\
