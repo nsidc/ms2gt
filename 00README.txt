@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.27 --  3 November 2014
+Readme for MODIS Swath-to-Grid Toolbox 0.28 --  5 November 2014
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -22,8 +22,8 @@ The software and associated documentation can be downloaded
 from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.26.tar.gz.
 Save this file in some directory and type:
 
-gunzip ms2gt0.27.tar.gz
-tar xvf ms2gt0.27.tar 
+gunzip ms2gt0.28.tar.gz
+tar xvf ms2gt0.28.tar 
 
 This will create a directory called ms2gt in the current directory
 containing several subdirectories. Further instructions on the
@@ -172,3 +172,15 @@ As of 0.27, wdbpltc.c routine ufree(), changed return to return(0) since
 ufree() is defined as returning an int. Thanks to Jack Saba of NASA Goddard
 who reported this bug which was preventing successful compilation under Mac
 OSX 10.8.
+
+As of 0.28, additional make files src/Makefile.mac and
+src/fornav/Makefile.mac were added to the distribution to support
+making MS2GT for Mac OSX 10.9.5.  File src/fornav/fornav.c was
+modified to conditionally compile code for the Mac such that lseek()
+is called in place of lseek64() because lseek() can be used on files
+larger than 2^32 bytes on Mac OSX, and so lseek64() does not exist on
+Mac OSX.The above additions also included src/utils/Makefile.mac; and
+the above modifications were also made to files apply_mask.c,
+extract_region.c, insert_region.c, and make_mask.c all in
+src/utils. Note that when building the executables for Mac OSX, the
+"make all" command should be replaced with "make all -f Makefile.mac".
