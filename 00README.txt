@@ -1,4 +1,4 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.28 --  5 November 2014
+Readme for MODIS Swath-to-Grid Toolbox 0.29 --  19 May 2015
 Terry Haran
 National Snow and Ice Data Center
 tharan@colorado.edu
@@ -184,3 +184,8 @@ the above modifications were also made to files apply_mask.c,
 extract_region.c, insert_region.c, and make_mask.c all in
 src/utils. Note that when building the executables for Mac OSX, the
 "make all" command should be replaced with "make all -f Makefile.mac".
+
+As of 0.29, a bug in fornav has been fixed wherein setting grid fill to a
+non-zero value was being ignored when maximum weight mode was set. Thanks
+to Yinghui Liu of CIMSS/SSEC at the University of Wisconsin for reporting this
+bug.
