@@ -4,7 +4,7 @@
  * 27-Dec-2000 T.Haran tharan@kryos.colorado.edu 303-492-1847
  * National Snow & Ice Data Center, University of Colorado, Boulder
  *========================================================================*/
-static const char fornav_c_rcsid[] = "$Header: /disks/megadune/data/tharan/ms2gth/src/fornav/fornav.c,v 1.34 2013/09/06 16:25:05 tharan Exp tharan $";
+static const char fornav_c_rcsid[] = "$Header: /disks/megadune/data/tharan/ms2gth/src/fornav/fornav.c,v 1.35 2014/11/05 20:39:46 tharan Exp tharan $";
 
 #ifndef MAC
 #define _LARGEFILE64_SOURCE
@@ -28,7 +28,7 @@ off64_t lseek64(int fd, off64_t offset, int whence)
 #endif
 
 #define USAGE \
-"$Revision: 1.34 $\n" \
+"$Revision: 1.35 $\n" \
 "usage: fornav chan_count\n"\
 "              [-v] [-m]\n"\
 "              [-s chan_scan_first colrow_scan_first]\n"\
@@ -1034,6 +1034,8 @@ int main (int argc, char *argv[])
 	    DisplayInvalidParameter("grid_fill");
 	  if (sscanf(*argv, "%f", &grid_chan_io_image[i].fill) != 1)
 	    DisplayInvalidParameter("grid_fill");
+	  else
+	    grid_chan_image[i].fill = grid_chan_io_image[i].fill;
 	}
 	break;
       case 'r':
