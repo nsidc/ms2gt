@@ -18,33 +18,32 @@ geolocation and/or ancillary data.
 
 ## Level of Support
 
-_(Choose one of the following bullets to describe USO Level of Support, then delete this instructional message along with the unchosen support bullet)_
-
-* This repository is fully supported by NSIDC. If you discover any problems or bugs, please submit an Issue. If you would like to contribute to this repository, you may fork the repository and submit a pull request.
 * This repository is not actively supported by NSIDC but we welcome issue submissions and pull requests in order to foster community contribution.
 
-See the [LICENSE](LICENSE) for details on permissions and warranties. Please contact nsidc@nsidc.org for more information.
+See the [LICENSE](LICENSE.md) for details on permissions and warranties. Please contact nsidc@nsidc.org for more information.
 
 ## Requirements
 
 This package requires:
-* library 1.2.3
+* C compiler (such as gcc)
 
 ## Installation
 
-Describe how to install the MyRepository, with platform-specific instructions if necessary.
+See [these instructions](doc/index.hd) for information on how to build and install the toolkit.  Note that
+the documentation was written for v0.5 and have not been updated since.
 
 ## Usage
 
-Describe how to use the MyRepository application/tool, with platform-specific instructions if necessary.
+See the [Tutorials](doc/tutorials.md) for information on using the tools in the toolkit.  Note that
+these tutorials were written for v0.5, and have not been updated since.
 
-## Troubleshooting
+## See also
 
-Describe any tips or tricks in case the user runs into problems.
+Additional documentation can be found [here](https://nsidc.org/data/modis/ms2gt/)
 
 ## License
 
-See [LICENSE](LICENSE).
+See [LICENSE](LICENSE.md).
 
 ## Code of Conduct
 

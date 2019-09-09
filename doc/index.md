@@ -38,8 +38,7 @@
 
 ## MS2GT: The MODIS Swath-to-Grid Toolbox
 
-<div align="center" class="SmallText">*** Documentation for this product is in development. ***  
-Please [contact NSIDC User Services](/forms/contact.html).</div>
+<div align="center" class="SmallText">*** Documentation for this product is in development and out of date. *** </div>
 
 * * *
 

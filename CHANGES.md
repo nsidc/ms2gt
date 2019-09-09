@@ -1,37 +1,3 @@
-Readme for MODIS Swath-to-Grid Toolbox 0.29 --  20 May 2015
-Terry Haran
-National Snow and Ice Data Center
-tharan@colorado.edu
-303-492-1847
-
-The MODIS Swath-to-Grid Toolbox (MS2GT) is a set of software tools that
-can be used to read HDF-EOS files containing MODIS swath data and produce
-flat binary files containing gridded data in a variety of map
-projections. Multiple input files corresponding to successively acquired 5
-minute MODIS "scenes" can be processed together to produce a seamless
-output grid.
-
-MS2GT consists of four perl programs that make calls to several
-standalone IDL and C programs: mod02.pl which reads MOD02 Level 1b files,
-mod10_l2.pl which reads MOD10_L2 snow cover files, mod29.pl which
-reads MOD29 sea ice files, and mod35_l2 which reads MOD35_L2 cloud mask
-files. All four Perl programs can optionally read MOD03 files for
-geolocation and/or ancillary data.
-
-The software and associated documentation can be downloaded
-from http://cires.colorado.edu/~tharan/ms2gt/ms2gt0.26.tar.gz.
-Save this file in some directory and type:
-
-gunzip ms2gt0.28.tar.gz
-tar xvf ms2gt0.28.tar 
-
-This will create a directory called ms2gt in the current directory
-containing several subdirectories. Further instructions on the
-installation and use of MS2GT can be then found in html files in the
-ms2gt/doc subdirectory. Point your browser to ms2gt/doc/index.html. Note
-that the html documentation is for 0.5 and has not yet been updated of
-0.6 and higher. See also http://nsidc.org/data/modis/ms2gt/.
-
 As of 0.7 there is an updated version of ppgc.html, "Points,
 Pixels, Grids, and Cells", which describes the updated gpd
 syntax. Included in the grids directory are some examples of gpd files
