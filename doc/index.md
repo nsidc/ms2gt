@@ -73,7 +73,7 @@ Please [contact NSIDC User Services](/forms/contact.html).</div>
     *   [mod02.pl](#mod02)
     *   [mod10_l2.pl](#mod10_l2)
     *   [mod29.pl](#mod29)
-*   [Tutorials](tutorials.html)
+*   [Tutorials](tutorials.md)
 
 ## <a name="history"></a>Version History
 
