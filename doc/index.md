@@ -1,6 +1,6 @@
 ## MS2GT: The MODIS Swath-to-Grid Toolbox
 
-<div align="center" class="SmallText">*** Documentation for this product is in development and only covers through v0.5. *** </div>
+<div align="center" class="SmallText">*** Documentation for this product is in development and only covers through v0.5.  Many of the links may no longer work at this time. *** </div>
 
 * * *
 
@@ -89,7 +89,7 @@ MS2GT consists of three perl programs that make calls to several standalone IDL 
 Each of the three Perl scripts provided with MS2GT make similar calls to the IDL and C programs outlined below:
 
 *   User-specified swath data arrays are read out of HDF-EOS files using a suite of IDL programs written by [Liam Gumley](http://cimss.ssec.wisc.edu/~gumley/) of [SSEC at the University of Wisconsin](http://www.ssec.wisc.edu/). During this step, radiance data can be left as raw integer counts or converted to floating-point corrected counts, radiances, or reflectances; similarly, thermal data can be left as raw counts or converted to temperatures. These swath data arrays, including latitude and longitude arrays, are saved as temporary data files.
-*   The latitude and longitude files are then converted to files containing column and row numbers of the target grid by a C program called ll2cr which uses the mapx C library written by Ken Knowles of NSIDC. The mapx library requires the use of a user-supplied [Grid Parameters Definition](github.com/nsidc/mapx/blob/master/PPGC.md#gpd) (gpd) text file that specifies the desired grid and associated map projection.
+*   The latitude and longitude files are then converted to files containing column and row numbers of the target grid by a C program called ll2cr which uses the mapx C library written by Ken Knowles of NSIDC. The mapx library requires the use of a user-supplied [Grid Parameters Definition](https://github.com/nsidc/mapx/blob/master/PPGC.md#gpd) (gpd) text file that specifies the desired grid and associated map projection.
 *   The column and row files and any ancillary data files are then interpolated to the resolution of the primary data files (1 km for [MOD021KM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD021KM.shtml) and [MOD29](/data/mod29.html), 500 m for [MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml) and [MOD10_L2](/data/mod10_l2.html), or 250 m for [MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml)) as necessary using two IDL programs (interp_colrow.pro and interp_swath.pro).
 *   Finally, the interpolated column and row files, together with the primary data files and any interpolated ancillary data files are run through a C program called fornav that performs forward navigation to produce gridded flat binary files. The user can specify that either elliptical weighted averaging or elliptical maximum weight sampling be used during forward navigation.
 
@@ -254,8 +254,7 @@ or a line such as
 
 then the two MS2GT lines above should be placed after these IDL and PATHMPP lines in the appropriate file. Once your .cshrc or your .login file has been editted, then logout and login again, or else type the following two lines:
 
-`source ~/.cshrc` or  
-`source ~/.login`  
+`source ~/.cshrc` or `source ~/.login`  
 `rehash`
 
 Finally, create a writeable directory in your home directory called tmp that will be used by a perl script called idl_sh.pl. This directory will be used for holding temporary shell scripts for running IDL programs:
@@ -270,7 +269,7 @@ Try typing in the following three commands to get the syntax of each of the thre
 `mod10_l2.pl`  
 `mod29.pl`
 
-You should see a usage message that describes the syntax of each perl script that is essentially the same as [mod02_usage](mod02_usage), [mod10_l2_usage](mod10_l2_usage) and [mod29_usage](mod29_usage), respectively. If you get "command not found" or something to that effect, it probably means that your $path is being set after the `source $MS2GT_HOME/ms2gt_env.csh` command in your .cshrc or .login file. Find the line in your .cshrc or .login that looks like:
+You should see a usage message that describes the syntax of each perl script that is essentially the same as [mod02_usage](#mod02), [mod10_l2_usage](mod10_l2) and [mod29_usage](mod29), respectively. If you get "command not found" or something to that effect, it probably means that your $path is being set after the `source $MS2GT_HOME/ms2gt_env.csh` command in your .cshrc or .login file. Find the line in your .cshrc or .login that looks like:
 
 `set path = <something>`
 
@@ -286,7 +285,7 @@ Next, verify that the environment variable $IDL_PATH is set correctly. Type:
 
 You should see a directory that looks like:
 
-`something>/ms2gt/src/idl`
+`<something>/ms2gt/src/idl`
 
 as one of the directories in the IDL path. If not, then make sure that you placed the `source $MS2GT_HOME/ms2gt_env.csh` command _after_ setting $IDL_PATH in your .login or .cshrc as decribed [above](#environment).
 
@@ -302,7 +301,7 @@ as one of the directories in PATHMPP. If not, then make sure that you placed the
 
 ## <a name="using"></a>Using the MS2GT Software
 
-In most cases, users will need to perform the following steps in order to use the MS2GT software (detailed examples of these steps can be found in the [Tutorials](tutorials.html)):
+In most cases, users will need to perform the following steps in order to use the MS2GT software (detailed examples of these steps can be found in the [Tutorials](tutorials.md)):
 
 ### <a name="searching"></a>Searching for the Data
 
@@ -322,7 +321,7 @@ The user needs to use a text editor to create miscellaneous text files used to c
 
 Each script requires a listfile which contains a list of the filenames of the HDF-EOS files to be gridded. Each of these HDF-EOS files contains MODIS swath data acquired over a five minute interval. Consecutively acquired files can be gridded together to produce a seamless gridded result.
 
-Each script also requires a Grid Parameters Definition (gpd) file, which in turn requires an associated Map Projection Parameters (mpp) file. These files are used by the mapx library software (developed at NSIDC) to define the grid into which the swath data is to be mapped. The format of these files and an explanation of the mapx library is provided in [Points, Pixels, Grids, and Cells](http://cires.colorado.edu/~knowlesk/ppgc.html).
+Each script also requires a Grid Parameters Definition (gpd) file, which in turn requires an associated Map Projection Parameters (mpp) file. These files are used by the mapx library software (developed at NSIDC) to define the grid into which the swath data is to be mapped. The format of these files and an explanation of the mapx library is provided in [Points, Pixels, Grids, and Cells](https://github.com/nsidc/mapx/blob/master/PPGC.md).
 
 Other miscellaneous text files used by some of the scripts include a chanfile, an ancilfile, and a latlonfile.
 
@@ -332,15 +331,15 @@ The format and use of each miscellaneous file is described [below](#descriptions
 
 Once all the miscellaneous text files have been created, the MS2GT command file can be invoked to actually perform the gridding, or the invocation of the particular MS2GT script and its associated parameters may be simply typed in on the command line.
 
-The MS2GT script runs several IDL and C programs to actually perform the gridding as outlined [above](#how). Further explanations are also provided in the [Tutorials](tutorials.html).
+The MS2GT script runs several IDL and C programs to actually perform the gridding as outlined [above](#how). Further explanations are also provided in the [Tutorials](tutorials.md).
 
 ### <a name="examining"></a>Examining the Results
 
-Once the particular MS2GT script has completed processing, there will exist a single binary flat file containing the gridded data for each channel specified in the MS2GT command file. The filenames for each flat file contain fields that specify the type of data the file contains as well as the number of rows and columns in the grid. A detailed description of the filenames created by each script is provided in the [Tutorials](tutorials.html). The MS2GT software does not currently provide any facility for visualizing these data, but they can be easily imported into a variety of visualization programs.
+Once the particular MS2GT script has completed processing, there will exist a single binary flat file containing the gridded data for each channel specified in the MS2GT command file. The filenames for each flat file contain fields that specify the type of data the file contains as well as the number of rows and columns in the grid. A detailed description of the filenames created by each script is provided in the [Tutorials](tutorials.md). The MS2GT software does not currently provide any facility for visualizing these data, but they can be easily imported into a variety of visualization programs.
 
 ### <a name="geolocating"></a>Geolocating the Results
 
-The MS2GT software contains a utility called gridloc which can be used to create binary floating-point flat files containing the latitude and longitude of each cell in the grid. An example of how to use gridloc can be found at the [end of Tutorial 1](tutorial_1.html#geolocating).
+The MS2GT software contains a utility called gridloc which can be used to create binary floating-point flat files containing the latitude and longitude of each cell in the grid. An example of how to use gridloc can be found at the [end of Tutorial 1](tutorial_1.md#geolocating).
 
 ## <a name="descriptions"></a>Script Descriptions and Usage
 
@@ -356,95 +355,77 @@ mod02.pl dirinout tag listfile gpdfile chanfile
        defaults:   none          1          1       0     50
 ```
 
-[mod02.pl usage](mod02_usage) provides a cursory explanation of the mod02.pl script parameters. A more expanded discussion of each parameter is provided here. Note that the first five parameters to mod02.pl are required; the rest are optional.
+Note that the first five parameters to mod02.pl are required; the rest are optional.
 
 1.  _dirinout_ - the directory containing all input files required by mod02.pl and all output files created by mod02.pl. If input files must reside in some directory other that the one used for output, then the user will need to create links to each of these files in the dirinout directory.
 2.  _tag_ - a string used in constructing the names of output files. Each output filename will begin with the _tag_ string.
 3.  _listfile_ - the name of a text file containing the names of the [MOD021KM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD021KM.shtml), [MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml), [MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml), or [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) swath files to be gridded. If multiple files are present in _listfile_, then the files must all be of the same type (e.g. if the first file is a [MOD021KM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD021KM.shtml) file, then all subsequent files must also be [MOD021KM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD021KM.shtml) files). Multiple files must have been acquired at subsequent acquisition times without any gaps. If _chanfile_ (below) is "none", then _listfile_ must contain a list of one or more [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) files from which the 1 km ancillary data specified in ancilfile (below) will be read. If _chanfile_ is not "none", then _listfile_ must contain a list of one or more [MOD021KM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD021KM.shtml), [MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml), or [MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml) files from which the 1 km, 500 m, or 250 m channel data, respectively, specified in _chanfile_ will be read. If, in this latter case, _ancilfile_ is also not "none", then the 5 km data specified in _ancilfile_ will be read from [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) files whose filenames are constructed from the corresponding filenames in _chanfile_ by substituting the MOD021KM, MOD02HKM, or MOD02QKM filename prefix with MOD03.
-4.  _gpdfile_ - the name of a Grid Parameters Definition (gpd) file that defines the desired output grid. See [Points, Pixels, Grids, and Cells](http://cires.colorado.edu/~knowlesk/ppgc.html) and the [Tutorials](tutorials.html) for more details.
+4.  _gpdfile_ - the name of a Grid Parameters Definition (gpd) file that defines the desired output grid. See [Points, Pixels, Grids, and Cells](https://github.com/nsidc/mapx/blob/master/PPGC.md) and the [Tutorials](tutorials.md) for more details.
 5.  _chanfile_ - the name of a text file containing a list of the channels to be gridded, one line per channel.  If _chanfile_ is "none" then no channel data will be gridded and _ancilfile_ must not be "none". Note that if the first file in _listfile_ is a [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) file, then _chanfile_ must be "none" and both _latlon_src_ and _ancil_src_ (described below) are forced to 3\. The channels specified in _chanfile_ are always read from the files specified in _listfile_. Each line in _chanfile_ can have up to four fields. The first field is mandatory; the rest are optional. The fields are:
 
-*   chan - specifies a channel number (1-36).
-*   conversion - a string that specifies the type of conversion that should be performed on the channel. The conversion string must be one of the following five values:
+  *   chan - specifies a channel number (1-36).
+  *   conversion - a string that specifies the type of conversion that should be performed on the channel. The conversion string must be one of the following five values:
 
-*   raw - create a "raw" output file containing raw HDF values (16-bit unsigned integers) (default).
-*   corrected - create a "cor" output file containing corrected counts (floating-point).
-*   radiance - create a "rad" output file containing radiance values in watts per square meter per steradian per micrometer (floating-point).
-*   reflectance - (channels 1-19 and 26) create a "ref" output file containing reflectance values without solar zenith angle correction (floating-point).
-*   temperature - (channels 20-25 and 27-36) create a "tem" output file containing brightness temperature values in kelvin (floating-point).
+    *   raw - create a "raw" output file containing raw HDF values (16-bit unsigned integers) (default).
+    *   corrected - create a "cor" output file containing corrected counts (floating-point).
+    *   radiance - create a "rad" output file containing radiance values in watts per square meter per steradian per micrometer (floating-point).
+    *   reflectance - (channels 1-19 and 26) create a "ref" output file containing reflectance values without solar zenith angle correction (floating-point).
+    *   temperature - (channels 20-25 and 27-36) create a "tem" output file containing brightness temperature values in kelvin (floating-point).
 
-*   weight_type - a string that specifies the type of weighting that should be performed on the channel data during swath-to-grid mapping. The weight_type string must be one of the following two values:
+  *   weight_type - a string that specifies the type of weighting that should be performed on the channel data during swath-to-grid mapping. The weight_type string must be one of the following two values:
 
-*   avg - use weighted averaging (default). This method can introduce intermediate output values that do not necessarily appear in the input. However it produces an anti-aliased output image.
-*   max - use maximum weighting. This method is analogous to nearest neighbor sampling in that it will not result in output values to do not appear in the input. However it can produce aliasing artifacts in the output image.
+    *   avg - use weighted averaging (default). This method can introduce intermediate output values that do not necessarily appear in the input. However it produces an anti-aliased output image.
+    *   max - use maximum weighting. This method is analogous to nearest neighbor sampling in that it will not result in output values to do not appear in the input. However it can produce aliasing artifacts in the output image.
 
-*   fill - specifies the output fill value to which the input fill value and any unfilled output pixels will be mapped. Default is 0.
+  *   fill - specifies the output fill value to which the input fill value and any unfilled output pixels will be mapped. Default is 0.
 
-8.  _ancilfile_ - the name of a text file containing a list of ancillary parameters to be gridded, one line per parameter. The default is "none" indicating that no ancillary parameters should be gridded. Each line in ancilfile can have up to four fields. The first field is mandatory; the rest are optional. The fields are:
+6.  _ancilfile_ - the name of a text file containing a list of ancillary parameters to be gridded, one line per parameter. The default is "none" indicating that no ancillary parameters should be gridded. Each line in ancilfile can have up to four fields. The first field is mandatory; the rest are optional. The fields are:
 
-*   param - a string that specifies an ancillary parameter to be gridded. The param string must be one of the following four-character strings:
+  *   param - a string that specifies an ancillary parameter to be gridded. The param string must be one of the following four-character strings:
 
-*   hght - Height - create a "hght" output file containing topographic height values in meters.
-*   seze - SensorZenith - create a "seze" output file containing sensor zenith values. Scaled values are in degrees. The scale factor is 0.01.
-*   seaz - SensorAzimuth - create a "seaz" output file containing sensor azimuth values.  Scaled values are in degrees. The scale factor is 0.01.
-*   rang - Range - create a "rang" output file containing range values. Scaled values are in meters. The scale factor is 25.
-*   soze - SolarZenith - create a "soze" output file containing solar zenith values.  Scaled values are in degrees. The scale factor is 0.01.
-*   soaz - SolarAzimuth - create a "soaz" output file containing solar azimuth values.  Scaled values are in degrees. The scale factor is 0.01.
-*   lmsk - Land/SeaMask -  create a "lmsk" output file containing land/sea mask coded values. This ancillary parameter is available in [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) files only. See [MODIS Geolocation Version 2 Product Format](http://daac.gsfc.nasa.gov/DAAC_DOCS/direct_broadcast/MOD03.geolocation.fs.txt) for a description of lmsk coded values.
-*   gflg - gflags - create a "gflg" output file containing gflags coded values. See [MODIS Geolocation Version 2 Product Format](http://daac.gsfc.nasa.gov/DAAC_DOCS/direct_broadcast/MOD03.geolocation.fs.txt) for a description of gflags coded values.
+    *   hght - Height - create a "hght" output file containing topographic height values in meters.
+    *   seze - SensorZenith - create a "seze" output file containing sensor zenith values. Scaled values are in degrees. The scale factor is 0.01.
+    *   seaz - SensorAzimuth - create a "seaz" output file containing sensor azimuth values.  Scaled values are in degrees. The scale factor is 0.01.
+    *   rang - Range - create a "rang" output file containing range values. Scaled values are in meters. The scale factor is 25.
+    *   soze - SolarZenith - create a "soze" output file containing solar zenith values.  Scaled values are in degrees. The scale factor is 0.01.
+    *   soaz - SolarAzimuth - create a "soaz" output file containing solar azimuth values.  Scaled values are in degrees. The scale factor is 0.01.
+    *   lmsk - Land/SeaMask -  create a "lmsk" output file containing land/sea mask coded values. This ancillary parameter is available in [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) files only. See [MODIS Geolocation Version 2 Product Format](http://daac.gsfc.nasa.gov/DAAC_DOCS/direct_broadcast/MOD03.geolocation.fs.txt) for a description of lmsk coded values.
+    *   gflg - gflags - create a "gflg" output file containing gflags coded values. See [MODIS Geolocation Version 2 Product Format](http://daac.gsfc.nasa.gov/DAAC_DOCS/direct_broadcast/MOD03.geolocation.fs.txt) for a description of gflags coded values.
 
-*   conversion - a string that specifies the type of conversion that should be performed on the channel. The conversion string must be one of the following:
+  *   conversion - a string that specifies the type of conversion that should be performed on the channel. The conversion string must be one of the following:
 
-*   raw - create a "raw" output file containing raw HDF values (16-bit signed integers except that Range is 16-bit unsigned integer and Land/SeaMask and gflags are unsigned bytes) (default).
-*   scaled - create a "sca" output file containing raw values multiplied by a parameter-specific scale factor (floating-point). Note that the effective scale factor for Height, Land/SeaMask, and gflags is 1.
+    *   raw - create a "raw" output file containing raw HDF values (16-bit signed integers except that Range is 16-bit unsigned integer and Land/SeaMask and gflags are unsigned bytes) (default).
+    *   scaled - create a "sca" output file containing raw values multiplied by a parameter-specific scale factor (floating-point). Note that the effective scale factor for Height, Land/SeaMask, and gflags is 1.
 
-*   weight_type - a string that specifies the type of weighting that should be performed on the ancillary parameter data during swath-to-grid mapping. The weight_type string must be one of the following two values:
+  *   weight_type - a string that specifies the type of weighting that should be performed on the ancillary parameter data during swath-to-grid mapping. The weight_type string must be one of the following two values:
 
-*   avg - use weighted averaging (default for all except Land/SeaMask and gflags). This method can introduce intermediate output values that do not necessarily appear in the input. However it produces an anti-aliased output image.
-*   max - use maximum weighting (default for Land/SeaMask and gflags). This method is analogous to nearest neighbor sampling in that it will not result in output values to do not appear in the input. However it can produce aliasing artifacts in the output image.
+    *   avg - use weighted averaging (default for all except Land/SeaMask and gflags). This method can introduce intermediate output values that do not necessarily appear in the input. However it produces an anti-aliased output image.
+    *   max - use maximum weighting (default for Land/SeaMask and gflags). This method is analogous to nearest neighbor sampling in that it will not result in output values to do not appear in the input. However it can produce aliasing artifacts in the output image.
 
-*   fill - specifies the output fill value to which the input fill value and any unfilled output pixels will be mapped. Default is 0.
+  *   fill - specifies the output fill value to which the input fill value and any unfilled output pixels will be mapped. Default is 0.
 
-11.  _latlon_src_ - a single character code specifying from where the latitude and longitude data should be read. The codes are as follows:
+7.  _latlon_src_ - a single character code specifying from where the latitude and longitude data should be read. The codes are as follows:
 
-*   1: use 5 km lat-lon data from [MOD021KM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD021KM.shtml) file (default).
-*   3: use 1 km lat-lon data from [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) file.
-*   H: use 1 km lat-lon data from [MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml) file.
-*   Q: use 1 km lat-lon data from [MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml) file.
+  *   1: use 5 km lat-lon data from [MOD021KM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD021KM.shtml) file (default).
+  *   3: use 1 km lat-lon data from [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) file.
+  *   H: use 1 km lat-lon data from [MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml) file.
+  *   Q: use 1 km lat-lon data from [MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml) file.
 
-_latlon_src_
+Note that if _latlon_src_ is set to 3, then _ancil_src_ (below) is forced to 3.  Note also that if the first file specified in _listfile_ is a [MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml), , [MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml), or [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) file, then _latlon_src_ is forced to H, Q, or 3, respectively.
 
-_ancil_src_
+8.  _ancil_src_ - a single character code specifying from where the ancillary data should be read. The codes are as follows:
 
-_listfile_
+  *   1: use 5 km ancillary data from [MOD021KM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD021KM.shtml) file (default).
+  *   3: use 1 km ancillary data from [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) file.
 
-[MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml)
+Note that if _ancil_src_ is set to 3, then _latlon_src_ is forced to 3.  Note also that if the first file specified in _listfile_ is a [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) file, then _ancil_src_ is forced to 3.
 
-[MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml)
+9.  _keep_ - a single character code indicating whether intermediate files should or should not be deleted. The codes are as follows:
 
-[MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml)
+  *   0: delete intermediate chan, ancil, lat, lon, col, and row files (default).
+  *   1: do not delete intermediate chan, ancil, lat, lon, col, and row files.
 
-19.  _ancil_src_ - a single character code specifying from where the ancillary data should be read. The codes are as follows:
-
-*   1: use 5 km ancillary data from [MOD021KM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD021KM.shtml) file (default).
-*   3: use 1 km ancillary data from [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) file.
-
-_ancil_src_
-
-_latlon_src_
-
-_listfile_
-
-[MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml)
-
-_ancil_src_
-
-26.  _keep_ - a single character code indicating whether intermediate files should or should not be deleted. The codes are as follows:
-
-*   0: delete intermediate chan, ancil, lat, lon, col, and row files (default).
-*   1: do not delete intermediate chan, ancil, lat, lon, col, and row files.
-
-28.  _rind_ - number of pixels to add around intermediate grid to eliminate holes in final grid. Default is 50 which should be adequate in most cases. If you see pixels being set to the fill value along the seam joining adjacent scenes, then you might try increasing the value of _rind_.
+10.  _rind_ - number of pixels to add around intermediate grid to eliminate holes in final grid. Default is 50 which should be adequate in most cases. If you see pixels being set to the fill value along the seam joining adjacent scenes, then you might try increasing the value of _rind_.
 
 ### <a name="mod10_l2"></a>mod10_l2.pl
 
@@ -458,7 +439,7 @@ mod10_l2.pl dirinout tag listfile gpdfile
        defaults:      1          none         0     50
 ```
 
-[mod10_l2 usage](mod10_l2_usage) provides a cursory explanation of the mod10_l2.pl script parameters. A more expanded discussion of each parameter is provided here. Note that the first four parameters to mod10_l2.pl are required; the rest are optional.
+Note that the first four parameters to mod10_l2.pl are required; the rest are optional.
 
 1.  _dirinout_ - the directory containing all input files required by mod10_l2.pl and all output files created by mod10_l2.pl. If input files must reside in some directory other that the one used for output, then the user will need to create links to each of these files in the dirinout directory.
 2.  _tag_ - a string used in constructing the names of output files. Each output filename will begin with the _tag_ string.
@@ -466,20 +447,18 @@ mod10_l2.pl dirinout tag listfile gpdfile
 4.  _gpdfile_ - the name of a Grid Parameters Definition (gpd) file that defines the desired output grid. See [Points, Pixels, Grids, and Cells](http://cires.colorado.edu/~knowlesk/ppgc.html) and the [Tutorials](tutorials.html) for more details.
 5.  _chanlist_ - string specifying channel numbers to be gridded. The default string is 1, i.e. grid channel 1 only. The channel numbers are:
 
-*   1: Snow Cover - create a "snow" output file containing 8-bit unsigned coded values. See [MODIS/Terra Snow Cover L2 and L3 Daily and 8-Day 500 m](/data/docs/daac/mod10_modis_snow.gd.html) for a table of coded values.
-*   2: Snow Cover PixelQA - create a "snqa" output file containing 8-bit unsigned coded values. See [MODIS Snow Cover Bit Processing](/data/docs/daac/mod10_modis_snow/snowcover_qa.html) for a description of coded values.
+  *   1: Snow Cover - create a "snow" output file containing 8-bit unsigned coded values. See [MODIS/Terra Snow Cover L2 and L3 Daily and 8-Day 500 m](/data/docs/daac/mod10_modis_snow.gd.html) for a table of coded values.
+  *   2: Snow Cover PixelQA - create a "snqa" output file containing 8-bit unsigned coded values. See [MODIS Snow Cover Bit Processing](/data/docs/daac/mod10_modis_snow/snowcover_qa.html) for a description of coded values.
 
-_chanlist_
+The _chanlist_ string should not contain any embedded blanks.  Thus to specify that all channels should be gridded, _chanlist_ should be 12.
 
-_chanlist_
+6.  _latlonlistfile_ - text file containing a list of [MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml), [MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml), or [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) files whose latitude and longitude data should be used in place of the latitude and longitude data in the corresponding [MOD10_L2](/data/mod10_l2.html) files in listfile. The default is "none" indicating that the latitude and longitude data in each [MOD10_L2](/data/mod10_l2.html) file should be used without substitution.
+7.  _keep_ - a single character code indicating whether intermediate files should or should not be deleted. The codes are as follows:
 
-9.  _latlonlistfile_ - text file containing a list of [MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml), [MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml), or [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) files whose latitude and longitude data should be used in place of the latitude and longitude data in the corresponding [MOD10_L2](/data/mod10_l2.html) files in listfile. The default is "none" indicating that the latitude and longitude data in each [MOD10_L2](/data/mod10_l2.html) file should be used without substitution.
-10.  _keep_ - a single character code indicating whether intermediate files should or should not be deleted. The codes are as follows:
+  *   0: delete intermediate chan, lat, lon, col, and row files (default).
+  *   1: do not delete intermediate chan, lat, lon, col, and row files.
 
-*   0: delete intermediate chan, lat, lon, col, and row files (default).
-*   1: do not delete intermediate chan, lat, lon, col, and row files.
-
-12.  _rind_ - number of pixels to add around intermediate grid to eliminate holes in final grid. Default is 50 which should be adequate in most cases. If you see pixels being set to the fill value along the seam joining adjacent scenes, then you might try increasing the value of _rind_.
+8.  _rind_ - number of pixels to add around intermediate grid to eliminate holes in final grid. Default is 50 which should be adequate in most cases. If you see pixels being set to the fill value along the seam joining adjacent scenes, then you might try increasing the value of _rind_.
 
 ### <a name="mod29"></a>mod29.pl
 
@@ -493,7 +472,7 @@ mod29.pl dirinout tag listfile gpdfile
        defaults:    1          none         0     50
 ```
 
-[mod29 usage](mod29_usage) provides a cursory explanation of the mod29.pl script parameters. A more expanded discussion of each parameter is provided here. Note that the first four parameters to mod29.pl are required; the rest are optional.
+Note that the first four parameters to mod29.pl are required; the rest are optional.
 
 1.  _dirinout_ - the directory containing all input files required by mod29.pl and all output files created by mod29.pl. If input files must reside in some directory other that the one used for output, then the user will need to create links to each of these files in the dirinout directory.
 2.  _tag_ - a string used in constructing the names of output files. Each output filename will begin with the _tag_ string.
@@ -501,34 +480,28 @@ mod29.pl dirinout tag listfile gpdfile
 4.  _gpdfile_ - the name of a Grid Parameters Definition (gpd) file that defines the desired output grid. See [Points, Pixels, Grids, and Cells](http://cires.colorado.edu/~knowlesk/ppgc.html) and the [Tutorials](tutorials.html) for more details.
 5.  _chanlist_ - string specifying channel numbers to be gridded. The default string is 1, i.e. grid channel 1 only. The channel numbers are:
 
-*   1: Sea Ice by Reflectance - create an "icer" output file containing 8-bit unsigned coded values. See [MODIS/Terra Sea Ice Extent L2 and L3 Day and Night 1 km](/data/docs/daac/mod29_modis_seaice.gd.html) for a table of coded values.
-*   2: Sea Ice by Reflectance PixelQA - create a "irqa" output file containing 8-bit unsigned coded values. See [MODIS Sea Ice Bit Processing](/data/docs/daac/mod29_modis_seaice/seaice_qa.html) for a description of values.
-*   3: Ice Surface Temperature - create a "temp" output file containing 16-bit unsigned values representing kelvin * 100\. Note that the 16-bit unsigned values should be divided by 100\. Resulting values in the range 0-255 represent coded values while 655.35 represents the fill value; all other values represent temperatures in kelvin. See [MODIS/Terra Sea Ice Extent L2 and L3 Day and Night 1 km](/data/docs/daac/mod29_modis_seaice.gd.html) for a table of coded values.
-*   4: Ice Surface Temperature PixelQA - create a "itqa" output file containing 8-bit unsigned coded values. See [MODIS Sea Ice Bit Processing](/data/docs/daac/mod29_modis_seaice/seaice_qa.html) for a description of values.
-*   5: Sea Ice by IST - create a "icet" output file containing 8-bit unsigned coded values. See [MODIS/Terra Sea Ice Extent L2 and L3 Day and Night 1 km](/data/docs/daac/mod29_modis_seaice.gd.html) for a table of coded values.
-*   6: icrt Combined Sea Ice - create a "icrt" output file containing 8-bit unsigned coded values. See [MOD29 Local Attributes](/data/docs/daac/mod29_modis_seaice/mod29_local_attributes.html) for a table of coded values.
+  *   1: Sea Ice by Reflectance - create an "icer" output file containing 8-bit unsigned coded values. See [MODIS/Terra Sea Ice Extent L2 and L3 Day and Night 1 km](/data/docs/daac/mod29_modis_seaice.gd.html) for a table of coded values.
+  *   2: Sea Ice by Reflectance PixelQA - create a "irqa" output file containing 8-bit unsigned coded values. See [MODIS Sea Ice Bit Processing](/data/docs/daac/mod29_modis_seaice/seaice_qa.html) for a description of values.
+  *   3: Ice Surface Temperature - create a "temp" output file containing 16-bit unsigned values representing kelvin * 100\. Note that the 16-bit unsigned values should be divided by 100\. Resulting values in the range 0-255 represent coded values while 655.35 represents the fill value; all other values represent temperatures in kelvin. See [MODIS/Terra Sea Ice Extent L2 and L3 Day and Night 1 km](/data/docs/daac/mod29_modis_seaice.gd.html) for a table of coded values.
+  *   4: Ice Surface Temperature PixelQA - create a "itqa" output file containing 8-bit unsigned coded values. See [MODIS Sea Ice Bit Processing](/data/docs/daac/mod29_modis_seaice/seaice_qa.html) for a description of values.
+  *   5: Sea Ice by IST - create a "icet" output file containing 8-bit unsigned coded values. See [MODIS/Terra Sea Ice Extent L2 and L3 Day and Night 1 km](/data/docs/daac/mod29_modis_seaice.gd.html) for a table of coded values.
+  *   6: icrt Combined Sea Ice - create a "icrt" output file containing 8-bit unsigned coded values. See [MOD29 Local Attributes](/data/docs/daac/mod29_modis_seaice/mod29_local_attributes.html) for a table of coded values.
 
-_chanlist_
+The _chanlist_ string should not contain any embedded blanks.  Thus to specify that all channels should be gridded, _chanlist_ should be 123456.
 
-_chanlist_
+NOTE: During twilight and nighttime conditions, "dark" [MOD29](/data/mod29.html) granules may be created that do not include Sea Ice by Reflectance, Sea Ice by Reflectance PixelQA, nor Combined Sea Ice channels.  Gridded arrays containing the fill value of 255 are returned when these channels are specified for dark [MOD29](/data/mod29.html) granules.
 
+6.  _latlonlistfile_ - text file containing a list of [MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml), [MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml), or [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) files whose latitude and longitude data should be used in place of the latitude and longitude data in the corresponding [MOD29](/data/mod29.html) files in listfile. The default is "none" indicating that the latitude and longitude data in each [MOD29](/data/mod29.html) file should be used without substitution.
+7.  _keep_ - a single character code indicating whether intermediate files should or should not be deleted. The codes are as follows:
 
+  *   0: delete intermediate chan, lat, lon, col, and row files (default).
+  *   1: do not delete intermediate chan, lat, lon, col, and row files.
 
-[MOD29](/data/mod29.html)
-
-[MOD29](/data/mod29.html)
-
-12.  _latlonlistfile_ - text file containing a list of [MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml), [MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml), or [MOD03](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD03.shtml) files whose latitude and longitude data should be used in place of the latitude and longitude data in the corresponding [MOD29](/data/mod29.html) files in listfile. The default is "none" indicating that the latitude and longitude data in each [MOD29](/data/mod29.html) file should be used without substitution.
-13.  _keep_ - a single character code indicating whether intermediate files should or should not be deleted. The codes are as follows:
-
-*   0: delete intermediate chan, lat, lon, col, and row files (default).
-*   1: do not delete intermediate chan, lat, lon, col, and row files.
-
-15.  _rind_ - number of pixels to add around intermediate grid to eliminate holes in final grid. Default is 50 which should be adequate in most cases. If you see pixels being set to the fill value along the seam joining adjacent scenes, then you might try increasing the value of _rind_.
+8.  _rind_ - number of pixels to add around intermediate grid to eliminate holes in final grid. Default is 50 which should be adequate in most cases. If you see pixels being set to the fill value along the seam joining adjacent scenes, then you might try increasing the value of _rind_.
 
 * * *
 
-<font size="-1">Last updated: January 2, 2002 by</font>  
+<font size="-1">Text Last updated: January 2, 2002 by</font>  
 <font size="-1">Terry Haran</font>  
 <font size="-1">NSIDC-CIRES</font>  
 <font size="-1">449 UCB</font>  
