@@ -89,11 +89,11 @@ MS2GT consists of three perl programs that make calls to several standalone IDL 
 Each of the three Perl scripts provided with MS2GT make similar calls to the IDL and C programs outlined below:
 
 *   User-specified swath data arrays are read out of HDF-EOS files using a suite of IDL programs written by [Liam Gumley](http://cimss.ssec.wisc.edu/~gumley/) of [SSEC at the University of Wisconsin](http://www.ssec.wisc.edu/). During this step, radiance data can be left as raw integer counts or converted to floating-point corrected counts, radiances, or reflectances; similarly, thermal data can be left as raw counts or converted to temperatures. These swath data arrays, including latitude and longitude arrays, are saved as temporary data files.
-*   The latitude and longitude files are then converted to files containing column and row numbers of the target grid by a C program called ll2cr which uses the mapx C library written by Ken Knowles of NSIDC. The mapx library requires the use of a user-supplied [Grid Parameters Definition](http://cires.colorado.edu/~knowlesk/ppgc.html#parameters) (gpd) text file that specifies the desired grid and associated map projection.
+*   The latitude and longitude files are then converted to files containing column and row numbers of the target grid by a C program called ll2cr which uses the mapx C library written by Ken Knowles of NSIDC. The mapx library requires the use of a user-supplied [Grid Parameters Definition](github.com/nsidc/mapx/blob/master/PPGC.md#gpd) (gpd) text file that specifies the desired grid and associated map projection.
 *   The column and row files and any ancillary data files are then interpolated to the resolution of the primary data files (1 km for [MOD021KM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD021KM.shtml) and [MOD29](/data/mod29.html), 500 m for [MOD02HKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02HKM.shtml) and [MOD10_L2](/data/mod10_l2.html), or 250 m for [MOD02QKM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo/MOD02QKM.shtml)) as necessary using two IDL programs (interp_colrow.pro and interp_swath.pro).
 *   Finally, the interpolated column and row files, together with the primary data files and any interpolated ancillary data files are run through a C program called fornav that performs forward navigation to produce gridded flat binary files. The user can specify that either elliptical weighted averaging or elliptical maximum weight sampling be used during forward navigation.
 
- It should relatively easy for a user who is familiar with Perl and IDL programming to modify the Perl scripts and IDL procedures in order to process other kinds swath data using many of the same standalone programs provided with MS2GT. Further details can be found in the [Tutorials](tutorials.html).
+ It should relatively easy for a user who is familiar with Perl and IDL programming to modify the Perl scripts and IDL procedures in order to process other kinds swath data using many of the same standalone programs provided with MS2GT. Further details can be found in the [Tutorials](tutorials.md).
 
 ### <a name="requirements"></a>Requirements
 
@@ -177,14 +177,14 @@ The software and associated documentation can be downloaded from this repository
 
 `git clone git@github.com/nsidc/ms2gt.git`
 
-This will create a directory in the current directory called ms2gt which will contain several subdirectories. Further instructions on the installation and use of MS2GT can be found int the (doc)[../doc/] directory of
+This will create a directory in the current directory called ms2gt which will contain several subdirectories. Further instructions on the installation and use of MS2GT can be found in the [doc](../doc/) directory of
 this repository.
 
 ### <a name="building"></a>Building the Executables
 
 Change the current working directory to the ms2gt/src directory and type:
 
-**<tt>make all</tt>**
+`make all`
 
 This will build and install the MS2GT executables under the ms2gt directory. The only write privileges required are the ability to write into the ms2gt directory and its subdirectories.
 
@@ -192,42 +192,44 @@ This will build and install the MS2GT executables under the ms2gt directory. The
 
 Type the command:
 
-**<tt>perl -v</tt>**
+`perl -v`
 
 If you see something like:
 
-<tt>This is perl, version 5.004_04 built for irix-n32</tt>
+```
+This is perl, version 5.004_04 built for irix-n32
 
-<tt>Copyright 1987-1997, Larry Wall</tt>
+Copyright 1987-1997, Larry Wall
 
-<tt>Perl may be copied only under the terms of either the Artistic License or the</tt>  
-<tt>GNU General Public License, which may be found in the Perl 5.0 source kit.</tt>
+Perl may be copied only under the terms of either the Artistic License or the
+GNU General Public License, which may be found in the Perl 5.0 source kit.
+```
 
 then you know perl has been installed ok. Just make sure you have at least perl version 5 installed. However, if you see something like:
 
-<tt>perl: Command not found</tt>
+`perl: Command not found`
 
 then you need to contact your system administrator to get perl installed.
 
 Assuming you have perl installed, then type:
 
-**<tt>/usr/bin/perl -v</tt>**
+`/usr/bin/perl -v`
 
 If you see the same message as before, then you have a proper link to your installed version of perl. However, if you see something like:
 
-<tt>/usr/bin/perl: Command not found</tt>
+`/usr/bin/perl: Command not found`
 
 or you see mention of a lower version of perl, then you need to contact your system administrator and have a link called /usr/bin/perl created that points to your installed version of perl. For example, if you type:
 
-**<tt>which perl</tt> **(or **<tt>type perl</tt>** if you're running bash, ksh, or sh)
+`which perl` (or `type perl` if you're running bash, ksh, or sh)
 
 and you see:
 
-<tt>/usr/sbin/perl</tt>
+`/usr/sbin/perl`
 
 then the command to create the link would be:
 
-**<tt>ln -s /usr/sbin/perl /usr/bin/perl</tt>**
+`ln -s /usr/sbin/perl /usr/bin/perl`
 
 but you'll probably need to be logged in as root to be able to execute this command successfully.
 
@@ -235,66 +237,68 @@ but you'll probably need to be logged in as root to be able to execute this comm
 
 Edit your .cshrc or your .login file and insert the following two lines:
 
-<tt>setenv MS2GT_HOME $HOME/ms2gt</tt>  
-<tt>source $MS2GT_HOME/ms2gt_env.csh</tt>
+```
+setenv MS2GT_HOME $HOME/ms2gt
+source $MS2GT_HOME/ms2gt_env.csh
+```
 
 If you installed ms2gt into some directory other than $HOME, then change the first line accordingly. If your .cshrc or your .login includes lines such as:
 
-<tt>setenv IDL_DIR /usr/local/rsi/idl</tt>  
-<tt>source $IDL_DIR/bin/idl_setup</tt>  
-<tt>setenv IDL_PATH ...</tt>
+`setenv IDL_DIR /usr/local/rsi/idl`  
+`source $IDL_DIR/bin/idl_setup`  
+`setenv IDL_PATH ...`
 
-<tt>or a line such as</tt>
+or a line such as
 
-<tt>setenv PATHMPP ...</tt>
+`setenv PATHMPP ...`
 
 then the two MS2GT lines above should be placed after these IDL and PATHMPP lines in the appropriate file. Once your .cshrc or your .login file has been editted, then logout and login again, or else type the following two lines:
 
-**<tt>source ~/.cshrc</tt> **or  
-**<tt>source ~/.login</tt>**  
-**<tt>rehash</tt>**
+`source ~/.cshrc` or  
+`source ~/.login`  
+`rehash`
 
 Finally, create a writeable directory in your home directory called tmp that will be used by a perl script called idl_sh.pl. This directory will be used for holding temporary shell scripts for running IDL programs:
 
-**<tt>mkdir ~/tmp</tt>**
+`mkdir ~/tmp`
 
 ### <a name="verifying"></a>Verifying the MS2GT Installation
 
-Try typing in the following three commands to get the syntax of each of the three perl scripts (note that the name of the first script contains a zero (0), followed by a two (2); note that the name of the second script contains a one (1), followed by a zero (0), followed by an underbar (_), followed by a lower case L (l), followed by a two (2):
+Try typing in the following three commands to get the syntax of each of the three perl scripts (note that the name of the first script contains a zero (0), followed by a two (2); note that the name of the second script contains a one (1), followed by a zero (0), followed by an underbar (\_), followed by a lower case L (l), followed by a two (2):
 
-**<tt>mod02.pl</tt>**  
-**<tt>mod10_l2.pl</tt>**  
-**<tt>mod29.pl</tt>**
+`mod02.pl`  
+`mod10_l2.pl`  
+`mod29.pl`
 
-You should see a usage message that describes the syntax of each perl script that is essentially the same as [mod02_usage](mod02_usage), [mod10_l2_usage](mod10_l2_usage) and [mod29_usage](mod29_usage), respectively. If you get "command not found" or something to that effect, it probably means that your $path is being set after the <tt>source $MS2GT_HOME/ms2gt_env.csh</tt> command in your .cshrc or .login file. Find the line in your .cshrc or .login that looks like:
+You should see a usage message that describes the syntax of each perl script that is essentially the same as [mod02_usage](mod02_usage), [mod10_l2_usage](mod10_l2_usage) and [mod29_usage](mod29_usage), respectively. If you get "command not found" or something to that effect, it probably means that your $path is being set after the `source $MS2GT_HOME/ms2gt_env.csh` command in your .cshrc or .login file. Find the line in your .cshrc or .login that looks like:
 
-<tt>set path = <something></tt>
+`set path = <something>`
 
 and change it to:
 
-<tt>set path = ($path <something>)</tt>
+`set path = ($path <something>)`
 
 Then logout and login and try the commands again.
 
 Next, verify that the environment variable $IDL_PATH is set correctly. Type:
 
-**<tt>echo $IDL_PATH</tt>**
+`echo $IDL_PATH`
 
 You should see a directory that looks like:
 
-<<tt>something>/ms2gt/src/idl</tt>
+`something>/ms2gt/src/idl`
 
-as one of the directories in the IDL path. If not, then make sure that you placed the <tt>source</tt> <tt>$MS2GT_HOME/ms2gt_env.csh</tt> command _after_ setting $IDL_PATH in your .login or .cshrc as decribed [above](#environment).
+as one of the directories in the IDL path. If not, then make sure that you placed the `source $MS2GT_HOME/ms2gt_env.csh` command _after_ setting $IDL_PATH in your .login or .cshrc as decribed [above](#environment).
 
 Finally, verify that the environment varialble $PATHMPP is set correctly. Type:
 
-**<tt>echo $PATHMPP</tt>**
+`echo $PATHMPP`
 
 You should see a directory that looks like:
 
-<something>/ms2gt/grids
+`<something>/ms2gt/grids`
 
-as one of the directories in PATHMPP. If not, then make sure that you placed the <tt>source $MS2GT_HOME/ms2gt_env.csh</tt> command _after_ setting $PATHMPP in your .login or .cshrc as decribed [above](#environment).
+as one of the directories in PATHMPP. If not, then make sure that you placed the `source $MS2GT_HOME/ms2gt_env.csh` command _after_ setting $PATHMPP in your .login or .cshrc as decribed [above](#environment).
 
 ## <a name="using"></a>Using the MS2GT Software
 
@@ -346,9 +350,11 @@ This script can process [MOD021KM](http://daac.gsfc.nasa.gov/MODIS/Terra/rad_geo
 
 The mod02.pl script has the following usage:
 
-<tt>mod02.pl dirinout tag listfile gpdfile chanfile</tt>  
-<tt>                [ancilfile [latlon_src [ancil_src [keep [rind]]]]]</tt>  
-<tt>       defaults:   none          1          1       0     50</tt>
+```
+mod02.pl dirinout tag listfile gpdfile chanfile
+                [ancilfile [latlon_src [ancil_src [keep [rind]]]]]
+       defaults:   none          1          1       0     50
+```
 
 [mod02.pl usage](mod02_usage) provides a cursory explanation of the mod02.pl script parameters. A more expanded discussion of each parameter is provided here. Note that the first five parameters to mod02.pl are required; the rest are optional.
 
@@ -446,9 +452,11 @@ This script can process [MOD10_L2](/data/mod10_l2.html) swath files to produce f
 
 The mod10_l2.pl script has the following usage:
 
-<tt>mod10_l2.pl dirinout tag listfile gpdfile</tt>  
-<tt>                  [chanlist [latlonlistfile [keep [rind]]]]</tt>  
-<tt>       defaults:      1          none         0     50</tt>
+```
+mod10_l2.pl dirinout tag listfile gpdfile
+                  [chanlist [latlonlistfile [keep [rind]]]]
+       defaults:      1          none         0     50
+```
 
 [mod10_l2 usage](mod10_l2_usage) provides a cursory explanation of the mod10_l2.pl script parameters. A more expanded discussion of each parameter is provided here. Note that the first four parameters to mod10_l2.pl are required; the rest are optional.
 
@@ -479,9 +487,11 @@ This script can process [MOD29](/data/mod29.html) swath files to produce flat bi
 
 The mod29.pl script has the following usage:
 
-<tt>mod29.pl dirinout tag listfile gpdfile</tt>  
-<tt>                [chanlist [latlonlistfile [keep [rind]]]]</tt>  
-<tt>       defaults:    1          none         0     50</tt>
+```
+mod29.pl dirinout tag listfile gpdfile
+                [chanlist [latlonlistfile [keep [rind]]]]
+       defaults:    1          none         0     50
+```
 
 [mod29 usage](mod29_usage) provides a cursory explanation of the mod29.pl script parameters. A more expanded discussion of each parameter is provided here. Note that the first four parameters to mod29.pl are required; the rest are optional.
 
