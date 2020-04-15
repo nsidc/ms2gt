@@ -27,6 +27,7 @@ See the [LICENSE](LICENSE.md) for details on permissions and warranties. Please 
 This package requires:
 * C compiler (such as gcc)
 * Perl
+* IDL
 
 ## Installation
 
