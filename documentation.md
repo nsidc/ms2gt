@@ -4,28 +4,28 @@ MS2GT - The MODIS Swath-to-Grid Toolbox
 ## Table of Contents
 
 -   [Overview](#overview)
-    -   [What the Software Does](#what)
-    -   [How the Software Works](#how)
-    -   [Requirements](#requirements)
-    -   [Supported Data Sets](#datasets)
--   [Installation Instructions](#installation)
-    -   [Obtaining the Software](#obtaining)
-    -   [Building the Executables](#building)
-    -   [Verifying your Perl Installation](#perl)
-    -   [Setting up the MS2GT Environment](#environment)
-    -   [Verifying the MS2GT Installation](#verifying)
--   [Using the MS2GT Software](#using)
-    -   [Obtaining the Data](#searching)
-    -   [Creating a MS2GT Command File](#command)
-    -   [Creating Miscellaneous Text Files](#miscellaneous)
-    -   [Running the MS2GT Command File](#running)
-    -   [Examining the Results](#examining)
-    -   [Geolocating the Results](#geolocating)
--   [Script Descriptions and Usage](#descriptions)
-    -   [mod02.pl - MODIS Level 1B Channel or Ancillary Data](#mod02)
-    -   [mod10_l2.pl - Snow Cover Data](#mod10_l2)
-    -   [mod29.pl - Sea Ice Extent Data](#mod29)
--   [Version History](#history)
+    -   What the Software Does
+    -   How the Software Works
+    -   Requirements
+    -   Supported Data Sets
+-   [Installation Instructions](#installation-instructions)
+    -   Obtaining the Software
+    -   Building the Executables
+    -   Verifying your Perl Installation
+    -   Setting up the MS2GT Environment
+    -   Verifying the MS2GT Installation
+-   [Using the MS2GT Software](#using-the-ms2gt-software)
+    -   Obtaining the Data
+    -   Creating a MS2GT Command File
+    -   Creating Miscellaneous Text Files
+    -   Running the MS2GT Command File
+    -   Examining the Results
+    -   Geolocating the Results
+-   [Script Descriptions and Usage](#script-descriptions-and-usage)
+    -   `mod02.pl` - MODIS Level 1B Channel or Ancillary Data
+    -   `mod10_l2.pl` - Snow Cover Data
+    -   `mod29.pl` - Sea Ice Extent Data
+-   [Version History](#version-history)
 
 ## Overview
 
@@ -186,7 +186,7 @@ You should see a directory that looks like the following:
 
 `<name>/ms2gt/src/idl`
 
-as one of the directories in the IDL path. If you do not, then make sure that you placed the `source` `$MS2GT_HOME/ms2gt_env.csh `command *after* setting `$IDL_PATH` in your `.login` or `.cshrc` as described [above](#environment).
+as one of the directories in the IDL path. If you do not, then make sure that you placed the `source` `$MS2GT_HOME/ms2gt_env.csh `command *after* setting `$IDL_PATH` in your `.login` or `.cshrc` as described above.
 
 Finally, verify that the environment variable $PATHMPP is set correctly.
 
@@ -198,7 +198,7 @@ You should see a directory that looks like:
 
 `<name>/ms2gt/grids`
 
-as one of the directories in `PATHMPP`. If you do not, then make sure that you placed the `source $MS2GT_HOME/ms2gt_env.csh `command *after *setting `$PATHMPP` in your `.login` or `.cshrc` as described [above](#environment).
+as one of the directories in `PATHMPP`. If you do not, then make sure that you placed the `source $MS2GT_HOME/ms2gt_env.csh `command *after *setting `$PATHMPP` in your `.login` or `.cshrc` as described above.
 
 ## Using the MS2GT Software
 
@@ -210,7 +210,7 @@ Visit the [MODIS Data | Order Data](https://nsidc.org/data/modis/order_data.htm
 
 ### Creating an MS2GT Command File
 
-Use a text editor to create a command file for running the particular MS2GT script: `mod02.pl`, `mod10_l2.pl`, or `mod29.pl`. This command file contains an invocation of the particular script with its associated parameters. The parameters to a particular script contain the names of miscellaneous text files (described [below](#miscellaneous)), as well as other parameters used to control the operation of the script. Parameters include a specification of which data arrays in the input file(s) are to be gridded. Alternatively, you can type the script name on the command line once the miscellaneous text files have been created.
+Use a text editor to create a command file for running the particular MS2GT script: `mod02.pl`, `mod10_l2.pl`, or `mod29.pl`. This command file contains an invocation of the particular script with its associated parameters. The parameters to a particular script contain the names of miscellaneous text files (described below), as well as other parameters used to control the operation of the script. Parameters include a specification of which data arrays in the input file(s) are to be gridded. Alternatively, you can type the script name on the command line once the miscellaneous text files have been created.
 
 ### Miscellaneous Text Files
 
@@ -222,11 +222,11 @@ Each script also requires a Grid Parameters Definition (gpd) file, which in turn
 
 Other miscellaneous text files used by some of the scripts include a chanfile, an ancilfile, and a latlonfile.
 
-The format and use of each miscellaneous file is described [below](#descriptions) as well as in the tutorials.
+The format and use of each miscellaneous file is described below as well as in the tutorials.
 
 ### Running the MS2GT Command File
 
-Once all the miscellaneous text files have been created, you can invoke the MS2GT command file to actually perform the gridding. You can also invoke the particular MS2GT script and its associated parameters by typing on the command line. The MS2GT script runs several IDL and C programs to perform the gridding as outlined [above](#how). Further explanations are also provided in the tutorials.
+Once all the miscellaneous text files have been created, you can invoke the MS2GT command file to actually perform the gridding. You can also invoke the particular MS2GT script and its associated parameters by typing on the command line. The MS2GT script runs several IDL and C programs to perform the gridding as outlined above. Further explanations are also provided in the tutorials.
 
 ### Examining the Results
 
@@ -240,7 +240,7 @@ The MS2GT software contains a utility called gridloc, which can be used to creat
 
 ### `mod02.pl` - MODIS Level-1B Channel or Ancillary Data
 
-This script can process [MOD021KM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), [MOD02HKM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), [MOD02QKM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), or [MOD03](https://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=03) swath files to produce flat binary gridded files containing MODIS Level-1B channel data and/or ancillary data. The channel data consist of up to 36 spectral bands, as described in the [MODIS Technical Specifications](https://modis.gsfc.nasa.gov/about/specifications.php). See [Supported Data Sets](#datasets) for a table summarizing which channels are available at which resolutions in which files. The table also shows that ancillary data are available in [MOD021KM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf) and [MOD03](https://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=03) files at 5 km and 1 km resolutions, respectively. Finally the table shows geolocation (lat-lon) data are available at either 1 km or 5 km resolutions. Using 1 km ancillary data and/or 1 km geolocation data will minimize interpolation error.
+This script can process [MOD021KM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), [MOD02HKM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), [MOD02QKM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), or [MOD03](https://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=03) swath files to produce flat binary gridded files containing MODIS Level-1B channel data and/or ancillary data. The channel data consist of up to 36 spectral bands, as described in the [MODIS Technical Specifications](https://modis.gsfc.nasa.gov/about/specifications.php). See [Supported Data Sets](#supported-data-sets) for a table summarizing which channels are available at which resolutions in which files. The table also shows that ancillary data are available in [MOD021KM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf) and [MOD03](https://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=03) files at 5 km and 1 km resolutions, respectively. Finally the table shows geolocation (lat-lon) data are available at either 1 km or 5 km resolutions. Using 1 km ancillary data and/or 1 km geolocation data will minimize interpolation error.
 
 The mod02.pl script has the following usage:
 
