@@ -31,7 +31,7 @@ This package requires:
 
 ## Installation
 
-See documentation.md for information on how to build and install the toolkit.  Note that the documentation was written for v0.5 and have not been updated since.  Note that the documentation there refers to downloading the v0.5 package from the FTP site.  If using this repository, you do not need to do that, you can simply clone this repository into a folder and run the documentation.md#building step from there.
+See ms2gt/documentation.md for information on how to build and install the toolkit.  Note that the documentation was written for v0.5 and have not been updated since.  Note that the documentation there refers to downloading the v0.5 package from the FTP site.  If using this repository, you do not need to do that, you can simply clone this repository into a folder and run the ms2gt/documentation.md#building step from there.
 
 ## Usage
 
