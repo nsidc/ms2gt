@@ -238,7 +238,7 @@ The MS2GT software contains a utility called gridloc, which can be used to creat
 
 ## Script Descriptions and Usage
 
-### mod02.pl - MODIS Level-1B Channel or Ancillary Data
+### `mod02.pl` - MODIS Level-1B Channel or Ancillary Data
 
 This script can process [MOD021KM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), [MOD02HKM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), [MOD02QKM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), or [MOD03](https://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=03) swath files to produce flat binary gridded files containing MODIS Level-1B channel data and/or ancillary data. The channel data consist of up to 36 spectral bands, as described in the [MODIS Technical Specifications](https://modis.gsfc.nasa.gov/about/specifications.php). See [Supported Data Sets](#datasets) for a table summarizing which channels are available at which resolutions in which files. The table also shows that ancillary data are available in [MOD021KM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf) and [MOD03](https://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=03) files at 5 km and 1 km resolutions, respectively. Finally the table shows geolocation (lat-lon) data are available at either 1 km or 5 km resolutions. Using 1 km ancillary data and/or 1 km geolocation data will minimize interpolation error.
 
@@ -262,7 +262,7 @@ The file `mod02_usage` provides a cursory explanation of the `mod02.pl` script
 | *ancil_src* | A single character code specifying from where the ancillary data should be read. The codes are as follows:<br>1: use 5-km ancillary data from [MOD021KM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf) file. (This is the default.)<br>3: use 1 km ancillary data from [MOD03](https://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=03) file.<br>Note that if *ancil_src* is set to 3, then *latlon_src* is forced to 3. Also, if the first file specified in *listfile* is a [MOD03](https://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=03) file, then *ancil_src* is forced to 3.
 | *keep* | A single character code indicating whether intermediate files should or should not be deleted. The codes are as follows:<br>0: delete intermediate chan, ancil, lat, lon, col, and row files. (This is the default.)<br>1: do not delete intermediate chan, ancil, lat, lon, col, and row files.
 | *rind* | The number of pixels to add around intermediate grid to eliminate holes in final grid. The default is 50, which should be adequate in most cases. If you see pixels being set to the fill value along the seam joining adjacent scenes, then try increasing the value of *rind*. |
-----------
+
 ### chanfile fields
 
 -   chan - specifies a channel number (1-36).
@@ -298,7 +298,7 @@ The file `mod02_usage` provides a cursory explanation of the `mod02.pl` script
 
 
 
-### mod10_l2.pl - Snow Cover Data
+### `mod10_l2.pl` - Snow Cover Data
 
 This script can process [MOD10_L2](https://nsidc.org/data/mod10_l2.html) swath files to produce flat binary gridded files containing MODIS snow cover data. The snow cover data consist of 2 500-m resolution channels described in [mod10_l2 usage](https://nsidc.org/data/modis/ms2gt/mod10_l2_usage.txt) and [MOD10_L2](https://nsidc.org/data/mod10_l2.html).
 
@@ -323,7 +323,7 @@ The mod10_l2.pl script has the following usage:
 | *keep* | A single character code indicating whether intermediate files should or should not be deleted. The codes are as follows:<br>0: delete intermediate chan, lat, lon, col, and row files. (This is the default.)<br>1: do not delete intermediate chan, lat, lon, col, and row files.
 | *rind* | The number of pixels to add around the intermediate grid to eliminate holes in final grid. The default is 50, which is adequate in most cases. If you see pixels being set to the fill value along the seam joining adjacent scenes, then try increasing the value of *rind*. |
 
-### Sea Ice Extent Data `mod29.pl`
+### `mod29.pl` - Sea Ice Extent Data
 
 This script can process [MOD29](https://nsidc.org/data/mod29v5.html) swath files to produce flat binary gridded files containing MODIS sea ice extent data. The sea ice extent data consist of six 1 km resolution channels described in [mod29 usage](https://nsidc.org/data/modis/data/modis/ms2gt/mod29_usage.txt) and [MOD29](https://nsidc.org/data/mod29v5.html). The geolocation information stored in [MOD29](https://nsidc.org/data/mod29v5.html) files is 5 km resolution, but 1 km resolution geolocation information extracted from [MOD02HKM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), [MOD02QKM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), or [MOD03](https://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=03) files, if available, can be used by `mod29.pl` via the *latlonlistfile* parameter (described below). Using 1-km geolocation information will minimize geolocation interpolation error.
 
