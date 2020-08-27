@@ -300,7 +300,7 @@ The file `mod02_usage` provides a cursory explanation of the `mod02.pl` script
 
 ### `mod10_l2.pl` - Snow Cover Data
 
-This script can process [MOD10_L2](https://nsidc.org/data/mod10_l2.html) swath files to produce flat binary gridded files containing MODIS snow cover data. The snow cover data consist of 2 500-m resolution channels described in [mod10_l2 usage](https://nsidc.org/data/modis/ms2gt/mod10_l2_usage.txt) and [MOD10_L2](https://nsidc.org/data/mod10_l2.html).
+This script can process [MOD10_L2](https://nsidc.org/data/mod10_l2.html) swath files to produce flat binary gridded files containing MODIS snow cover data. The snow cover data consist of 2 500-m resolution channels described in `mod10_l2 usage.txt` and [MOD10_L2](https://nsidc.org/data/mod10_l2.html).
 
 The geolocation information stored in [MOD10_L2](https://nsidc.org/data/mod10_l2.html) files is 5-km resolution, but 1-km resolution geolocation information extracted from [MOD02HKM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), [MOD02QKM](http://ccplot.org/pub/resources/Aqua/MODIS%20Level%201B%20Product%20User%20Guide.pdf), or [MOD03](https://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=03) files, if available, can be used by mod10_l2.pl via the *latlonlistfile* parameter (described below). Using 1-km geolocation information will minimize geolocation interpolation error.
 
@@ -350,37 +350,37 @@ The mod29.pl script has the following usage:
 
 ### The current version of MS2GT is 0.5 released May 31, 2001
 
--   Changed perl location from /usr/local/bin/perl to /usr/bin/perl in idl_sh.pl.
--   Added exit(EXIT_SUCCESS) for successful exit from gridsize.c, ll2cr.c, and fornav.c to get around apparent Linux problem.
--   Moved mod10_l2.pl and mod29.pl usage descriptions into separate files.
--   Added [Script Descriptions and Usage](https://nsidc.org/data/modis/ms2gt/index.html#descriptions).
+-   Changed perl location from `/usr/local/bin/perl` to `/usr/bin/perl` in `idl_sh.pl`.
+-   Added exit(EXIT_SUCCESS) for successful exit from `gridsize.c`, `ll2cr.c`, and `fornav.c` to get around apparent Linux problem.
+-   Moved `mod10_l2.pl` and `mod29.pl` usage descriptions into separate files.
+-   Added Script Descriptions and Usage.
 
 ### Version 0.4 released May 3, 2001
 
 -   Fixed bugs in fornav related to fill value processing.
--   Enhanced modis_ice_read.pro to allow processing by [mod29.pl](https://nsidc.org/data/modis/ms2gt/index.html#mod29) of "dark" MOD29 granules which do not include Sea Ice by Reflectance, Sea Ice by Reflectance PixelQA, nor Combined Sea Ice channels. Gridded arrays containing the fill value of 255 are now returned when these channels are specified for dark MOD29 granules.
--   Modified [Building the Executables](https://nsidc.org/data/modis/ms2gt/index.html#building) so that the make is run from the ms2gt/src directory rather than the ms2gt directory due to an unresolved problem on Linux platforms.
+-   Enhanced modis_ice_read.pro to allow processing by `mod29.pl` of "dark" MOD29 granules which do not include Sea Ice by Reflectance, Sea Ice by Reflectance PixelQA, nor Combined Sea Ice channels. Gridded arrays containing the fill value of 255 are now returned when these channels are specified for dark MOD29 granules.
+-   Modified building the executables so that the make is run from the `ms2gt/src` directory rather than the `ms2gt` directory due to an unresolved problem on Linux platforms.
 
 ### Version 0.3 released May 1, 2001
 
--   Fixed bug in [mod29.pl](https://nsidc.org/data/modis/ms2gt/index.html#mod29) related to checking for a temperature channel.
--   Changed [mod29.pl](https://nsidc.org/data/modis/ms2gt/index.html#mod29) mnemonics for better consistency.
+-   Fixed bug in `mod29.pl` related to checking for a temperature channel.
+-   Changed `mod29.pl` mnemonics for better consistency.
 -   Added -F option to ll2cr to allow specification of input and output fill values.
 -   Added -r option to fornav to allow specification of a column-row fill value.
--   Added [Tutorial 4](https://nsidc.org/data/modis/ms2gt/tutorial_4.html).
+-   Added Tutorial 4.
 
 ### Version 0.2 released April 27, 2001
 
--   Changed perl location from /usr/local/bin/perl to /usr/bin/perl.
--   Added [Verifying your Perl Installation](https://nsidc.org/data/modis/ms2gt/index.html#perl).
--   Added [Tutorial 3](https://nsidc.org/data/modis/ms2gt/tutorial_3.html).
--   Fixed bugs in [mod10_l2.pl](https://nsidc.org/data/modis/ms2gt/index.html#mod10_l2) and [mod29.pl](https://nsidc.org/data/modis/ms2gt/index.html#mod29) related to reading the *.gpd file.
--   Changed channel numbers to mnemonic strings in output filenames for [mod10_l2.pl](https://nsidc.org/data/modis/ms2gt/index.html#mod10_l2) and [mod29.pl](https://nsidc.org/data/modis/ms2gt/index.html#mod29).
+-   Changed perl location from `/usr/local/bin/perl` to `/usr/bin/perl`.
+-   Added section on Verifying your Perl Installation.
+-   Added Tutorial 3.
+-   Fixed bugs in `mod10_l2.pl` and `mod29.pl` related to reading the `*.gpd` file.
+-   Changed channel numbers to mnemonic strings in output filenames for `mod10_l2.pl` and `mod29.pl`.
 
 ### Version 0.1 released April 23, 2001
 
--   Added [Tutorial 2](https://nsidc.org/data/modis/ms2gt/tutorial_2.html).
--   Changed the -d weight_distance_max parameter to fornav from its default value of 1.0 to 1.2 due to the appearance of holes in a preliminary version of the [Tutorial 2](https://nsidc.org/data/modis/ms2gt/tutorial_2.html) example. Holes do not now appear to be a problem in this example.
+-   Added Tutorial 2.
+-   Changed the `-d` `weight_distance_max` parameter to `fornav` from its default value of 1.0 to 1.2 due to the appearance of holes in a preliminary version of the Tutorial 2 example. Holes do not now appear to be a problem in this example.
 
 ### Version 00.00 released April 20, 2001
 
