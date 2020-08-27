@@ -31,13 +31,11 @@ This package requires:
 
 ## Installation
 
-See the [MS2GT page](https://nsidc.org/data/modis/ms2gt) for information on how to build and install the toolkit.  Note that the documentation was written for v0.5 and have not been updated since.  Note that the documentation there refers to downloading the v0.5 package from the FTP site.  If using this repository, you do not need to do that, you can simply clone this repository into a folder and run the [Building the Executables](https://nsidc.org/data/modis/ms2gt#building) step from there.
+See documentation.md for information on how to build and install the toolkit.  Note that the documentation was written for v0.5 and have not been updated since.  Note that the documentation there refers to downloading the v0.5 package from the FTP site.  If using this repository, you do not need to do that, you can simply clone this repository into a folder and run the documentation.md#building step from there.
 
 ## Usage
 
-See the [Tutorials](https://nsidc.org/data/modis/ms2gt/tutorials.html) for information on using the tools in the toolkit.  Note that these tutorials were written for v0.5, and have not been updated since.  Changes that apply to later versions may not be covered.
-
-The instructions on that page will refer you to data on an FTP site.  This repository also has the data in the relevant `tutorial_x` folder.
+See the tutorials for information on using the tools in the toolkit.  Note that these tutorials were written for v0.5, and have not been updated since.  Changes that apply to later versions may not be covered.
 
 ## License
 
